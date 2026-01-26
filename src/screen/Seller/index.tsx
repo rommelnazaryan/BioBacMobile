@@ -32,6 +32,7 @@ export default function Seller(route: Props) {
     onSubmitConfirm,
     onSubmitCreate,
     isConnected,
+    onSubmitEdit
   } = useSeller(route);
   return (
     <View style={styles.container}>
@@ -66,10 +67,16 @@ export default function Seller(route: Props) {
                 onClickHistory={() =>
                   onHandlerHistory(company.id, company.name)
                 }
-                onClickEdit={() => console.log()}
+                onClickEdit={() => onSubmitEdit(company)}
                 onClickDelete={() => onSubmitDelete(company.id)}
                 permission={routeItem?.items}
-                showDelete={company?.deleted}>
+                showDelete={company?.deleted}
+                permissionType={{
+                  CREATE: 'COMPANY_SELLER_CREATE',
+                  UPDATE: 'COMPANY_SELLER_UPDATE',
+                  DELETE: 'COMPANY_SELLER_DELETE',
+                }}
+                >
                 <Card key={company.id} element={company}/>
               </Table>
             )}

@@ -1,16 +1,16 @@
-import {View, Text, StyleSheet} from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import React from 'react';
-import {AllCompanyProps} from '@/types';
-import {Colors, FontFamily, FontSizes} from '@/theme';
-import {t} from '@/locales';
-export default function Card({element}: {element: AllCompanyProps}) {
+import { AllCompanyProps } from '@/types';
+import { Colors, FontFamily, FontSizes } from '@/theme';
+import { t } from '@/locales';
+export default function Card({ element }: { element: AllCompanyProps}) {
   const createdAtDate = element.ogrnDate.split(':')[0];
   const backgroundColor = element.deleted ? Colors.red_300 : Colors.white;
   return (
     <View
       style={[
         styles.container,
-        { backgroundColor: backgroundColor}
+        { backgroundColor: backgroundColor }
       ]}>
       <View style={styles.row}>
         <Text style={styles.title}>{t('common.name')}:</Text>
@@ -32,7 +32,7 @@ export default function Card({element}: {element: AllCompanyProps}) {
           <Text style={styles.value}>{element.debtorAmount}</Text>
         </View>
       )}
-     
+
       <View style={styles.row}>
         <Text style={styles.title}>{t('common.phoneNumber')}:</Text>
         <Text style={styles.value}>{element.phones[0]}</Text>
@@ -67,11 +67,23 @@ export default function Card({element}: {element: AllCompanyProps}) {
           <Text style={styles.value}>{element.warehouseAddress}</Text>
         </View>
       )}
-
+      {element.latitude && (
+        <View style={styles.row}>
+          <Text style={styles.title}>Latitude:</Text>
+          <Text style={styles.value}>{element.latitude}</Text>
+        </View>
+      )}
+      {element.longitude && (
+        <View style={styles.row}>
+          <Text style={styles.title}>Longitude:</Text>
+          <Text style={styles.value}>{element.longitude}</Text>
+        </View>
+      )}
       <View style={styles.row}>
         <Text style={styles.title}>{t('common.createdAt')}:</Text>
         <Text style={styles.value}>{createdAtDate}</Text>
       </View>
+
     </View>
   );
 }
@@ -98,4 +110,5 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.regular,
     fontSize: FontSizes.small,
   },
+
 });

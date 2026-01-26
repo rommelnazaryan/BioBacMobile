@@ -45,7 +45,7 @@ export async function requestWithStatus<TResponse extends object>(
     }
     if(err instanceof Error && err.message.includes('Network Error')) {
     }else{
-      console.log('Error',status);
+      console.log('Error',status,err);
       callbacks.onError?.(err, status);
     }
 

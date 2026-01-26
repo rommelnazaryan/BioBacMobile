@@ -13,10 +13,12 @@ import DateIcon from '@/component/icons/DateIcon';
 import moment from 'moment';
 import DropdownComponent from '@/component/dropdown';
 import MapModal from '@/component/Modal/MapModal';
-export default function SellerCreate() {
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { SellerParamList } from '@/navigation/types';
+export default function SellerCreate(route: NativeStackScreenProps<SellerParamList, 'SellerCreate'>) {
   const { control, handleSubmit, errors, onOpenDate,
     onclearDate, onCloseDate, date, showDate, onConfirmDate, companyGroupList,
-    companyGroup, isConnected, onPressGetLocation, showMap, onCloseMap, onSubmitMap, latitude, longitude, setLatitude, setLongitude, onCreateCompany, errorDate } = useSellerCreate();
+    companyGroup, isConnected, onPressGetLocation, showMap, onCloseMap, onSubmitMap, latitude, longitude, setLatitude, setLongitude, onCreateCompany, errorDate,keyValue } = useSellerCreate(route);
  
     return (
     <View style={styles.container}>
@@ -216,7 +218,7 @@ export default function SellerCreate() {
         />
 
         <Botton title="Show Map" onHandler={onPressGetLocation} style={styles.locationButton} textStyle={styles.locationButtonText} />
-        <Botton title="Create" onHandler={handleSubmit(onCreateCompany)} style={styles.button} />
+        <Botton title={keyValue === 'edit' ? 'Update' : 'Create'} onHandler={handleSubmit(onCreateCompany)} style={styles.button} />
         <MapModal isVisible={showMap} onClose={() => onCloseMap()} onSubmit={(latitude, longitude) => onSubmitMap(latitude, longitude)} />
       </ScrollView>
     </View>

@@ -184,7 +184,9 @@ export type GetPaymentAllResponse = {
 
 }
 
-export type CreateSellerRequest = {
+export type CreateCompanyRequest = {
+  id?: number;
+  key?: string;
   name: string;
   clientRegisteredDate: string;
   ogrnDate: string;

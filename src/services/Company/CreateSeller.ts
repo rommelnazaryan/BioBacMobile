@@ -4,15 +4,15 @@ import {
     type StatusResult,
   } from '@/api/request';
   import {endpoints} from '@/api/endpoints';
-import { CreateSellerRequest } from '@/types';
+import { CreateCompanyRequest } from '@/types';
   
-  export type CreateSellerCallbacks<T> = StatusCallbacks<T>;
-  export type CreateSellerResult<T> = StatusResult<T>;
+  export type CreateCompanyCallbacks<T> = StatusCallbacks<T>;
+  export type CreateCompanyResult<T> = StatusResult<T>;
   
-  export const CreateSeller = async <T extends object>(
-    data: CreateSellerRequest,
-    result: CreateSellerCallbacks<T> = {},
-  ): Promise<CreateSellerResult<T>> => {
+  export const CreateCompany = async <T extends object>(
+    data: CreateCompanyRequest,
+    result: CreateCompanyCallbacks<T> = {},
+  ): Promise<CreateCompanyResult<T>> => {
     return requestWithStatus<T>({
       config: {
         method: 'POST',

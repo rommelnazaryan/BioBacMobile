@@ -33,6 +33,7 @@ export default function Buyers(route: Props) {
     onSubmitConfirm,
     onSubmitCreate,
     isConnected,
+    onSubmitEdit,
   } = useBuyers(route);
   return (
     <View style={styles.container}>
@@ -67,10 +68,16 @@ export default function Buyers(route: Props) {
                   onClickHistory={() =>
                     onHandlerHistory(company.id, company.name)
                   }
-                  onClickEdit={() => console.log()}
+                  onClickEdit={() => onSubmitEdit(company)}
                   onClickDelete={() => onSubmitDelete(company.id)}
                   permission={routeItem?.items}
-                  showDelete={company?.deleted}>
+                  showDelete={company?.deleted}
+                  permissionType={{
+                    CREATE: 'COMPANY_BUYER_CREATE',
+                    UPDATE: 'COMPANY_BUYER_UPDATE',
+                    DELETE: 'COMPANY_BUYER_DELETE',
+                  }}
+                  >
                   <Card key={company.id} element={company} />
                 </Table>
               )}

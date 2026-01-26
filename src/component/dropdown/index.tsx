@@ -31,12 +31,12 @@ const DropdownComponent = ({
   }, [isControlled, valueProp]);
 
   const selectedValue = useMemo(() => {
-    return isControlled ? (valueProp ?? null) : internalValue;
+    return isControlled ? (valueProp ?? internalValue) : internalValue;
   }, [internalValue, isControlled, valueProp]);
 
   const [_isFocused, setIsFocused] = useState(false);
   const renderItem = (item: {label: string; value: string}) => {
-    const isSelected = item.value === selectedValue;
+    const isSelected = Number(item.value) === Number(selectedValue);
     return (
       <View
         style={[
@@ -85,7 +85,7 @@ const DropdownComponent = ({
         valueField="value"
         placeholder="Select..."
         searchPlaceholder="Search..."
-        value={selectedValue}
+        value={Number(selectedValue)}
         onChange={item => {
           if (!isControlled) {
             setInternalValue(item.value);

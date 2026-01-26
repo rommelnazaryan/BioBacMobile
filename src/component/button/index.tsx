@@ -63,7 +63,7 @@ const Botton = (props: Props) => {
 export default Botton;
 const styles = StyleSheet.create({
   container: {
-    width: '90%',
+    width: '93%',
     height: 54,
     borderRadius: 12,
     alignSelf: 'center',

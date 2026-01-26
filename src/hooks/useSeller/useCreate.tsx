@@ -1,7 +1,7 @@
 import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import useNetworkStore from '@/zustland/networkStore';
 import { useState } from 'react';
 import { useToast } from '@/component/toast/ToastProvider';
@@ -9,16 +9,20 @@ import moment from 'moment';
 import { GetCompanyGroup } from '@/services/Company/CompnayGroup';
 import { useFocusEffect } from '@react-navigation/native';
 import useCompanyGroupStore from '@/zustland/companyGroup';
-import { CompanyGroupParamList, DropdownOptions } from '@/navigation/types';
+import { CompanyGroupParamList, DropdownOptions, RootStackParamList } from '@/navigation/types';
 import useRefetchOnReconnect from '../useRefetchOnReconnect';
-import { CreateSeller } from '@/services/Company/CreateSeller';
+import { CreateCompany } from '@/services/Company/CreateSeller';
 import { useNavigation } from '@react-navigation/native';
-import type { CreateSellerRequest } from '@/types';
+import type { CreateCompanyRequest } from '@/types';
 import useDraftStore from '@/zustland/draftStore';
-export default function useSellerCreate() {
+import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
+import { SellerParamList } from '@/navigation/types';
+import { UpdateCompany } from '@/services/Company/UpdateCompany';
+export default function useSellerCreate(route: NativeStackScreenProps<SellerParamList, 'SellerCreate'>) {
+  const {item, key} = route.route.params;
   const isConnected = useNetworkStore(s => s.isConnected);
   const [showDate, setShowDate] = useState(false);
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { companyGroup, setCompanyGroup } = useCompanyGroupStore();
   const { Draft, setDraft } = useDraftStore();
   const [companyGroupList, setCompanyGroupList] = useState<DropdownOptions[]>([]);
@@ -26,6 +30,7 @@ export default function useSellerCreate() {
   const [date, setDate] = useState<string>(
     moment(new Date()).format('DD/MM/YYYY'),
   );
+  const [keyValue, setKeyValue] = useState<string>('');
   const [errorDate, setErrorDate] = useState<string>('');
   const [latitude, setLatitude] = useState<string>('');
   const [longitude, setLongitude] = useState<string>('');
@@ -43,11 +48,14 @@ export default function useSellerCreate() {
     warehouseAddress: Yup.string().trim(),
   });
 
+
+
   const {
     control,
     handleSubmit,
     formState: { errors },
     getValues,
+    setValue,
   } = useForm({
     defaultValues: {
       companyName: '',
@@ -64,6 +72,28 @@ export default function useSellerCreate() {
     resolver: yupResolver(validationSchema),
   });
 
+
+  useEffect(() => {
+    if (item) {
+     const anyItem = item as any;
+     setValue('companyName', anyItem.name ?? '');
+     setValue('generalDirector', anyItem.ceo ?? '');
+     setValue('companyPhone', anyItem.phones?.[0] ?? '');
+     // online item has companyGroup.id, draft has companyGroupId
+     const companyGroupId = anyItem.companyGroup?.id ?? anyItem.companyGroupId;
+     setValue('companyGroup', companyGroupId != null ? String(companyGroupId) : '');
+     setValue('creditorAmount', String(anyItem.creditorAmount ?? 0));
+     setValue('debtorAmount', String(anyItem.debtorAmount ?? 0));
+     setValue('actualAddress', anyItem.actualAddress ?? '');
+     setValue('addressTT', Array.isArray(anyItem.addressTT) ? anyItem.addressTT.join(',') : (anyItem.addressTT ?? ''));
+     setValue('localAddress', anyItem.localAddress ?? '');
+     setValue('warehouseAddress', anyItem.warehouseAddress ?? '');
+     setDate(anyItem.clientRegisteredDate?.split?.(':')?.[0] ?? date);
+     setLatitude(anyItem.latitude != null ? String(anyItem.latitude) : '');
+     setLongitude(anyItem.longitude != null ? String(anyItem.longitude) : '');
+   }
+   setKeyValue(key);
+  }, [item, setValue, date, key]);
 
   // open date picker
   const onOpenDate = () => {
@@ -103,9 +133,9 @@ export default function useSellerCreate() {
       onSuccess: res => {
         const { data } = res as { data: CompanyGroupParamList[] };
         const companyGroupOptions: DropdownOptions[] = data.map(
-          (item: CompanyGroupParamList) => ({
-            label: item.name,
-            value: item.id,
+          (group: CompanyGroupParamList) => ({
+            label: group.name,
+            value: group.id,
           }),
         );
         setCompanyGroup(companyGroupOptions);
@@ -154,7 +184,7 @@ export default function useSellerCreate() {
       show('Please enter a creditor or debtor amount', { type: 'error' });
       return;
     }
-    const data: CreateSellerRequest = {
+    const data: CreateCompanyRequest = {
       name: getValues().companyName,
       clientRegisteredDate: `${moment(new Date()).format('DD/MM/YYYY')}:23:59:00`,
       ogrnDate: `${date}:23:59:00`,
@@ -189,12 +219,24 @@ export default function useSellerCreate() {
     }
     // if offline, save to draft//
     if (!isConnected) {
+      data.key = 'Seller'
       setDraft([...Draft, data]);
       show('Company saved to draft', { type: 'success' });
       navigation.goBack();
       return;
     }
-    CreateSeller(data, {
+    if (key === 'edit' && (item as any)?.id != null) {
+      UpdateCompany((item as any).id, data, {
+        onSuccess: () => {
+          show('Company updated successfully', { type: 'success' });
+          navigation.goBack();
+        },
+        onError: () => {
+          show('Failed to update company', {type: 'error'});
+        },
+      });
+    } else {
+    CreateCompany(data, {
       onSuccess: () => {
         show('Company created successfully', { type: 'success' });
         navigation.goBack();
@@ -207,7 +249,10 @@ export default function useSellerCreate() {
         show('Failed to create company', { type: 'error' });
       },
     });
-  }, [getValues, date, show, longitude, latitude, navigation, Draft, setDraft, isConnected]);
+    }
+  }, [getValues, date, show, longitude, latitude, navigation, Draft, setDraft, isConnected, item, key]);
+
+
 
   useFocusEffect(
     useCallback(() => {
@@ -239,6 +284,7 @@ export default function useSellerCreate() {
     setLatitude,
     setLongitude,
     onCreateCompany,
-    errorDate
+    errorDate,
+    keyValue
   }
 }

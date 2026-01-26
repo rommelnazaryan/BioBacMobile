@@ -80,19 +80,20 @@ export default function useBuyers(route: Props) {
   }, [hasNextPage, loading, loadingMore]);
 
   // navigate to history //
-  const onHandlerHistory = (id: number, name: string) => {
+  const onHandlerHistory = (companyId: number, name: string) => {
     navigation.navigate('BuyerStack', {
       screen: 'HistoryBuyers',
-      params: {item: {id: id, name: name}},
+      params: {item: {id: companyId, name: name}},
     });
   };
 
   // submit delete //
-  const onSubmitDelete = (id: number) => {
+  const onSubmitDelete = (companyId: number) => {
     setVisible(() => true);
-    setId(id);
+    setId(companyId);
   };
 
+// submit confirm modal//
   const onSubmitConfirm = () => {
     setLoading(true);
     DeleteCompany(id, {
@@ -110,6 +111,7 @@ export default function useBuyers(route: Props) {
     });
   };
 
+// submit cancel modal//
   const onSubmitCancel = () => {
     setVisible(() => false);
   };
@@ -118,6 +120,15 @@ export default function useBuyers(route: Props) {
   const onSubmitCreate = () => {
     navigation.navigate('BuyerStack', {
       screen: 'BuyerCreate',
+      params: {item: undefined, key: 'create'},
+    });
+  };
+
+  // submit edit //
+  const onSubmitEdit = (company: AllCompanyProps) => {
+    navigation.navigate('BuyerStack', {
+      screen: 'BuyerCreate',
+      params: {item: company, key: 'edit'},
     });
   };
 
@@ -148,5 +159,6 @@ export default function useBuyers(route: Props) {
     onSubmitCancel,
     onSubmitCreate,
     isConnected,
+    onSubmitEdit,
   };
 }

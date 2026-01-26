@@ -1,10 +1,16 @@
-import {View, StyleSheet, TouchableOpacity, ViewStyle} from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ViewStyle, Text } from 'react-native';
 import React from 'react';
-import {Colors, Shadows} from '@/theme';
+import { Colors, FontFamily, FontSizes, Shadows } from '@/theme';
 import DeleteIcon from 'react-native-vector-icons/Ionicons';
-import {Permission} from '@/permissions/engine';
-import {hasPermission} from '@/permissions/hasPermission';
+import { Permission } from '@/permissions/engine';
+import { hasPermission } from '@/permissions/hasPermission';
 import { HistoryIcon, EditIcon } from '@/component/icons';
+
+type UserPermission = {
+  CREATE: string,
+  UPDATE: string,
+  DELETE: string,
+}
 
 type Props = {
   onClickEdit?: () => void;
@@ -14,13 +20,10 @@ type Props = {
   containerStyle?: ViewStyle;
   permission?: Permission[];
   showDelete?: boolean;
+  permissionType: UserPermission;
 };
 
-enum UserPermission {
-  CREATE = 'COMPANY_SELLER_CREATE',
-  UPDATE = 'COMPANY_SELLER_UPDATE',
-  DELETE = 'COMPANY_SELLER_DELETE',
-}
+
 
 export default function Table({
   onClickEdit,
@@ -30,22 +33,23 @@ export default function Table({
   containerStyle,
   permission,
   showDelete,
+  permissionType,
 }: Props) {
-  const canEdit = hasPermission(permission, UserPermission.UPDATE);
-  const canDelete = hasPermission(permission, UserPermission.DELETE);
+  const canEdit = hasPermission(permission, permissionType.UPDATE);
+  const canDelete = hasPermission(permission, permissionType.DELETE);
 
   const allowActions = !showDelete;
   const showHeader =
     !!onClickHistory ||
     (allowActions && ((canEdit && !!onClickEdit) || (canDelete && !!onClickDelete)));
 
-    return (
+  return (
     <View style={[styles.contentContainer, containerStyle]}>
       {showHeader ? (
         <View style={styles.invoiceContainer}>
           {!!onClickHistory && (
             <TouchableOpacity activeOpacity={0.5} onPress={onClickHistory}>
-              <HistoryIcon/>
+              <HistoryIcon />
             </TouchableOpacity>
           )}
           {allowActions && canEdit && !!onClickEdit && (
@@ -58,7 +62,12 @@ export default function Table({
               <DeleteIcon name="trash-outline" size={24} color={Colors.red} />
             </TouchableOpacity>
           )
-        }
+          }
+          {showDelete &&
+            <View style={styles.deleteContainer}>
+              <Text style={styles.deleteText}>Delete</Text>
+            </View>
+          }
         </View>
       ) : null}
       {children}
@@ -86,5 +95,22 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
     padding: 10,
+  },
+  deleteContainer: {
+    width: 100,
+    height: 30,
+    backgroundColor: Colors.red_100,
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    left: 10,
+    top: 8,
+  },
+  deleteText: {
+    fontSize: FontSizes.small,
+    fontFamily: FontFamily.regular,
+    color: Colors.red_700,
   },
 });

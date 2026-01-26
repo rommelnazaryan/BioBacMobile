@@ -158,8 +158,6 @@ const HomeStackScreen = () => {
 };
 
 
-
-
 const DraftStackScreen = () => {
   return (
     <DraftStack.Navigator screenOptions={{headerShown: false}}>
@@ -167,8 +165,6 @@ const DraftStackScreen = () => {
     </DraftStack.Navigator>
   );
 };
-
-
 
 const SettingStackScreen = () => {
   return (

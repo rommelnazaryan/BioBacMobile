@@ -1,5 +1,6 @@
 import {View, StyleSheet, ScrollView} from 'react-native';
 import React from 'react';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {Colors} from '@/theme';
 import {Controller} from 'react-hook-form';
 import TextView from '@/component/view/TextView';
@@ -13,8 +14,11 @@ import DateIcon from '@/component/icons/DateIcon';
 import moment from 'moment';
 import DropdownComponent from '@/component/dropdown';
 import MapModal from '@/component/Modal/MapModal';
+import type {BuyerParamList} from '@/navigation/types';
 
-export default function BuyerCreate() {
+type Props = NativeStackScreenProps<BuyerParamList, 'BuyerCreate'>;
+
+export default function BuyerCreate(route: Props) {
   const {
     control,
     handleSubmit,
@@ -38,7 +42,8 @@ export default function BuyerCreate() {
     setLongitude,
     onCreateCompany,
     errorDate,
-  } = useBuyerCreate();
+    keyValue
+  } = useBuyerCreate(route);
 
   return (
     <View style={styles.container}>
@@ -253,7 +258,7 @@ export default function BuyerCreate() {
           textStyle={styles.locationButtonText}
         />
         <Botton
-          title="Create"
+          title={keyValue === 'edit' ? 'Update' : 'Create'}
           onHandler={handleSubmit(onCreateCompany)}
           style={styles.button}
         />

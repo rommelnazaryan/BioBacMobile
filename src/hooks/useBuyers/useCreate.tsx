@@ -1,23 +1,33 @@
 import * as Yup from 'yup';
 import {yupResolver} from '@hookform/resolvers/yup';
 import {useForm} from 'react-hook-form';
-import {useCallback, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import useNetworkStore from '@/zustland/networkStore';
 import {useToast} from '@/component/toast/ToastProvider';
 import moment from 'moment';
 import {GetCompanyGroup} from '@/services/Company/CompnayGroup';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import useCompanyGroupStore from '@/zustland/companyGroup';
-import {CompanyGroupParamList, DropdownOptions} from '@/navigation/types';
+import {
+  BuyerParamList,
+  CompanyGroupParamList,
+  DropdownOptions,
+  RootStackParamList,
+} from '@/navigation/types';
 import useRefetchOnReconnect from '../useRefetchOnReconnect';
-import {CreateSeller} from '@/services/Company/CreateSeller';
-import type {CreateSellerRequest} from '@/types';
+import type {CreateCompanyRequest} from '@/types';
 import useDraftStore from '@/zustland/draftStore';
+import type {NativeStackNavigationProp, NativeStackScreenProps} from '@react-navigation/native-stack';
+import {UpdateCompany} from '@/services/Company/UpdateCompany';
+import { CreateCompany } from '@/services/Company/CreateSeller';
 
-export default function useBuyerCreate() {
+export default function useBuyerCreate(
+  route: NativeStackScreenProps<BuyerParamList, 'BuyerCreate'>,
+) {
+  const {item, key} = route.route.params;
   const isConnected = useNetworkStore(s => s.isConnected);
   const [showDate, setShowDate] = useState(false);
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const {companyGroup, setCompanyGroup} = useCompanyGroupStore();
   const {Draft, setDraft} = useDraftStore();
   const [companyGroupList, setCompanyGroupList] = useState<DropdownOptions[]>([]);
@@ -27,7 +37,7 @@ export default function useBuyerCreate() {
   const [latitude, setLatitude] = useState<string>('');
   const [longitude, setLongitude] = useState<string>('');
   const [showMap, setShowMap] = useState(false);
-
+  const [keyValue, setKeyValue] = useState<string>('');
   const validationSchema = Yup.object().shape({
     companyName: Yup.string().trim().required('Required'),
     generalDirector: Yup.string().trim().required('Required'),
@@ -46,6 +56,7 @@ export default function useBuyerCreate() {
     handleSubmit,
     formState: {errors},
     getValues,
+    setValue,
   } = useForm({
     defaultValues: {
       companyName: '',
@@ -62,6 +73,28 @@ export default function useBuyerCreate() {
     mode: 'onSubmit',
     resolver: yupResolver(validationSchema),
   });
+
+  useEffect(() => {
+    if (item) {
+      const anyItem = item as any;
+      setValue('companyName', anyItem.name ?? '');
+      setValue('generalDirector', anyItem.ceo ?? '');
+      setValue('companyPhone', anyItem.phones?.[0] ?? '');
+      const companyGroupId = anyItem.companyGroup?.id ?? anyItem.companyGroupId;
+      setValue('companyGroup', companyGroupId != null ? String(companyGroupId) : '');
+      setValue('creditorAmount', String(item.creditorAmount ?? 0));
+      setValue('debtorAmount', String(item.debtorAmount ?? 0));
+      setValue('actualAddress', item.actualAddress ?? '');
+      setValue('addressTT', item.addressTT?.join(',') ?? '');
+      setValue('localAddress', item.localAddress ?? '');
+      setValue('warehouseAddress', item.warehouseAddress ?? '');
+      setDate(anyItem.clientRegisteredDate?.split?.(':')?.[0] ?? date);
+      setLatitude(anyItem.latitude != null ? String(anyItem.latitude) : '');
+      setLongitude(anyItem.longitude != null ? String(anyItem.longitude) : '');
+    }
+    setKeyValue(key);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item, setValue, key]);
 
   // open date picker
   const onOpenDate = () => {
@@ -151,7 +184,7 @@ export default function useBuyerCreate() {
       return;
     }
 
-    const data: CreateSellerRequest = {
+    const data: CreateCompanyRequest = {
       name: getValues().companyName,
       clientRegisteredDate: `${moment(new Date()).format('DD/MM/YYYY')}:23:59:00`,
       ogrnDate: `${date}:23:59:00`,
@@ -186,25 +219,38 @@ export default function useBuyerCreate() {
 
     // if offline, save to draft
     if (!isConnected) {
+      data.key = 'Buyer'
       setDraft([...Draft, data]);
       show('Company saved to draft', {type: 'success'});
       navigation.goBack();
       return;
     }
 
-    CreateSeller(data, {
-      onSuccess: () => {
-        show('Company created successfully', {type: 'success'});
-        navigation.goBack();
-      },
-      onUnauthorized: () => {
-        show('Unauthorized', {type: 'error'});
-      },
-      onError: error => {
-        console.log('error', error);
-        show('Failed to create company', {type: 'error'});
-      },
-    });
+    if (key === 'edit' && (item as any)?.id != null) {
+      UpdateCompany((item as any).id, data, {
+        onSuccess: () => {
+          show('Company updated successfully', {type: 'success'});
+          navigation.goBack();
+        },
+        onError: () => {
+          show('Failed to update company', {type: 'error'});
+        },
+      });
+    } else {
+      CreateCompany(data, {
+        onSuccess: () => {
+          show('Company created successfully', {type: 'success'});
+          navigation.goBack();
+        },
+        onUnauthorized: () => {
+          show('Unauthorized', {type: 'error'});
+        },
+        onError: error => {
+          console.log('error', error);
+          show('Failed to create company', {type: 'error'});
+        },
+      });
+    }
   }, [
     getValues,
     date,
@@ -215,6 +261,8 @@ export default function useBuyerCreate() {
     Draft,
     setDraft,
     isConnected,
+    item,
+    key,
   ]);
 
   useFocusEffect(
@@ -248,6 +296,7 @@ export default function useBuyerCreate() {
     setLongitude,
     onCreateCompany,
     errorDate,
+    keyValue
   };
 }
 

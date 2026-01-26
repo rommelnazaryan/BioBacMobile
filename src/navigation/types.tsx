@@ -1,4 +1,4 @@
-import {historyProps, HomeListProps} from '@/types';
+import {AllCompanyProps, historyProps, HomeListProps} from '@/types';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import type {NavigatorScreenParams} from '@react-navigation/native';
 
@@ -7,13 +7,13 @@ export const HomeStack = createNativeStackNavigator<RootStackParamList>();
 export type SellerParamList = {
   Seller: {item: HomeListProps};
   History: {item: historyProps};
-  SellerCreate: undefined;
+  SellerCreate: {item: AllCompanyProps | undefined,key: 'create' | 'edit'};
 };
 
 export type BuyerParamList = {
   Buyers: {item: HomeListProps};
   HistoryBuyers: {item: historyProps};
-  BuyerCreate: undefined;
+  BuyerCreate: {item: AllCompanyProps | undefined,key: 'create' | 'edit'};
 };
 
 

@@ -60,7 +60,6 @@ export default function useSeller(route: Props) {
         const {metadata} = payload as unknown as {
           metadata: {page: number; last: boolean; totalPages: number};
         };
-        console.log('getAllCompanies', data);
         // page=0 -> replace, page>0 -> append
         setSeller(prev => (page === 0 ? data : [...prev, ...data]));
 
@@ -135,8 +134,18 @@ export default function useSeller(route: Props) {
   const onSubmitCreate = () => {
     navigation.navigate('SellerStack', {
       screen: 'SellerCreate',
+      params: {item: undefined, key: 'create'},
     })
   };
+
+// submit edit //
+const onSubmitEdit = (item: AllCompanyProps) => {
+  navigation.navigate('SellerStack', {
+    screen: 'SellerCreate',
+    params: {item: item as AllCompanyProps, key: 'edit'},
+  })
+};
+
 
 
   useEffect(() => {
@@ -166,5 +175,6 @@ export default function useSeller(route: Props) {
     onSubmitCancel,
     onSubmitCreate,
     isConnected,
+    onSubmitEdit
   };
 }
