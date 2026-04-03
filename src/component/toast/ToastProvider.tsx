@@ -41,32 +41,43 @@ export const ToastProvider = ({children}: {children: React.ReactNode}) => {
   const show = useCallback(
     (msg: string, options?: ToastOptions) => {
       const durationMs = options?.durationMs ?? 2500;
-      setMessage(msg);
-      setType(options?.type ?? 'info');
       if (hideTimeout.current) {
         clearTimeout(hideTimeout.current);
       }
-      Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: 0,
-          duration: 220,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 220,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        hideTimeout.current = setTimeout(hide, durationMs);
+
+      // Reset the toast before showing a new message so the previous
+      // toast color does not flash during the next animation.
+      translateY.stopAnimation();
+      opacity.stopAnimation();
+      translateY.setValue(-80);
+      opacity.setValue(0);
+
+      setMessage(msg);
+      setType(options?.type ?? 'info');
+
+      requestAnimationFrame(() => {
+        Animated.parallel([
+          Animated.timing(translateY, {
+            toValue: 0,
+            duration: 220,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacity, {
+            toValue: 1,
+            duration: 220,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          hideTimeout.current = setTimeout(hide, durationMs);
+        });
       });
     },
     [hide, opacity, translateY],
   );
 
-  const bg = type === 'success' ? Colors.green : type === 'error' ? Colors.red : '#111827';
+  const bg = type === 'success' ? Colors.green :  Colors.red;
 
   return (
     <ToastContext.Provider value={{show}}>

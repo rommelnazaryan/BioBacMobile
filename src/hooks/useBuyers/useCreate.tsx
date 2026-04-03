@@ -176,14 +176,6 @@ export default function useBuyerCreate(
       setErrorDate('Required');
       return;
     }
-    if (
-      Number(getValues().creditorAmount) !== 0 &&
-      Number(getValues().debtorAmount) !== 0
-    ) {
-      show('Please enter a creditor or debtor amount', {type: 'error'});
-      return;
-    }
-
     const data: CreateCompanyRequest = {
       name: getValues().companyName,
       clientRegisteredDate: `${moment(new Date()).format('DD/MM/YYYY')}:23:59:00`,
@@ -197,7 +189,6 @@ export default function useBuyerCreate(
       longitude: longitude,
       latitude: latitude,
     };
-
     if (Number(getValues().creditorAmount) > 0) {
       data.creditorAmount = Number(getValues().creditorAmount);
     }
@@ -219,6 +210,11 @@ export default function useBuyerCreate(
 
     // if offline, save to draft
     if (!isConnected) {
+      const check = Draft.find(item => item.name === data.name);
+      if(check) {
+        show('Company already exists in draft', {type: 'error'});
+        return;
+      }
       data.key = 'Buyer'
       setDraft([...Draft, data]);
       show('Company saved to draft', {type: 'success'});
@@ -243,11 +239,14 @@ export default function useBuyerCreate(
           navigation.goBack();
         },
         onUnauthorized: () => {
+          console.log('unauthorized');
           show('Unauthorized', {type: 'error'});
         },
         onError: error => {
           console.log('error', error);
-          show('Failed to create company', {type: 'error'});
+          show((error as Error)?.message ?? 'Failed to create company', {
+            type: 'error',
+          });
         },
       });
     }

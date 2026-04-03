@@ -7,6 +7,7 @@ import {
   ApartmentIcon,
   BusinessIcon,
   NotFound,
+  ShoppingCartIcon,
   UserSvgIcon,
 } from '@/component/icons';
 import {t} from '@/locales';
@@ -27,6 +28,8 @@ export default function HomeList({
       ? PaymentIcon
       : item.iconName === 'UserSvgIcon'
       ? UserSvgIcon
+      : item.iconName === 'ReturnProductIcon'
+      ? ShoppingCartIcon
       : NotFound;
 
   return (
@@ -44,6 +47,8 @@ export default function HomeList({
           ? t('company.companiesPayment')
           : item.label === 'payment history'
           ? t('company.companiesPaymentHistory')
+          : item.label === 'return products'
+          ? t('common.returnProducts')
           : 'other'}
       </Text>
     </TouchableOpacity>

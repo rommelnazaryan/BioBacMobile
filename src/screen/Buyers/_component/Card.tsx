@@ -46,7 +46,7 @@ export default function Card({element}: {element: AllCompanyProps}) {
       </View>
       <View style={styles.row}>
         <Text style={styles.title}>{t('Legal Address')}:</Text>
-        <Text style={styles.value}>{element.localAddress}</Text>
+        <Text style={[styles.value,{width:'60%'}]}>{element.localAddress}</Text>
       </View>
       <View style={styles.row}>
         <Text style={styles.title}>{t('Warehouse Address')}:</Text>
@@ -70,7 +70,6 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: '2%',
   },

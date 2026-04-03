@@ -3,14 +3,24 @@ import {StyleSheet, View, Text, ViewStyle} from 'react-native';
 import {Dropdown} from 'react-native-element-dropdown';
 import {Feather} from '@/component/icons/VectorIcon';
 import {Colors, FontFamily, FontSizes, Shadows} from '@/theme';
+import {t} from '@/locales';
+import { DropdownOptions } from '@/navigation/types';
 
 type DropdownComponentProps = {
   style?: ViewStyle;
-  data: {label: string; value: string}[];
-  onClick: (item: {label: string; value: string}) => void;
+  data: DropdownOptions[];
+  onClick: (item: {label: string; value: string | number}) => void;
   errorMessage?: string;
   search?: boolean;
-  value?: string | null;
+  value?: string | number | null;
+};
+
+const normalizeValue = (value: string | number | null | undefined) => {
+  if (value === '' || value === null || value === undefined) {
+    return null;
+  }
+
+  return String(value);
 };
 
 const DropdownComponent = ({
@@ -22,7 +32,8 @@ const DropdownComponent = ({
   value: valueProp,
 }: DropdownComponentProps) => {
   const isControlled = valueProp !== undefined;
-  const [internalValue, setInternalValue] = useState<string | null>(null);
+  const isEmpty = data.length === 0;
+  const [internalValue, setInternalValue] = useState<string | number | null>(null);
 
   useEffect(() => {
     if (isControlled) {
@@ -34,9 +45,14 @@ const DropdownComponent = ({
     return isControlled ? (valueProp ?? internalValue) : internalValue;
   }, [internalValue, isControlled, valueProp]);
 
+  const normalizedSelectedValue = useMemo(
+    () => normalizeValue(selectedValue),
+    [selectedValue],
+  );
+
   const [_isFocused, setIsFocused] = useState(false);
-  const renderItem = (item: {label: string; value: string}) => {
-    const isSelected = Number(item.value) === Number(selectedValue);
+  const renderItem = (item: {label: string; value: string | number}) => {
+    const isSelected = normalizeValue(item.value) === normalizedSelectedValue;
     return (
       <View
         style={[
@@ -50,7 +66,7 @@ const DropdownComponent = ({
           ]}>
           {item.label}
         </Text>
-        {item.value === selectedValue && (
+        {normalizeValue(item.value) === normalizedSelectedValue && (
           <Feather
             style={styles.icon}
             color={Colors.blue}
@@ -77,15 +93,16 @@ const DropdownComponent = ({
         selectedTextStyle={styles.selectedTextStyle}
         iconStyle={styles.iconStyle}
         iconColor={Colors.black}
-        search={search}
+        search={search && !isEmpty}
         data={data}
+        disable={isEmpty}
         activeColor={Colors.white}
         maxHeight={300}
         labelField="label"
         valueField="value"
-        placeholder="Select..."
+        placeholder={isEmpty ? t('common.noData') : 'Select...'}
         searchPlaceholder="Search..."
-        value={Number(selectedValue)}
+        value={selectedValue ?? null}
         onChange={item => {
           if (!isControlled) {
             setInternalValue(item.value);

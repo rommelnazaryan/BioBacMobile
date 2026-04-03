@@ -52,7 +52,9 @@ export default function useDraft() {
       },
       onError: (error) => {
         console.log('error', error);
-        show('Failed to create company', { type: 'error' });
+        show((error as Error)?.message ?? 'Failed to create company', {
+          type: 'error',
+        });
         setLoading(false);
       },
 

@@ -57,6 +57,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.1)', // Semi-transparent background
   },
   cardContainer: {
+    alignSelf: 'center',
     width: '90%',
     backgroundColor: Colors.white,
     borderRadius: 20,

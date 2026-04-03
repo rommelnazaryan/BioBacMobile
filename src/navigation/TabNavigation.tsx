@@ -6,7 +6,7 @@ import { MaterialIcons, AntDesign, Feather} from '@/component/icons/VectorIcon';
 import { Colors, FontFamily } from '@/theme';
 import useDraftStore from '@/zustland/draftStore';
 
-import type {RootStackParamList, TabParamList, SellerParamList, BuyerParamList} from './types';
+import type {RootStackParamList, TabParamList, SellerParamList, BuyerParamList, ReturnProductParamList} from './types';
 //-------------Home----------------
 import Home from '@/screen/Home';
 
@@ -33,8 +33,9 @@ import Draft from '@/screen/Draft';
 import { deviceHeight } from '@/helper';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-
-
+//-------------Return Product----------------
+import ReturnProduct from '@/screen/ReturnProduct';
+import ReturnProductCreate from '@/screen/ReturnProduct/Create';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const HomeStack = createNativeStackNavigator<RootStackParamList>();
@@ -42,7 +43,7 @@ const SettingsStack = createNativeStackNavigator<RootStackParamList>();
 const DraftStack = createNativeStackNavigator<RootStackParamList>();
 const SellerStack = createNativeStackNavigator<SellerParamList>();
 const BuyerStack = createNativeStackNavigator<BuyerParamList>();
-
+const ReturnProductStack = createNativeStackNavigator<ReturnProductParamList>();
 
 const baseScreenOptions = {
   headerShown: false,
@@ -145,6 +146,16 @@ const BuyerStackScreen = () => {
   );
 };
 
+const ReturnProductStackScreen = () => {
+  return (
+    <ReturnProductStack.Navigator screenOptions={{headerShown: false}}>
+      <ReturnProductStack.Screen name="ReturnProduct" component={ReturnProduct} />
+      <ReturnProductStack.Screen name="ReturnProductCreate" component={ReturnProductCreate} />
+    </ReturnProductStack.Navigator>
+  );
+};
+
+
 const HomeStackScreen = () => {
   return (
     <HomeStack.Navigator screenOptions={{headerShown: false}}>
@@ -153,6 +164,7 @@ const HomeStackScreen = () => {
       <HomeStack.Screen name="SellerStack" component={SellerStackScreen} />
       <HomeStack.Screen name="Payment" component={Payment} />
       <HomeStack.Screen name="PaymentHistory" component={PaymentHistory} />
+      <HomeStack.Screen name="ReturnProductStack" component={ReturnProductStackScreen} />
     </HomeStack.Navigator>
   );
 };

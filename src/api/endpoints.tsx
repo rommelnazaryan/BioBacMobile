@@ -16,6 +16,11 @@ type Endpoints = {
   GetCompanyGroup: string;
   CreateCompany: string;
   UpdateCompanyGroup: string;
+  GetReturnProduct: string;
+  GetWarehouses: string;
+  GetAssortment: string;
+  CreateReturn: string;
+  UpdateReturn: string;
 }
 
 export const endpoints:Endpoints = {
@@ -36,8 +41,10 @@ export const endpoints:Endpoints = {
   GetCompanyAccount: 'company/account',
   GetCompanyGroup: 'company/company-group',
   CreateCompany: 'company/create',
-  UpdateCompanyGroup: 'company/company-group/',
-
+  UpdateCompanyGroup: 'company/update/',
+  GetAssortment: 'company/assortment/',
+  CreateReturn: 'company/return/',
+  UpdateReturn: 'company/return/',
   //payment
   GetPaymentCategory: 'company/payment-category',
   CreatePayment: 'company/payment',
@@ -45,4 +52,10 @@ export const endpoints:Endpoints = {
 
   //info-controller
   GetAssetInfoCategory: 'warehouse/asset-info/category',
+
+  //return product
+  GetReturnProduct: 'company/return/all',
+
+  //warehouses
+  GetWarehouses: 'warehouse/warehouses',
 };

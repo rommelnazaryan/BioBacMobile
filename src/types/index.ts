@@ -1,4 +1,5 @@
-import type {Permission} from '@/permissions/engine';
+import { ReturnProductFormItem } from '@/hooks/useReturnProduct/useCreate';
+import type { Permission } from '@/permissions/engine';
 export type LoginForm = {
   username: string;
   password: string;
@@ -37,7 +38,6 @@ export type HomeListProps = {
   items?: Permission[];
 };
 
-
 export type AllCompanyProps = {
   actualAddress: string;
   addressTT: string[];
@@ -46,33 +46,46 @@ export type AllCompanyProps = {
   ceo: string;
   chainOfStore: string;
   clientRegisteredDate: string;
-  clientType: {id: number, name: string};
-  companyGroup: {createdAt: string, updatedAt: string, id: number, name: string};
-  condition: {id: number, deliveryMethods: number[], deliveryPayerId: number, deliveryPayerName: string, financialTerms: number[], contractFormId: number, contractFormName: string, bonus: number | null};
-  contactPerson: {id: number, name: string}[];
-  cooperation: {id: number, name: string};
+  clientType: { id: number; name: string };
+  companyGroup: {
+    createdAt: string;
+    updatedAt: string;
+    id: number;
+    name: string;
+  };
+  condition: {
+    id: number;
+    deliveryMethods: number[];
+    deliveryPayerId: number;
+    deliveryPayerName: string;
+    financialTerms: number[];
+    contractFormId: number;
+    contractFormName: string;
+    bonus: number | null;
+  };
+  contactPerson: { id: number; name: string }[];
+  cooperation: { id: number; name: string };
   createdAt: string;
   deleted: boolean;
-  detail: {id: number, inn: string, kpp: string, ogrn: string, okpo: string};
+  detail: { id: number; inn: string; kpp: string; ogrn: string; okpo: string };
   emails: string[];
   externalEmails: string[];
   externalPhones: string[];
   id: number;
   latitude: number | null;
-  lines : string[];
+  lines: string[];
   localAddress: string;
   longitude: number | null;
   name: string;
   ogrnDate: string;
-  ourCompanies: {id: number, name: string}[];
+  ourCompanies: { id: number; name: string }[];
   phones: string[];
   priceList: number | null;
-  region
-  : {id: number, name: string, code: string};
+  region: { id: number; name: string; code: string };
   responsibleEmployeeId: number;
-  saleType: {id: number, name: string};
-  source: {id: number, name: string};
-  types: {id: number, name: string}[];
+  saleType: { id: number; name: string };
+  source: { id: number; name: string };
+  types: { id: number; name: string }[];
   updatedAt: string;
   warehouseAddress: string;
   websites: string[];
@@ -80,32 +93,30 @@ export type AllCompanyProps = {
   debtorAmount: number;
   balance: number;
   metadata: {
-    page: number,
-    size: number,
-    totalElesments: number,
-    totalPages: number,
-    last: boolean,
+    page: number;
+    size: number;
+    totalElesments: number;
+    totalPages: number;
+    last: boolean;
     filter: {
       typeIds: {
-        operator: string,
-        value: number[],
-      },
-    },
-  },
-}
-
+        operator: string;
+        value: number[];
+      };
+    };
+  };
+};
 
 export type historyProps = {
   id: number;
-  name:string;
-}
+  name: string;
+};
 
 export type getHistoryProps = {
   createdAt: string;
   amountChanged: number;
   note: string | null;
-}
-
+};
 
 export type GetAccountResponse = {
   balance: number;
@@ -119,7 +130,7 @@ export type GetAccountResponse = {
   name: string;
   ourCompanyId: number;
   updatedAt: string;
-}
+};
 
 export type PaymentRootItem = {
   name: string;
@@ -157,32 +168,31 @@ export type GetPaymentResponse = {
   paymentCategoryId: number;
   sum: number;
   targetId: number;
-}
+};
 
 export type GetPaymentAllResponse = {
+  createdAt: string;
+  updatedAt: string;
+  id: number;
+  date: string;
+  account: GetAccountResponse;
+  paymentCategory: {
     createdAt: string;
     updatedAt: string;
     id: number;
-    date: string;
-    account: GetAccountResponse;
-    paymentCategory: {
-        createdAt: string;
-        updatedAt: string;
-        id: number;
-        parentId: number | null;
-        parent: PaymentCategoryNode | null;
-        name: string;
-        category: string;
-        children: PaymentCategoryNode[];
-        state: string;
-    },
-    notes: string;
-    sum: number;
-    targetType: string;
-    target: string;
-    username: string;
-
-}
+    parentId: number | null;
+    parent: PaymentCategoryNode | null;
+    name: string;
+    category: string;
+    children: PaymentCategoryNode[];
+    state: string;
+  };
+  notes: string;
+  sum: number;
+  targetType: string;
+  target: string;
+  username: string;
+};
 
 export type CreateCompanyRequest = {
   id?: number;
@@ -204,4 +214,60 @@ export type CreateCompanyRequest = {
   addressTT?: string[];
   localAddress?: string;
   warehouseAddress?: string;
-}
+};
+
+export type ReturnProductItemProps = {
+  id?: number;
+  productId?: number;
+  productName?: string;
+  amount?: number;
+  quantity?: number;
+  price?: number;
+  returnPrice?: number;
+  sale?: number;
+  sum?: number;
+};
+
+export type ReturnProductProps = {
+  id: number;
+  comment: string;
+  companyId: number;
+  warehouseId?: number;
+  companyName: string;
+  createdAt: string;
+  createdById: number;
+  createdByName: string;
+  items: ReturnProductItemProps[];
+  returnDate: string;
+  totalAmount: number;
+  updatedAt: string;
+};
+
+export type GetWarehousesResponse = {
+  id: 1;
+  name: string;
+  location: string;
+  warehouseGroupName: string;
+  warehouseGroupId: number;
+  attributeGroupIds: number[];
+  warehouseTypeName: string;
+  warehouseTypeId: number;
+  attributes: null;
+  createdAt: string;
+  updatedAt: string;
+  deleted: boolean;
+};
+
+export type WarehousesParamList = {
+  name: string;
+  id: string | number;
+  updatedAt: string;
+};
+
+export type CreateReturnRequest = {
+  companyId: number;
+  warehouseId: number;
+  returnDate: string;
+  comment: string;
+  items: ReturnProductFormItem[];
+};

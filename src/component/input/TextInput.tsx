@@ -28,6 +28,8 @@ export interface Props {
   multiline?: boolean;
   isPassword?: boolean;
   errorMessage?: string;
+  inputStyle?: object;
+  errorMessageStyle?: object;
   onChangeText?: (text: string) => void;
   onClick?: () => void | undefined;
   handlePasswordIconClick?: () => void;
@@ -55,7 +57,7 @@ const TextInputComponent = (props: Props) => {
         ? Colors.red
         : activeBorder
           ? Colors.blue
-          : '#C4C4C4',
+          : Colors.gray_200,
     }),
     [activeBorder, showError],
   );
@@ -131,7 +133,7 @@ const TextInputComponent = (props: Props) => {
           ]}>
           {props.leftIcon && <>{props.leftIcon}</>}
           <TextInput
-            style={[styles.inputContainer]}
+            style={[styles.inputContainer, props.inputStyle]}
             ref={textInputRef}
             placeholderTextColor={
               props.placeholderColor ?? (showError ? Colors.red : Colors.gray)
@@ -169,7 +171,7 @@ const TextInputComponent = (props: Props) => {
         </View>
       </TouchableWithoutFeedback>
       {props.errorMessage && (
-        <Text style={[styles.textError]}>{props.errorMessage}</Text>
+        <Text style={[styles.textError, props.errorMessageStyle]}>{props.errorMessage}</Text>
       )}
     </View>
   );

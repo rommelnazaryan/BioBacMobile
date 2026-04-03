@@ -4,12 +4,12 @@ import usePaymentHistory from '@/hooks/usePayment/usePaymentHistory';
 import {Colors} from '@/theme';
 import Header from '@/navigation/Header';
 import VerticalFlatList from '@/component/list/VerticalFlatList';
-import Table from '@/component/Table';
 import Activity from '@/component/ActivityIndicator';
 import {deviceHeight} from '@/helper';
 import {GetPaymentAllResponse} from '@/types';
 import HistoryCard from './_component/Card';
 import NotFound from '@/component/icons/NotFound';
+import DefaultTable from '@/component/Table/defaultTable';
 
 export default function PaymentHistory() {
  const {loading, loadingMore, history, loadMore} = usePaymentHistory();
@@ -40,10 +40,11 @@ export default function PaymentHistory() {
             ) : null
           }
           renderItem={({item: company}: {item: GetPaymentAllResponse}) => (
-            <Table
+            <DefaultTable
               containerStyle={styles.tableContainer}>
-               <HistoryCard element={company} />
-            </Table>
+               <HistoryCard element={company}
+               />
+            </DefaultTable>
           )}
         />
       )}

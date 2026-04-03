@@ -38,7 +38,7 @@ export default function useHome() {
           });
           const groupsData = orderGrouped(
             result.grouped,
-            ['BUYER', 'SELLER', 'PAYMENT', 'PAYMENT_HISTORY'],
+            ['BUYER', 'SELLER', 'PAYMENT', 'PAYMENT_HISTORY', 'RETURN_PRODUCT'],
             {
               includeEmpty: true,
             },
@@ -135,6 +135,7 @@ export default function useHome() {
     (item: HomeListProps) => {
       switch (item.key) {
         case 'BUYER':
+          console.log('item', item);
           navigation.navigate('BuyerStack', {
             screen: 'Buyers',
             params: {item},
@@ -151,6 +152,12 @@ export default function useHome() {
           break;
         case 'PAYMENT_HISTORY':
           navigation.navigate('PaymentHistory');
+          break;
+        case 'RETURN_PRODUCT':
+          navigation.navigate('ReturnProductStack', {
+            screen: 'ReturnProduct',
+            params: {item},
+          });
           break;
         default:
           console.warn(`Unknown home item key: ${item.key}`);
