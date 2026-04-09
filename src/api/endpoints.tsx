@@ -4,7 +4,7 @@ type Endpoints = {
   GetAllPermissions: string;
   GetProfile: string;
   GetBuyers: string;
-  GetSeller: string;
+  GetSale: string;
   GetAllCompanies: string;
   GetCompanyHistory: string;
   DeleteCompany: string;
@@ -16,6 +16,13 @@ type Endpoints = {
   GetCompanyGroup: string;
   CreateCompany: string;
   UpdateCompanyGroup: string;
+  GetReturnProductAll: string;
+  GetWarehouses: string;
+  GetAssortment: string;
+  CreateReturn: string;
+  UpdateReturn: string;
+  GetSaleLookup: string;
+  GetReturnProduct: string;
 }
 
 export const endpoints:Endpoints = {
@@ -30,13 +37,19 @@ export const endpoints:Endpoints = {
   // company //
   GetAllCompanies: 'company/all',
   GetBuyers: 'company/buyer',
-  GetSeller: 'company/seller',
+  GetSale: 'company/sale/',
   GetCompanyHistory: 'company/company-history/',
   DeleteCompany: 'company/delete/',
   GetCompanyAccount: 'company/account',
   GetCompanyGroup: 'company/company-group',
   CreateCompany: 'company/create',
-  UpdateCompanyGroup: 'company/company-group/',
+  UpdateCompanyGroup: 'company/update/',
+  GetAssortment: 'company/assortment/',
+  CreateReturn: 'company/return/',
+  UpdateReturn: 'company/return/',
+  GetSaleLookup: 'company/sale/lookup/',
+  GetReturnProductAll: 'company/return/all',
+  GetReturnProduct: 'company/return/',
 
   //payment
   GetPaymentCategory: 'company/payment-category',
@@ -45,4 +58,7 @@ export const endpoints:Endpoints = {
 
   //info-controller
   GetAssetInfoCategory: 'warehouse/asset-info/category',
+
+  //warehouses
+  GetWarehouses: 'warehouse/warehouses',
 };

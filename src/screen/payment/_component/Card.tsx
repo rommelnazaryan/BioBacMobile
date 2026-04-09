@@ -6,8 +6,7 @@ import {t} from '@/locales';
 export default function Card({element}: {element: GetPaymentAllResponse}) {
   const createdAtDate = element.date.split(':')[0];
   const {name: nameAccount} = element.account;
-  const {name: namePaymentCategory} = element.paymentCategory;
-  console.log('element', element);
+  const namePaymentCategory = element.paymentCategory?.name || null;
   return (
     <View
       style={[
@@ -23,7 +22,7 @@ export default function Card({element}: {element: GetPaymentAllResponse}) {
       </View>
       <View style={styles.row}>
         <Text style={styles.title}>{t('common.category')}:</Text>
-        <Text style={styles.value}>{namePaymentCategory}</Text>
+        <Text style={styles.value}>{namePaymentCategory != null ? namePaymentCategory : ''}</Text>
       </View>
       <View style={styles.row}>
         <Text style={styles.title}>{t('common.username')}:</Text>

@@ -28,9 +28,9 @@ export default function DefaultModal({
             <AntDesign name="warning" size={24} color={Colors.red} />
           </View>
           <Text style={styles.title}>{title}</Text>
-          <View style={styles.closeContainer}>
+          {/* <View style={styles.closeContainer}>
             <MaterialIcons name="close" size={20} color={Colors.black} />
-          </View>
+          </View> */}
         </View>
         <Text style={styles.description}>
           {description}
@@ -57,6 +57,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.1)', // Semi-transparent background
   },
   cardContainer: {
+    alignSelf: 'center',
     width: '90%',
     backgroundColor: Colors.white,
     borderRadius: 20,

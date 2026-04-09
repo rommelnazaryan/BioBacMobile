@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   },
   invoiceContainer: {
     width: '100%',
-    backgroundColor: Colors.gray_100,
+    backgroundColor: Colors.gray_200,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',

@@ -25,6 +25,7 @@ export const PERMISSION_GROUP_META: Readonly<Record<string, GroupMeta>> = {
   SELLER: {key: 'SELLER', label: 'sellers', icon: {library: 'Svg', name: 'ApartmentIcon',size: 40}},
   PAYMENT: {key: 'PAYMENT', label: 'payment', icon: {library: 'Svg', name: 'PaymentIcon',size: 40}},
   PAYMENT_HISTORY: {key: 'PAYMENT_HISTORY', label: 'payment history', icon: {library: 'Svg', name: 'PaymentIcon',size: 40}},
+  RETURN_PRODUCT: {key: 'RETURN_PRODUCT', label: 'return products', icon: {library: 'Svg', name: 'ReturnProductIcon',size: 40}},
   OTHER: DEFAULT_META,
 };
 

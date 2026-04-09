@@ -3,27 +3,35 @@
     "companyBuyerList": "Buyers",
     "companiesSellerList": "Sellers",
     "companiesPayment": "Payment",
-    "companiesPaymentHistory": "Payment History"
+    "companiesPaymentHistory": "Payment History",
+    "sales": "Sales"
   },
   "common": {
     "ok": "Ok",
     "cancel": "Cancel",
     "name": "Name",
+    "buyer": "Buyer",
     "creditorAmount": "Creditor Amount",
     "debtorAmount": "Debtor Amount",
     "phoneNumber": "Phone Number",
     "email": "Email",
     "createdAt": "Created At",
+    "updatedAt": "Updated At",
     "Filter": "Filter",
     "amountChanged": "Amount Changed",
     "note": "Note",
+    "comment": "Comment",
     "actionTime": "Action Time",
     "account": "Account",
     "parentCategory": "Parent Category",
     "category": "Category",
     "username": "User Name",
     "date": "Date",
-    "sum": "Sum"
+    "sum": "Sum",
+    "noData": "No data",
+    "totalReturnAmount": "Total Return Amount",
+    "returnProducts": "Return Products",
+    "phone": "Phone"
     
   },
   "settings": {

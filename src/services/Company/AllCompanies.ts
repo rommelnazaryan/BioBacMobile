@@ -13,13 +13,17 @@ export const GetAllCompanies = async <T extends object>(
   value: number = 0,
   result: AllCompanyCallbacks<T> = {},
 ): Promise<AllCompanyResult<T>> => {
+  const data =
+  value > 0
+    ? {
+        typeIds: {operator: 'contains', value: [value]},
+      }
+    : {};
   return requestWithStatus<T>({
     config: {
       method: 'POST',
       url: `${endpoints.GetAllCompanies}?sortBy=id&sortDir=DESC&page=${page}&size=20`,
-      data: {
-        typeIds: {operator: 'contains', value: [value]},
-      },
+      data
     },
     callbacks: result,
   });

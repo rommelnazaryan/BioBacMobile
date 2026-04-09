@@ -18,6 +18,67 @@ type RequestArgs<TResponse> = {
   callbacks?: StatusCallbacks<TResponse>;
 };
 
+const extractErrorMessage = (data: unknown): string | undefined => {
+  if (typeof data === 'string' && data.trim()) {
+    return data;
+  }
+
+  if (!data || typeof data !== 'object') {
+    return undefined;
+  }
+
+  const record = data as Record<string, unknown>;
+
+  if (typeof record.message === 'string' && record.message.trim()) {
+    return record.message;
+  }
+
+  if (typeof record.error === 'string' && record.error.trim()) {
+    return record.error;
+  }
+
+  if (typeof record.detail === 'string' && record.detail.trim()) {
+    return record.detail;
+  }
+
+  if (Array.isArray(record.message)) {
+    const message = record.message.find(
+      item => typeof item === 'string' && item.trim(),
+    );
+    if (typeof message === 'string') {
+      return message;
+    }
+  }
+
+  if (record.errors && typeof record.errors === 'object') {
+    const firstError = Object.values(record.errors as Record<string, unknown>).find(
+      value =>
+        (typeof value === 'string' && value.trim()) ||
+        (Array.isArray(value) &&
+          value.some(item => typeof item === 'string' && item.trim())),
+    );
+
+    if (typeof firstError === 'string') {
+      return firstError;
+    }
+
+    if (Array.isArray(firstError)) {
+      const nestedMessage = firstError.find(
+        item => typeof item === 'string' && item.trim(),
+      );
+      if (typeof nestedMessage === 'string') {
+        return nestedMessage;
+      }
+    }
+  }
+
+  if (record.data) {
+    return extractErrorMessage(record.data);
+  }
+
+  return undefined;
+};
+
 export async function requestWithStatus<TResponse extends object>(
   args: RequestArgs<TResponse>,
 ): Promise<StatusResult<TResponse>> {
@@ -36,20 +97,31 @@ export async function requestWithStatus<TResponse extends object>(
     callbacks.onError?.(err, res.status);
     return {ok: false, status: res.status, error: err};
   } catch (err) {
+    console.log('err', err);
     const status = axios.isAxiosError(err) ? err.response?.status : undefined;
     if (status === 401) {
       const data = axios.isAxiosError(err) ? err.response?.data : undefined;
       callbacks.onUnauthorized?.(data, err);
-      console.log('Unauthorized',data);
+      console.log('Unauthorized', data);
       return {ok: false, status: 401, error: err, data};
     }
-    if(err instanceof Error && err.message.includes('Network Error')) {
-    }else{
-      console.log('Error',status,err);
-      callbacks.onError?.(err, status);
+
+    const errorData = axios.isAxiosError(err) ? err.response?.data : undefined;
+    const extractedMessage =
+      extractErrorMessage(errorData) ??
+      (err instanceof Error ? err.message : undefined) ??
+      'Something went wrong';
+    const normalizedError = new Error(extractedMessage);
+
+    if (err instanceof Error) {
+      normalizedError.stack = err.stack;
+      normalizedError.name = err.name;
     }
 
-    return {ok: false, status: status ?? 0, error: err};
+    console.log('Error', status, extractedMessage, errorData);
+    callbacks.onError?.(normalizedError, status);
+
+    return {ok: false, status: status ?? 0, error: normalizedError};
   }
 }
 

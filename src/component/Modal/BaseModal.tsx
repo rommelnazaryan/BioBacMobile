@@ -1,12 +1,20 @@
-import {Modal, StyleSheet, TouchableOpacity } from 'react-native';
+import {Modal, Pressable, StyleSheet, View, type StyleProp, type ViewStyle} from 'react-native';
 import React from 'react';
 interface ModalCardProps {
   isVisible: boolean;
   onClose?: () => void;
   children: React.ReactNode;
+  variant?: 'center' | 'bottomSheet';
+  overlayStyle?: StyleProp<ViewStyle>;
 }
 
-export default function ModalCard({ isVisible, onClose, children }: ModalCardProps) {
+export default function ModalCard({
+  isVisible,
+  onClose,
+  children,
+  variant = 'center',
+  overlayStyle,
+}: ModalCardProps) {
 
   return (
     <Modal
@@ -15,14 +23,17 @@ export default function ModalCard({ isVisible, onClose, children }: ModalCardPro
       visible={isVisible}
       onRequestClose={onClose}
     >
-      <TouchableOpacity
-        style={styles.modalOverlay}
-        activeOpacity={1} // Keep full opacity on overlay
-        onPress={onClose} // Close modal when pressing outside
-      >
-       {children}
-
-      </TouchableOpacity>
+      <Pressable
+        style={[
+          styles.modalOverlay,
+          variant === 'bottomSheet' ? styles.bottomSheetOverlay : null,
+          overlayStyle,
+        ]}
+        onPress={onClose}>
+        <Pressable onPress={() => {}} style={styles.contentWrapper}>
+          {children}
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 }
@@ -33,6 +44,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.1)', // Semi-transparent background
+  },
+  bottomSheetOverlay: {
+    justifyContent: 'flex-end',
+    alignItems: 'stretch',
+  },
+  contentWrapper: {
+    width: '100%',
   },
 
 });

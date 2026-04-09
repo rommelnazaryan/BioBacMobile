@@ -31,6 +31,7 @@ export default function Payment() {
     onSelectCategoryLevel,
     categoryResetKey,
     onSubmit,
+    onInvalidSubmit,
     control,
     handleSubmit,
     errors,
@@ -111,7 +112,10 @@ export default function Payment() {
                   value={value}
                   onClick={item => {
                     onChange(item.value);
-                    onSubmitFilterCategory(item);
+                    onSubmitFilterCategory({
+                      label: item.label,
+                      value: String(item.value),
+                    });
                   }}
                   search={true}
                   errorMessage={submitCount > 0 ? errors.listType?.message : undefined}
@@ -139,7 +143,10 @@ export default function Payment() {
                       value={value}
                       onClick={item => {
                         onChange(item.value);
-                        onSelectCategoryLevel(idx, item);
+                        onSelectCategoryLevel(idx, {
+                          label: item.label,
+                          value: String(item.value),
+                        });
                       }}
                       errorMessage={errors.category0?.message}
                     />
@@ -150,7 +157,12 @@ export default function Payment() {
                   key={`cat-dd-${categoryResetKey}-${idx}`}
                   style={styles.marginTop}
                   data={levelOptions}
-                  onClick={item => onSelectCategoryLevel(idx, item)}
+                  onClick={item =>
+                    onSelectCategoryLevel(idx, {
+                      label: item.label,
+                      value: String(item.value),
+                    })
+                  }
                 />
               )}
             </React.Fragment>
@@ -199,7 +211,7 @@ export default function Payment() {
           />
           <Button
             title="Create"
-            onHandler={handleSubmit(onSubmit)}
+            onHandler={handleSubmit(onSubmit,onInvalidSubmit)}
             style={styles.button}
           />
         </View>

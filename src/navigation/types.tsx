@@ -1,4 +1,4 @@
-import {AllCompanyProps, historyProps, HomeListProps} from '@/types';
+import {AllCompanyProps, historyProps, HomeListProps, ReturnProductProps} from '@/types';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import type {NavigatorScreenParams} from '@react-navigation/native';
 
@@ -16,6 +16,11 @@ export type BuyerParamList = {
   BuyerCreate: {item: AllCompanyProps | undefined,key: 'create' | 'edit'};
 };
 
+export type ReturnProductParamList = {
+  ReturnProduct: {item: HomeListProps};
+  ReturnProductCreate: {item: ReturnProductProps | undefined,key: 'create' | 'edit'};
+};
+
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -28,6 +33,9 @@ export type RootStackParamList = {
   Draft: undefined;
   SellerStack: NavigatorScreenParams<SellerParamList> | undefined;
   BuyerStack: NavigatorScreenParams<BuyerParamList> | undefined;
+  ReturnProductStack: NavigatorScreenParams<ReturnProductParamList> | undefined;
+  Detail: {item: AllCompanyProps};
+  HomeCreate: {item: AllCompanyProps | undefined,key: 'create' | 'edit'};
 };
 
 export type TabParamList = {
@@ -35,9 +43,6 @@ export type TabParamList = {
   SettingsScreen: undefined;
   DraftScreen: undefined;
 };
-
-
-
 
 
 export type CompanyGroupParamList = {
@@ -48,5 +53,5 @@ export type CompanyGroupParamList = {
 
 export type DropdownOptions = {
     label: string;
-    value: string;
+    value: string | number;
 };

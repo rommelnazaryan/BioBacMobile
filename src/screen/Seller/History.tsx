@@ -6,12 +6,12 @@ import useHistory from '@/hooks/useSeller/useHistory';
 import {Colors} from '@/theme';
 import Header from '@/navigation/Header';
 import VerticalFlatList from '@/component/list/VerticalFlatList';
-import Table from '@/component/Table';
 import Activity from '@/component/ActivityIndicator';
 import {deviceHeight} from '@/helper';
 import {getHistoryProps} from '@/types';
 import HistoryCard from './_component/HistoryCard';
 import NotFound from '@/component/icons/NotFound';
+import DefaultTable from '@/component/Table/defaultTable';
 type Props = NativeStackScreenProps<SellerParamList, 'History'>;
 export default function History(route: Props) {
  const {name, loading, loadingMore, history, loadMore} = useHistory(route);
@@ -42,10 +42,10 @@ export default function History(route: Props) {
             ) : null
           }
           renderItem={({item: company}: {item: getHistoryProps}) => (
-            <Table
+            <DefaultTable
               containerStyle={styles.tableContainer}>
                <HistoryCard element={company} />
-            </Table>
+            </DefaultTable>
           )}
         />
       )}

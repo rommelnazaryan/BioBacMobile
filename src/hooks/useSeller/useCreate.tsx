@@ -35,6 +35,8 @@ export default function useSellerCreate(route: NativeStackScreenProps<SellerPara
   const [latitude, setLatitude] = useState<string>('');
   const [longitude, setLongitude] = useState<string>('');
   const [showMap, setShowMap] = useState(false);
+
+
   const validationSchema = Yup.object().shape({
     companyName: Yup.string().trim().required('Required'),
     generalDirector: Yup.string().trim().required('Required'),
@@ -180,10 +182,7 @@ export default function useSellerCreate(route: NativeStackScreenProps<SellerPara
       setErrorDate('Required');
       return;
     }
-    if (Number(getValues().creditorAmount) !== 0 && Number(getValues().debtorAmount) !== 0) {
-      show('Please enter a creditor or debtor amount', { type: 'error' });
-      return;
-    }
+
     const data: CreateCompanyRequest = {
       name: getValues().companyName,
       clientRegisteredDate: `${moment(new Date()).format('DD/MM/YYYY')}:23:59:00`,
@@ -219,6 +218,11 @@ export default function useSellerCreate(route: NativeStackScreenProps<SellerPara
     }
     // if offline, save to draft//
     if (!isConnected) {
+      const check = Draft.find(item => item.name === data.name);
+      if(check) {
+        show('Company already exists in draft', {type: 'error'});
+        return;
+      }
       data.key = 'Seller'
       setDraft([...Draft, data]);
       show('Company saved to draft', { type: 'success' });
@@ -246,7 +250,9 @@ export default function useSellerCreate(route: NativeStackScreenProps<SellerPara
       },
       onError: (error) => {
         console.log('error', error);
-        show('Failed to create company', { type: 'error' });
+        show((error as Error)?.message ?? 'Failed to create company', {
+          type: 'error',
+        });
       },
     });
     }
@@ -288,3 +294,4 @@ export default function useSellerCreate(route: NativeStackScreenProps<SellerPara
     keyValue
   }
 }
+

@@ -3,30 +3,37 @@
     "companyBuyerList": "Покупатели",
     "companiesSellerList": "Продавцы",
     "companiesPayment": "Платежи",
-    "companiesPaymentHistory": "История платежей"
-
+    "companiesPaymentHistory": "История платежей",
+    "sales": "Продажи"
 
   },
   "common": {
     "ok": "ХОРОШО",
     "cancel": "Отмена",
     "name": "Имя",
+    "buyer": "Покупатель",
     "creditorAmount": "Сумма кредитора",
     "debtorAmount": "Сумма дебитора",
     "phoneNumber": "ТЕЛЕФОН",
     "email": "EMAIL",
     "createdAt": "ДАТА СОЗДАНИЯ",
+    "updatedAt": "ДАТА ОБНОВЛЕНИЯ",
     "Filter": "Фильтр",
     "amountChanged": "Изменение суммы",
     "note": "ПРИМЕЧАНИЕ",
+    "comment": "Комментарий",
     "actionTime": "Время действий",
     "account": "АККАУНТ",
     "parentCategory": "Родительская категория",
     "category": "Категория",
     "username": "Имя пользователя",
     "date": "Дата",
-    "sum": "Сумма"
-
+    "sum": "Сумма",
+    "noData": "Нет данных",
+    "totalReturnAmount": "Общая сумма возврата",
+    "returnProducts": "Возврат продуктов",
+    "phone": "Телефон"
+    
   },
   "settings": {
     "title": "Настройки",
