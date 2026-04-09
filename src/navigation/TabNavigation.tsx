@@ -1,15 +1,16 @@
 import React from 'react';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import type {BottomTabBarButtonProps} from '@react-navigation/bottom-tabs';
-import {Platform, Pressable, StyleSheet, Text, View} from 'react-native';
-import { MaterialIcons, AntDesign, Feather} from '@/component/icons/VectorIcon';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import type { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { MaterialIcons, AntDesign, Feather } from '@/component/icons/VectorIcon';
 import { Colors, FontFamily } from '@/theme';
 import useDraftStore from '@/zustland/draftStore';
 
-import type {RootStackParamList, TabParamList, SellerParamList, BuyerParamList, ReturnProductParamList} from './types';
+import type { RootStackParamList, TabParamList, SellerParamList, BuyerParamList, ReturnProductParamList } from './types';
 //-------------Home----------------
 import Home from '@/screen/Home';
-
+import Detail from '@/screen/Home/Detail';
+import HomeCreate from '@/screen/Home/Create';
 //-------------Buyers----------------
 import Buyers from '@/screen/Buyers';
 import HistoryBuyers from '@/screen/Buyers/HistoryBuyers';
@@ -51,7 +52,7 @@ const baseScreenOptions = {
   tabBarShowLabel: false,
   tabBarStyle: {
     height: Platform.OS === 'android' ? deviceHeight * 0.06 : deviceHeight * 0.05,
-    paddingTop:Platform.OS === 'android' ? 6 : 10,
+    paddingTop: Platform.OS === 'android' ? 6 : 10,
   },
   textStyle: {
     fontSize: Platform.OS === 'android' ? 16 : 10,
@@ -78,7 +79,7 @@ function NoFeedbackTabBarButton({
       accessibilityLabel={accessibilityLabel}
       testID={testID}
       style={style}
-      android_ripple={{color: 'transparent'}}
+      android_ripple={{ color: 'transparent' }}
     >
       {children}
     </Pressable>
@@ -128,7 +129,7 @@ function TabBarIcon({
 
 const SellerStackScreen = () => {
   return (
-    <SellerStack.Navigator screenOptions={{headerShown: false}}>
+    <SellerStack.Navigator screenOptions={{ headerShown: false }}>
       <SellerStack.Screen name="Seller" component={Seller} />
       <SellerStack.Screen name="History" component={History} />
       <SellerStack.Screen name="SellerCreate" component={SellerCreate} />
@@ -138,7 +139,7 @@ const SellerStackScreen = () => {
 
 const BuyerStackScreen = () => {
   return (
-    <BuyerStack.Navigator screenOptions={{headerShown: false}}>
+    <BuyerStack.Navigator screenOptions={{ headerShown: false }}>
       <BuyerStack.Screen name="Buyers" component={Buyers} />
       <BuyerStack.Screen name="HistoryBuyers" component={HistoryBuyers} />
       <BuyerStack.Screen name="BuyerCreate" component={BuyerCreate} />
@@ -148,7 +149,7 @@ const BuyerStackScreen = () => {
 
 const ReturnProductStackScreen = () => {
   return (
-    <ReturnProductStack.Navigator screenOptions={{headerShown: false}}>
+    <ReturnProductStack.Navigator screenOptions={{ headerShown: false }}>
       <ReturnProductStack.Screen name="ReturnProduct" component={ReturnProduct} />
       <ReturnProductStack.Screen name="ReturnProductCreate" component={ReturnProductCreate} />
     </ReturnProductStack.Navigator>
@@ -158,13 +159,15 @@ const ReturnProductStackScreen = () => {
 
 const HomeStackScreen = () => {
   return (
-    <HomeStack.Navigator screenOptions={{headerShown: false}}>
+    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
       <HomeStack.Screen name="Home" component={Home} />
       <HomeStack.Screen name="BuyerStack" component={BuyerStackScreen} />
       <HomeStack.Screen name="SellerStack" component={SellerStackScreen} />
       <HomeStack.Screen name="Payment" component={Payment} />
       <HomeStack.Screen name="PaymentHistory" component={PaymentHistory} />
       <HomeStack.Screen name="ReturnProductStack" component={ReturnProductStackScreen} />
+      <HomeStack.Screen name="Detail" component={Detail} />
+      <HomeStack.Screen name="HomeCreate" component={HomeCreate} />
     </HomeStack.Navigator>
   );
 };
@@ -172,7 +175,7 @@ const HomeStackScreen = () => {
 
 const DraftStackScreen = () => {
   return (
-    <DraftStack.Navigator screenOptions={{headerShown: false}}>
+    <DraftStack.Navigator screenOptions={{ headerShown: false }}>
       <DraftStack.Screen name="Draft" component={Draft} />
     </DraftStack.Navigator>
   );
@@ -180,7 +183,7 @@ const DraftStackScreen = () => {
 
 const SettingStackScreen = () => {
   return (
-    <SettingsStack.Navigator screenOptions={{headerShown: false}}>
+    <SettingsStack.Navigator screenOptions={{ headerShown: false }}>
       <SettingsStack.Screen name="Settings" component={Settings} />
     </SettingsStack.Navigator>
   );
@@ -190,12 +193,12 @@ const SettingStackScreen = () => {
 export default function TabNavigation() {
   const draftCount = useDraftStore(s => s.Draft.length);
 
-  const screenOptions = ({route}: {route: {name: keyof TabParamList}}) => ({
+  const screenOptions = ({ route }: { route: { name: keyof TabParamList } }) => ({
     ...baseScreenOptions,
     tabBarButton: (props: BottomTabBarButtonProps) => (
       <NoFeedbackTabBarButton {...props} />
     ),
-    tabBarIcon: (props: {color: string; size: number; focused: boolean}) => (
+    tabBarIcon: (props: { color: string; size: number; focused: boolean }) => (
       <TabBarIcon routeName={route.name} {...props} size={30} draftCount={draftCount} />
     ),
   });

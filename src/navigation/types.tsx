@@ -34,6 +34,8 @@ export type RootStackParamList = {
   SellerStack: NavigatorScreenParams<SellerParamList> | undefined;
   BuyerStack: NavigatorScreenParams<BuyerParamList> | undefined;
   ReturnProductStack: NavigatorScreenParams<ReturnProductParamList> | undefined;
+  Detail: {item: AllCompanyProps};
+  HomeCreate: {item: AllCompanyProps | undefined,key: 'create' | 'edit'};
 };
 
 export type TabParamList = {

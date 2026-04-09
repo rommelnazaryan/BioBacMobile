@@ -1,35 +1,90 @@
-import {View, StyleSheet} from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import React from 'react';
-import {Colors} from '@/theme/Colors';
+import { Colors } from '@/theme/Colors';
 import VerticalFlatList from '@/component/list/VerticalFlatList';
 import useHome from '@/hooks/useHome';
-import HomeList from './_component/HomeList';
 import Activity from '@/component/ActivityIndicator';
-import {HomeListProps} from '@/types';
+import { AllCompanyProps } from '@/types';
+import { deviceHeight } from '@/helper';
+import NotFound from '@/component/icons/NotFound';
+import DefaultTable from '@/component/Table/defaultTable';
+import CartList from '@/screen/Home/_component/CartList';
+import CustomHeader from '@/navigation/Header';
+import { DefaultModal } from '@/component/Modal';
+import Filter from '@/component/Filter';
 
 export default function Home() {
-  const {groups, loading, navigateToDetail, groupsStore, isConnected} =
+  const {
+    loading,
+    allCompanies,
+    isConnected,
+    loadMore,
+    loadingMore,
+    hasNextPage,
+    onSubmitDelete,
+    onSubmitEdit,
+    onSubmitDetail,
+    visible,
+    onSubmitCancel,
+    onSubmitConfirm,
+    onSubmitCreate,
+  } =
     useHome();
   return (
     <View style={styles.container}>
-      {loading ? (
+      <CustomHeader title="All Companies" />
+      <Filter onHandlerCreate={onSubmitCreate} />
+      {loading ?
         <Activity />
-      ) : (
-        <View style={styles.linstContainer}>
-          <VerticalFlatList
-            data={isConnected ? groups : groupsStore}
-            gap={10}
-            columns={2}
-            keyExtractor={item => item.key}
-            renderItem={({item}) => (
-              <HomeList
-                item={item}
-                onCallback={item => navigateToDetail(item as HomeListProps)}
+        : allCompanies.length > 0 ?
+          <>
+            {isConnected ? (
+              <VerticalFlatList
+                data={isConnected ? allCompanies : []}
+                gap={10}
+                columns={1}
+                keyExtractor={company => String(company?.id ?? '')}
+                onEndReached={() => loadMore()}
+                onEndReachedThreshold={0.3}
+                ListFooterComponent={
+                  loadingMore ? (
+                    <Activity style={styles.footerLoading} />
+                  ) : !hasNextPage && allCompanies.length > 0 ? (
+                    <Text style={styles.footerText}>No more data</Text>
+                  ) : null
+                }
+                renderItem={({ item: company }: { item: AllCompanyProps }) => (
+                  <DefaultTable
+                    containerStyle={styles.tableContainer}
+                    // onClickHistory={() =>
+                    //   onHandlerHistory(company.id, company.name)
+                    // }
+                    onClickEdit={() => onSubmitEdit(company)}
+                    onClickDelete={() => onSubmitDelete(company.id)}
+
+                  >
+                    <CartList key={company.id} element={company} onCallback={() => onSubmitDetail(company)} />
+                  </DefaultTable>
+                )}
               />
+            ) : (
+              <View style={styles.emptyContainer}>
+                <NotFound size={120} />
+              </View>
             )}
-          />
-        </View>
-      )}
+          </>
+          : (
+            <View style={styles.emptyContainer}>
+              <NotFound size={120} />
+            </View>
+          )}
+                <DefaultModal
+        isVisible={visible}
+        onClose={onSubmitCancel}
+        onConfirm={onSubmitConfirm}
+        title="Delete Company"
+        description="Are you sure you want to delete this company?"
+      />
     </View>
   );
 }
@@ -44,5 +99,26 @@ const styles = StyleSheet.create({
     width: '93%',
     alignSelf: 'center',
     height: '100%',
+  },
+  activityIndicator: {
+    marginTop: deviceHeight / 3,
+  },
+  tableContainer: {
+    marginBottom: 10,
+  },
+  footerLoading: {
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  footerText: {
+    textAlign: 'center',
+    color: Colors.gray_300,
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

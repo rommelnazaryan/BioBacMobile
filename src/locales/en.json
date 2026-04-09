@@ -3,7 +3,8 @@
     "companyBuyerList": "Buyers",
     "companiesSellerList": "Sellers",
     "companiesPayment": "Payment",
-    "companiesPaymentHistory": "Payment History"
+    "companiesPaymentHistory": "Payment History",
+    "sales": "Sales"
   },
   "common": {
     "ok": "Ok",
@@ -29,8 +30,8 @@
     "sum": "Sum",
     "noData": "No data",
     "totalReturnAmount": "Total Return Amount",
-    "returnProducts": "Return Products"
-     
+    "returnProducts": "Return Products",
+    "phone": "Phone"
     
   },
   "settings": {

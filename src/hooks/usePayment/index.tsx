@@ -1,5 +1,5 @@
 import {useCallback, useState} from 'react';
-import {NavigationProp, useFocusEffect} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import moment from 'moment';
 import {GetPaymentCategory} from '@/services/Payment/PaymentCategory';
 import {GetCompanyAccount} from '@/services/Company/Account';
@@ -11,18 +11,26 @@ import {
 import {useToast} from '@/component/toast/ToastProvider';
 import * as Yup from 'yup';
 import {yupResolver} from '@hookform/resolvers/yup';
-import {useForm} from 'react-hook-form';
+import {type FieldErrors, useForm} from 'react-hook-form';
 import { CreatePayment } from '@/services/Payment/CreatePayment';
-import { useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '@/navigation/types';
 import useNetworkStore from '@/zustland/networkStore';
 import useRefetchOnReconnect from '../useRefetchOnReconnect';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/navigation/types';
 
 type Option = {label: string; value: string};
+type PaymentFormValues = {
+  account: string;
+  amount: string;
+  comment: string;
+  type: string;
+  listType: string;
+  category0: string;
+};
 
 export default function usePayment() {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const isConnected = useNetworkStore(s => s.isConnected);
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [showDate, setShowDate] = useState(false);
   const {show} = useToast();
   const [date, setDate] = useState<string>(
@@ -267,14 +275,24 @@ export default function usePayment() {
 
   // submit payment
   const onSubmit = () => {
-    isConnected &&
+    console.log('getValues',getValues());
+    if (!isConnected) {
+      show('Please check your internet connection', {type: 'error'});
+      return;
+    }
+
+    // if (!selectedLeafCategory?.value) {
+    //   show('Please select a category', {type: 'error'});
+    //   return;
+    // }
+
     CreatePayment(
       {
         accountId: Number(getValues().account),
         category: categoryName,
         date: `${date}:23:59:00`,
         notes: getValues().comment,
-        paymentCategoryId: Number(selectedLeafCategory?.value ?? 0),
+        paymentCategoryId: Number(selectedLeafCategory?.value),
         sum: Number(getValues().amount),
         targetId: Number(listTypeId),
       },
@@ -282,7 +300,7 @@ export default function usePayment() {
         onSuccess: () => {
           // clear selections but keep date + loaded dropdown data
           setAccount([]);
-           setTypeName([]);
+          setTypeName([]);
           setListType([]);
           setCategoryLevels([]);
           setCategoryPath([]);
@@ -299,7 +317,7 @@ export default function usePayment() {
             category0: '',
           });
           show('Payment created successfully', {type: 'success'});
-          navigation.navigate('PaymentHistory');
+          // navigation.navigate('PaymentHistory');
         },
         onError: error => {
           show((error as Error)?.message ?? 'Error', {type: 'error'});
@@ -318,9 +336,12 @@ export default function usePayment() {
 
   // onSubmit modal Confirm
   const onSubmitConfirm = () => {
-    console.log(
-      'result',
-    );
+    navigation.goBack()
+  };
+
+  const onInvalidSubmit = (formErrors: FieldErrors<PaymentFormValues>) => {
+    console.log('payment form errors', formErrors,getValues());
+    show('Please complete required fields', {type: 'error'});
   };
 
   useFocusEffect(
@@ -350,6 +371,7 @@ export default function usePayment() {
     selectedLeafCategory,
     categoryResetKey,
     onSubmit,
+    onInvalidSubmit,
     setResult,
     control,
     handleSubmit,

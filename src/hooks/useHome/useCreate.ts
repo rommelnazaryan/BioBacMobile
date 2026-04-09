@@ -20,7 +20,7 @@ import type {NativeStackNavigationProp, NativeStackScreenProps} from '@react-nav
 import {UpdateCompany} from '@/services/Company/UpdateCompany';
 import { CreateCompany } from '@/services/Company/CreateSeller';
 
-export default function useBuyerCreate(
+export default function useHomeCreate(
   route: NativeStackScreenProps<RootStackParamList, 'HomeCreate'>,
 ) {
   const {item, key} = route.route.params;

@@ -3,8 +3,8 @@
     "companyBuyerList": "Покупатели",
     "companiesSellerList": "Продавцы",
     "companiesPayment": "Платежи",
-    "companiesPaymentHistory": "История платежей"
-
+    "companiesPaymentHistory": "История платежей",
+    "sales": "Продажи"
 
   },
   "common": {
@@ -31,8 +31,9 @@
     "sum": "Сумма",
     "noData": "Нет данных",
     "totalReturnAmount": "Общая сумма возврата",
-    "returnProducts": "Возврат продуктов"
-
+    "returnProducts": "Возврат продуктов",
+    "phone": "Телефон"
+    
   },
   "settings": {
     "title": "Настройки",

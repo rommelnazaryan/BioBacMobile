@@ -67,8 +67,9 @@ const styles = StyleSheet.create({
 
   title: {
     color: Colors.black,
-    fontSize: 20,
+    fontSize: 16,
     fontFamily: FontFamily.semiBold,
     textAlign: 'center',
+    width: '60%',
   },
 });

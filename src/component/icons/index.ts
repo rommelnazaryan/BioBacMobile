@@ -6,4 +6,5 @@ import {default as BusinessIcon} from './BusinessIcon';
 import {default as UserSvgIcon} from './UserSvgIcon';
 import {default as PaymentIcon} from './Payment';
 import {default as ShoppingCartIcon} from './ShoppingCartIcon';
-export {HistoryIcon, EditIcon, NotFound, ApartmentIcon, BusinessIcon, UserSvgIcon, PaymentIcon, ShoppingCartIcon};
+import {default as SalesIcon} from './SalesIcon';
+export {HistoryIcon, EditIcon, NotFound, ApartmentIcon, BusinessIcon, UserSvgIcon, PaymentIcon, ShoppingCartIcon, SalesIcon};

@@ -13,6 +13,7 @@ type DropdownComponentProps = {
   errorMessage?: string;
   search?: boolean;
   value?: string | number | null;
+  disable?: boolean;
 };
 
 const normalizeValue = (value: string | number | null | undefined) => {
@@ -30,6 +31,7 @@ const DropdownComponent = ({
   errorMessage,
   search = false,
   value: valueProp,
+  disable = false,
 }: DropdownComponentProps) => {
   const isControlled = valueProp !== undefined;
   const isEmpty = data.length === 0;
@@ -95,7 +97,7 @@ const DropdownComponent = ({
         iconColor={Colors.black}
         search={search && !isEmpty}
         data={data}
-        disable={isEmpty}
+        disable={isEmpty || disable}
         activeColor={Colors.white}
         maxHeight={300}
         labelField="label"

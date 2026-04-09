@@ -17,6 +17,8 @@ import { GetWarehouses } from '@/services/Warehouses/GetWarehouses';
 import { GetAssortment } from '@/services/Company/GetAssortment';
 import { CreateReturn } from '@/services/Company/CreateReturn';
 import { UpdateReturn } from '@/services/Company/UpdateReturn';
+import { GetSaleLookup } from '@/services/Company/GetSaleLookup';
+import { GetSele } from '@/services/Company/Seller';
 //create empty item //
 export type ReturnProductFormItem = {
   id: number;
@@ -33,7 +35,7 @@ const createEmptyItem = (): ReturnProductFormItem => ({
   productId: '',
   quantity: 1,
   returnPrice: 0,
-  sale: 0,
+  sale: '',
 });
 
 export default function useReturnProductCreate(
@@ -54,8 +56,10 @@ export default function useReturnProductCreate(
   >({});
   const [companyList, setCompanyList] = useState<DropdownOptions[]>([]);
   const [warehousesList, setWarehousesList] = useState<DropdownOptions[]>([]);
-  const [saleList] = useState<DropdownOptions[]>([{ label: 'Без сделки', value: '0' }]);
+  const [saleList, setSaleList] = useState<DropdownOptions[]>([]);
   const [productList, setProductList] = useState<DropdownOptions[]>([]);
+  const [productId, setProductId] = useState<number | string>('');
+  const [productLable, setProductLable] = useState<string>('');
   const validationSchema = Yup.object().shape({
     Company: Yup.string().trim().required('Required'),
     Warehouse: Yup.string().trim().required('Required'),
@@ -78,10 +82,10 @@ export default function useReturnProductCreate(
     resolver: yupResolver(validationSchema),
   });
   // get product
-  const onSubmitGetProduct = useCallback((productId: number | string) => {
+  const onSubmitGetProduct = useCallback((assortmentId: number | string) => {
     if (!isConnected) return;
-
-    GetAssortment(Number(productId), {
+    if (typeof assortmentId === "number" && !Number.isInteger(assortmentId)) return
+    GetAssortment(Number(assortmentId), {
       onSuccess: res => {
         const {
           data: { products },
@@ -94,6 +98,7 @@ export default function useReturnProductCreate(
             value: product.productId,
           }),
         );
+        setProductId(assortmentId);
         setProductList(productOptions as []);
       },
       onUnauthorized: () => {
@@ -106,36 +111,59 @@ export default function useReturnProductCreate(
       },
     });
   }, [isConnected, show]);
-  
-  // set default values//
-  useEffect(() => {
-    if (item) {
-      setValue('Company', item.companyId.toString());
-      setValue('Comment', item.comment);
-      setDate(item.returnDate.split?.(':')?.[0]);
-      onSubmitGetProduct(item?.items?.[0]?.productId ?? '0');
-      setItems(item.items.map(returnItem => ({
-        id: returnItem.id ?? nextReturnProductItemId++,
-        productId: returnItem.productId ?? '',
-        quantity: returnItem.quantity ?? 1,
-        returnPrice: returnItem.returnPrice ?? returnItem.price ?? 0,
-        sale: returnItem.sale ?? 0,
-      })));
-    }
-    setKeyValue(key);
-  }, [item, setValue, key, onSubmitGetProduct]);
+
+  // get sale lookup
+  const onSubmitGetSaleLookup = useCallback((companyId: number | string) => {
+    if (!isConnected) return;
+    setSaleList([]);
+    GetSaleLookup(Number(companyId), {
+      onSuccess: res => {
+        const { data } = res as {
+          data: { id: number; dealName: string; company: { name: string } }[];
+        };
+        if (data.length > 0) {
+          const saleOptions: any[] = data.map(
+            (sale: { id: number; dealName: string; company: { name: string } }) => ({
+              label: `#${sale.id} - ${sale.dealName} - ${sale.company.name}`,
+              value: sale.id,
+            }),
+          );
+          setSaleList(() => [{ label: 'Без сделки', value: 0 }, ...saleOptions]);
+        } else {
+          setSaleList([{ label: 'Без сделки', value: 0 }]);
+        }
+
+      },
+      onUnauthorized: () => {
+        console.log('unauthorized');
+      },
+      onError: error => {
+        show((error as Error)?.message ?? 'Failed to get product', {
+          type: 'error',
+        });
+      },
+    });
+  }, [isConnected, show]);
+
+
 
 
   // get Buyer
-  const getBuyers = useCallback(async () => {
+  const getBuyers = useCallback(async (companyId: number | string | undefined) => {
     if (!isConnected) return;
     await GetBuyers({
       onSuccess: res => {
+          console.log('===>',res);
+          if(companyId) {
+            const filterProduct = (res as any).data.filter((company: any) => company.id === companyId);
+            onSubmitGetProduct(filterProduct[0].assortmentId);
+          }
+
         const { data } = res as { data: { id: number; name: string; assortmentId: number }[] };
         const companyOptions: any[] = data.map(
           (company: { name: string; assortmentId: number }) => ({
             label: company.name,
-            value: company.assortmentId == null? Math.random() * 1000000 : company.assortmentId,
+            value: company.assortmentId == null ? Math.random() * 1000000 : company.assortmentId,
           }),
         );
         setCompanyList(companyOptions as []);
@@ -166,9 +194,27 @@ export default function useReturnProductCreate(
         show('Failed to get company group', { type: 'error' });
       },
     });
-  }, [isConnected, show]);
+  }, [isConnected, show, onSubmitGetProduct]);
 
-
+  // set default values//
+  useEffect(() => {
+    if (item) {
+      getBuyers(item.companyId);
+      onSubmitGetSaleLookup(item.companyId);
+      setValue('Company', item.companyId.toString());
+      setValue('Comment', item.comment);
+      setDate(item.returnDate.split?.(':')?.[0]);
+      // onSubmitGetProduct(item?.items?.[0]?.productId ?? '0');
+      setItems(item.items.map(returnItem => ({
+        id: returnItem.id ?? nextReturnProductItemId++,
+        productId: returnItem.productId ?? '',
+        quantity: returnItem.quantity ?? 1,
+        returnPrice: returnItem.returnPrice ?? returnItem.price ?? 0,
+        sale: returnItem.sale ?? '',
+      })));
+    }
+    setKeyValue(key);
+  }, [item, setValue, key, getBuyers, onSubmitGetSaleLookup]);
 
 
   // open date picker
@@ -214,13 +260,48 @@ export default function useReturnProductCreate(
       index: number,
       field: K,
       value: ReturnProductFormItem[K],
+      label?: string,
     ) => {
+      if (field === 'productId') {
+        setItems(prev =>
+          prev.map((currentItem, itemIndex) =>
+            itemIndex === index
+              ? {...currentItem, productId: value, sale: '', returnPrice: 0}
+              : currentItem,
+          ),
+        );
+      } else {
+        setItems(prev =>
+          prev.map((currentItem, itemIndex) =>
+            itemIndex === index ? { ...currentItem, [field]: value } : currentItem,
+          ),
+        );
+      }
+
+      if (field === 'sale' && value !== 0) {
+        const match = label?.match(/#(\d+)/);
+        const number = match ? match[1] : null;
+        GetSele(Number(number), {
+          onSuccess: res => {
+            
+            const unitPrice = (res as any).data.items.filter(
+              (saleItem: any) => saleItem.product.name === productLable,
+            );
+            setItems(prev => prev.map((currentItem, itemIndex) =>
+              itemIndex === index ? { ...currentItem, returnPrice: unitPrice[0].unitPrice } : currentItem,
+            ));
+          },
+          onUnauthorized: () => {
+            console.log('unauthorized');
+          },
+          onError: error => {
+            show((error as Error)?.message ?? 'Failed to get product', {
+              type: 'error',
+            });
+          },
+        });
+      }
       const itemId = items[index]?.id;
-      setItems(prev =>
-        prev.map((currentItem, itemIndex) =>
-          itemIndex === index ? { ...currentItem, [field]: value } : currentItem,
-        ),
-      );
       if (field === 'productId' && itemId) {
         setItemErrors(prev => ({
           ...prev,
@@ -231,7 +312,7 @@ export default function useReturnProductCreate(
         }));
       }
     },
-    [items],
+    [items, show, productLable],
   );
 
   // delete item
@@ -315,11 +396,13 @@ export default function useReturnProductCreate(
 
   useFocusEffect(
     useCallback(() => {
-      getBuyers();
-    }, [getBuyers]),
+     !item && getBuyers(undefined);
+    }, [getBuyers, item]),
   );
 
-  useRefetchOnReconnect(getBuyers);
+  useRefetchOnReconnect(() => {
+    getBuyers(undefined);
+  });
 
   return {
     control,
@@ -343,8 +426,11 @@ export default function useReturnProductCreate(
     companyList,
     warehousesList,
     onSubmitGetProduct,
+    onSubmitGetSaleLookup,
     productList,
-    saleList
+    saleList,
+    productId,
+    setProductLable
   };
 }
 

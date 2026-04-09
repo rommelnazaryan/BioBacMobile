@@ -33,7 +33,7 @@ export default function BuyerCreate(route: Props) {
     isConnected,
     onCreateCompany,
     errorDate,
-    keyValue, 
+    keyValue,
     items,
     itemErrors,
     onChangeItem,
@@ -42,9 +42,14 @@ export default function BuyerCreate(route: Props) {
     companyList,
     warehousesList,
     onSubmitGetProduct,
+    onSubmitGetSaleLookup,
     productList,
-    saleList
+    saleList,
+    productId,
+    setProductLable
   } = useReturnProductCreate(route);
+
+
   const keyboardVerticalOffset = 30;
   return (
     <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={keyboardVerticalOffset} style={styles.container}>
@@ -63,9 +68,9 @@ export default function BuyerCreate(route: Props) {
               data={!isConnected ? [] : companyList as DropdownOptions[]}
               value={+accountValue}
               onClick={({ value }) => {
-                console.log(value);
-                // onSubmitGetProduct(value)
-                onChange(value)}}
+                onSubmitGetProduct(value)
+                onChange(value)
+              }}
               errorMessage={errors.Company?.message}
             />
           )}
@@ -110,13 +115,13 @@ export default function BuyerCreate(route: Props) {
           name="Comment"
           render={({ field: { onChange, value } }) => (
             <TextInput
-          containerStyle={styles.marginTop}
-          placeholder="..."
-          inputSize="medium"
-          onChangeText={onChange}
-          value={value}
-        />
-        )}
+              containerStyle={styles.marginTop}
+              placeholder="..."
+              inputSize="medium"
+              onChangeText={onChange}
+              value={value}
+            />
+          )}
         />
         <View style={styles.addItemContainer}>
           <Text style={styles.addItemText} >Items</Text>
@@ -129,11 +134,12 @@ export default function BuyerCreate(route: Props) {
           />
         </View>
         {items.map((item, index) => (
+
           <View key={item.id} style={styles.addItemListContainer}>
             {items.length > 1 ? (
               <TouchableOpacity
                 style={styles.deleteItemButton}
-                hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 onPress={() => onDeleteItem(index)}>
                 <DeleteIcon name="trash-outline" size={24} color={Colors.red} />
               </TouchableOpacity>
@@ -143,8 +149,12 @@ export default function BuyerCreate(route: Props) {
               style={styles.marginTop}
               data={!isConnected ? [] : productList as DropdownOptions[]}
               value={item.productId}
-              onClick={({ value }) => onChangeItem(index, 'productId', value)}
-              errorMessage={ itemErrors[item.id as number]?.productId ?? ''}
+              onClick={({ value, label }) => {
+                setProductLable(label)
+                onSubmitGetSaleLookup(productId)
+                onChangeItem(index, 'productId', value)
+              }}
+              errorMessage={itemErrors[item.id as number]?.productId ?? ''}
             />
             <TextView title="Quantity" style={styles.marginTop} />
             <TextInput
@@ -154,7 +164,7 @@ export default function BuyerCreate(route: Props) {
               inputSize="medium"
               onChangeText={value => onChangeItem(index, 'quantity', +value)}
               keyboard="numeric"
-              value={item.quantity.toString()}
+              value={String(item.quantity ?? '')}
             />
             <TextView title="Return Price" style={styles.marginTop} />
             <TextInput
@@ -164,14 +174,15 @@ export default function BuyerCreate(route: Props) {
               inputSize="medium"
               onChangeText={value => onChangeItem(index, 'returnPrice', +value)}
               keyboard="numeric"
-              value={item.returnPrice.toString()}
+              value={String(item.returnPrice ?? '')}
             />
             <TextView title="Sale" style={styles.marginTop} />
             <DropdownComponent
               style={styles.marginTop}
               data={!isConnected ? [] : saleList as DropdownOptions[]}
               value={item.sale}
-              onClick={({ value }) => onChangeItem(index, 'sale', +value)}
+              onClick={({ value, label }) => onChangeItem(index, 'sale', +value, label)}
+              disable={false}
             />
           </View>
         ))}

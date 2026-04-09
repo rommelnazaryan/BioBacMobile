@@ -13,7 +13,6 @@ import {DefaultModal} from '@/component/Modal';
 import Filter from '@/component/Filter';
 import {t} from '@/locales';
 import Card from './_component/Card';
-// type Props = NativeStackScreenProps<ReturnProductParamList, 'ReturnProduct'>;
 
 export default function ReturnProduct() {
   const {

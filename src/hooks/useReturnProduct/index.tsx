@@ -8,9 +8,8 @@ import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {useToast} from '@/component/toast/ToastProvider';
 import useRefetchOnReconnect from '../useRefetchOnReconnect';
 import useNetworkStore from '@/zustland/networkStore';
-import { GetReturnProduct } from '@/services/Company/GetReturnProduct';
+import { GetReturnProductAll } from '@/services/Company/GetReturnProductAll';
 
-// type Props = NativeStackScreenProps<ReturnProductParamList, 'ReturnProduct'>;
 
 export default function useReturnProduct() {
   // const {item} = route.route.params;
@@ -30,7 +29,7 @@ export default function useReturnProduct() {
 
 
   // get seller data //
-  const getReturnProduct = useCallback(() => {
+  const getReturnProductAll = useCallback(() => {
     if (!isConnected) {
       setLoading(false);
       return;
@@ -40,7 +39,7 @@ export default function useReturnProduct() {
     } else {
       setLoadingMore(true);
     }
-    return GetReturnProduct(page, {
+    return GetReturnProductAll(page, {
       onSuccess: payload => {
         const {data} = payload as {data: ReturnProductProps[]};
         const {metadata} = payload as unknown as {
@@ -78,11 +77,8 @@ export default function useReturnProduct() {
   }, [hasNextPage, loading, loadingMore]);
 
   // navigate to history //
-  const onHandlerHistory = (companyId: number, name: string) => {
-    navigation.navigate('BuyerStack', {
-      screen: 'HistoryBuyers',
-      params: {item: {id: companyId, name: name}},
-    });
+  const onHandlerHistory = () => {
+ 
   };
 
   // submit delete //
@@ -118,17 +114,17 @@ export default function useReturnProduct() {
   };
 
   useEffect(() => {
-    getReturnProductRef.current = getReturnProduct;
-  }, [getReturnProduct]);
+    getReturnProductRef.current = getReturnProductAll;
+  }, [getReturnProductAll]);
 
 
   useFocusEffect(
     useCallback(() => {
-      getReturnProduct();
-    }, [getReturnProduct])
+      getReturnProductAll();
+    }, [getReturnProductAll])
   );
 
-  useRefetchOnReconnect(getReturnProduct);
+  useRefetchOnReconnect(getReturnProductAll);
 
   return {
     loading,

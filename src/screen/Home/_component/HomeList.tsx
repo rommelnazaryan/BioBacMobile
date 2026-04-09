@@ -4,42 +4,62 @@ import {Colors} from '@/theme/Colors';
 import {FontFamily, FontSizes, Shadows} from '@/theme';
 import {HomeListProps} from '@/types';
 import {
-  ApartmentIcon,
-  BusinessIcon,
   NotFound,
   ShoppingCartIcon,
-  UserSvgIcon,
+  SalesIcon,
+  PaymentIcon
 } from '@/component/icons';
+import FontAwesome  from 'react-native-vector-icons/FontAwesome';
 import {t} from '@/locales';
-import {PaymentIcon} from '@/component/icons';
 export default function HomeList({
   item,
   onCallback,
 }: {
-  item: HomeListProps;
+  item: any;
   onCallback: (item: HomeListProps) => void;
 }) {
   const SvgIcon =
-    item.iconName === 'ApartmentIcon'
-      ? ApartmentIcon
-      : item.iconName === 'BusinessIcon'
-      ? BusinessIcon
-      : item.iconName === 'PaymentIcon'
-      ? PaymentIcon
-      : item.iconName === 'UserSvgIcon'
-      ? UserSvgIcon
-      : item.iconName === 'ReturnProductIcon'
-      ? ShoppingCartIcon
-      : NotFound;
+    item.iconName === 'PaymentIcon'
+    ? PaymentIcon
+    : item.iconName === 'ReturnProductIcon'
+    ? ShoppingCartIcon
+      : item.iconName === 'SalesIcon'
+      ? SalesIcon
+    : NotFound;
+  // const SvgIcon =
+  //   item.iconName === 'ApartmentIcon'
+  //     ? ApartmentIcon
+  //     : item.iconName === 'BusinessIcon'
+  //     ? BusinessIcon
+  //     : item.iconName === 'PaymentIcon'
+  //     ? PaymentIcon
+  //     : item.iconName === 'UserSvgIcon'
+  //     ? UserSvgIcon
+  //     : item.iconName === 'ReturnProductIcon'
+  //     ? ShoppingCartIcon
+  //     : NotFound;
 
   return (
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={() => onCallback(item)}
       style={styles.groupRow}>
-      <SvgIcon size={item.iconSize ?? 40} color={Colors.black} />
+        {item.iconName === 'PhoneIcon' ? (
+          <FontAwesome name="phone" size={30} color="black" style={styles.phoneIcon}/>
+        ) : (
+          <SvgIcon size={item.iconSize ?? 40} color={Colors.black} />
+        )}
       <Text style={styles.groupTitle}>
-        {item.label === 'buyers'
+      {    item.label === 'payment'
+          ? t('company.companiesPayment')
+          : item.label === 'return products'
+          ? t('common.returnProducts')
+          : item.label === 'sales'
+          ? t('company.sales')
+          : item.label === 'phone'
+          ? t('common.phone')
+          : 'other'}
+        {/* {item.label === 'buyers'
           ? t('company.companyBuyerList')
           : item.label === 'sellers'
           ? t('company.companiesSellerList')
@@ -49,7 +69,7 @@ export default function HomeList({
           ? t('company.companiesPaymentHistory')
           : item.label === 'return products'
           ? t('common.returnProducts')
-          : 'other'}
+          : 'other'} */}
       </Text>
     </TouchableOpacity>
   );
@@ -73,5 +93,8 @@ const styles = StyleSheet.create({
     color: Colors.black,
     fontFamily: FontFamily.semiBold,
     fontSize: FontSizes.small,
+  },
+  phoneIcon: {
+    marginTop: '2%',
   },
 });

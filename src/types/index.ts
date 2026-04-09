@@ -113,6 +113,7 @@ export type historyProps = {
 };
 
 export type getHistoryProps = {
+  dealId: number;
   createdAt: string;
   amountChanged: number;
   note: string | null;
