@@ -23,6 +23,9 @@ type Endpoints = {
   UpdateReturn: string;
   GetSaleLookup: string;
   GetReturnProduct: string;
+  GetAccountListAll: string;
+  GetAccountList: string;
+  GetAccountHistory: string;
 }
 
 export const endpoints:Endpoints = {
@@ -61,4 +64,9 @@ export const endpoints:Endpoints = {
 
   //warehouses
   GetWarehouses: 'warehouse/warehouses',
+
+  //account list
+  GetAccountListAll: 'company/account/all',
+  GetAccountList: 'company/account/',
+  GetAccountHistory: 'company/account/history/all',
 };

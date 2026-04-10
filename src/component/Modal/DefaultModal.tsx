@@ -3,7 +3,6 @@ import React from 'react';
 import {Colors, FontFamily, FontSizes, Shadows} from '@/theme';
 import Button from '@/component/button';
 import BaseModal from './BaseModal';
-import {MaterialIcons} from '../icons/VectorIcon';
 import {AntDesign} from '../icons/VectorIcon';
 interface ModalCardProps {
   isVisible: boolean;
