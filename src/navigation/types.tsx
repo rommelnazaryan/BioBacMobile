@@ -21,6 +21,10 @@ export type ReturnProductParamList = {
   ReturnProductCreate: {item: ReturnProductProps | undefined,key: 'create' | 'edit'};
 };
 
+export type AccountListParamList = {
+  AccountList: undefined;
+  AccountListHistory: {item: historyProps};
+};
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -36,6 +40,7 @@ export type RootStackParamList = {
   ReturnProductStack: NavigatorScreenParams<ReturnProductParamList> | undefined;
   Detail: {item: AllCompanyProps};
   HomeCreate: {item: AllCompanyProps | undefined,key: 'create' | 'edit'};
+  AccountListStack: NavigatorScreenParams<AccountListParamList> | undefined;
 };
 
 export type TabParamList = {

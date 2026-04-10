@@ -14,6 +14,7 @@ export const Colors = {
     red_700:'#c10007',
     red:'#ff6a55',
     green:'#16A34A',
+    green_100:'#ebfdf4',
     blue: '#2a85ff',
     blue_100:'#4996ff4a',
     cardgray:'#DEDEDE',

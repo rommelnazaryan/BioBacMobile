@@ -26,5 +26,10 @@ export const USER_PERMISSIONS = {
       label: 'phone',
       iconName: 'PhoneIcon',
     },
+    {
+      key: 'AccountList',
+      label: 'account list',
+      iconName: 'AccountListIcon',
+    },
   ];
   export type UserPermissions = keyof typeof USER_PERMISSIONS;

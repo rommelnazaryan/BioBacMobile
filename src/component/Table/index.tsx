@@ -20,7 +20,7 @@ type Props = {
   containerStyle?: ViewStyle;
   permission?: Permission[];
   showDelete?: boolean;
-  permissionType: UserPermission;
+  permissionType?: UserPermission;
 };
 
 
@@ -35,8 +35,8 @@ export default function Table({
   showDelete,
   permissionType,
 }: Props) {
-  const canEdit = hasPermission(permission, permissionType.UPDATE);
-  const canDelete = hasPermission(permission, permissionType.DELETE);
+  const canEdit = hasPermission(permission, permissionType?.UPDATE ?? '');
+  const canDelete = hasPermission(permission, permissionType?.DELETE ?? '');
 
   const allowActions = !showDelete;
   const showHeader =

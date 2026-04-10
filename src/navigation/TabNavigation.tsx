@@ -6,7 +6,7 @@ import { MaterialIcons, AntDesign, Feather } from '@/component/icons/VectorIcon'
 import { Colors, FontFamily } from '@/theme';
 import useDraftStore from '@/zustland/draftStore';
 
-import type { RootStackParamList, TabParamList, SellerParamList, BuyerParamList, ReturnProductParamList } from './types';
+import type { RootStackParamList, TabParamList, SellerParamList, BuyerParamList, ReturnProductParamList, AccountListParamList } from './types';
 //-------------Home----------------
 import Home from '@/screen/Home';
 import Detail from '@/screen/Home/Detail';
@@ -38,6 +38,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import ReturnProduct from '@/screen/ReturnProduct';
 import ReturnProductCreate from '@/screen/ReturnProduct/Create';
 
+//-------------Account List----------------
+import AccountList from '@/screen/AccountList';
+import AccountListHistory from '@/screen/AccountList/AccountListHistory';
+
 const Tab = createBottomTabNavigator<TabParamList>();
 const HomeStack = createNativeStackNavigator<RootStackParamList>();
 const SettingsStack = createNativeStackNavigator<RootStackParamList>();
@@ -45,6 +49,8 @@ const DraftStack = createNativeStackNavigator<RootStackParamList>();
 const SellerStack = createNativeStackNavigator<SellerParamList>();
 const BuyerStack = createNativeStackNavigator<BuyerParamList>();
 const ReturnProductStack = createNativeStackNavigator<ReturnProductParamList>();
+const AccountListStack = createNativeStackNavigator<AccountListParamList>();
+
 
 const baseScreenOptions = {
   headerShown: false,
@@ -156,6 +162,15 @@ const ReturnProductStackScreen = () => {
   );
 };
 
+const AccountListStackScreen = () => {
+  return (
+    <AccountListStack.Navigator screenOptions={{ headerShown: false }}>
+      <AccountListStack.Screen name="AccountList" component={AccountList} />
+      <AccountListStack.Screen name="AccountListHistory" component={AccountListHistory} />
+    </AccountListStack.Navigator>
+  );
+};
+
 
 const HomeStackScreen = () => {
   return (
@@ -168,6 +183,7 @@ const HomeStackScreen = () => {
       <HomeStack.Screen name="ReturnProductStack" component={ReturnProductStackScreen} />
       <HomeStack.Screen name="Detail" component={Detail} />
       <HomeStack.Screen name="HomeCreate" component={HomeCreate} />
+      <HomeStack.Screen name="AccountListStack" component={AccountListStackScreen} />
     </HomeStack.Navigator>
   );
 };

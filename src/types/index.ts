@@ -272,3 +272,32 @@ export type CreateReturnRequest = {
   comment: string;
   items: ReturnProductFormItem[];
 };
+
+export type GetAccountListResponse = {
+  id: number;
+  name: string;
+  balance: number;
+  bankAccount: string;
+  bik: string;
+  ks: string;
+  bankName: string;
+  ourCompanyId: number;
+  ourCompanyName: string;
+  deleted: boolean;
+  user: null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type GetAccountHistoryResponse = {
+    id: number;
+    accountId: number;
+    accountName: string;
+    amountChanged: number;
+    balanceAfter: number;
+    actionId: number;
+    actionName: string;
+    dealId: string;
+    note: string;
+    timestamp: string;  
+};
