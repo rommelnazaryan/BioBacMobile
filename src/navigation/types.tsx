@@ -41,12 +41,14 @@ export type RootStackParamList = {
   Detail: {item: AllCompanyProps};
   HomeCreate: {item: AllCompanyProps | undefined,key: 'create' | 'edit'};
   AccountListStack: NavigatorScreenParams<AccountListParamList> | undefined;
+  Sales: undefined;
 };
 
 export type TabParamList = {
   HomeScreen: undefined;
   SettingsScreen: undefined;
   DraftScreen: undefined;
+  AdditionalItemsScreen: undefined;
 };
 
 
@@ -59,4 +61,9 @@ export type CompanyGroupParamList = {
 export type DropdownOptions = {
     label: string;
     value: string | number;
+};
+
+export type AdditionalItemsParamList = {
+  AdditionalItems: undefined;
+  AccountListStack: NavigatorScreenParams<AccountListParamList> | undefined;
 };

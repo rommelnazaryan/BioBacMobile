@@ -26,6 +26,7 @@ type Endpoints = {
   GetAccountListAll: string;
   GetAccountList: string;
   GetAccountHistory: string;
+  GetSaleSuccess: string;
 }
 
 export const endpoints:Endpoints = {
@@ -69,4 +70,7 @@ export const endpoints:Endpoints = {
   GetAccountListAll: 'company/account/all',
   GetAccountList: 'company/account/',
   GetAccountHistory: 'company/account/history/all',
+
+  //sale
+  GetSaleSuccess: 'company/sale/success/all',
 };

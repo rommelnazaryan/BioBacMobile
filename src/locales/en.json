@@ -4,7 +4,8 @@
     "companiesSellerList": "Sellers",
     "companiesPayment": "Payment",
     "companiesPaymentHistory": "Payment History",
-    "sales": "Sales"
+    "sales": "Sales",
+    "companyAccountList": "Account List"
   },
   "common": {
     "ok": "Ok",

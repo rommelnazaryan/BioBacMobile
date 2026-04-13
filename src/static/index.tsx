@@ -26,6 +26,10 @@ export const USER_PERMISSIONS = {
       label: 'phone',
       iconName: 'PhoneIcon',
     },
+
+  ];
+
+  export const ADDITIONAL_ITEMS_LIST = [
     {
       key: 'AccountList',
       label: 'account list',
