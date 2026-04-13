@@ -2,72 +2,58 @@ import { View, StyleSheet, Text } from 'react-native';
 import React from 'react';
 import { Colors } from '@/theme/Colors';
 import VerticalFlatList from '@/component/list/VerticalFlatList';
-import useHome from '@/hooks/useHome';
 import Activity from '@/component/ActivityIndicator';
-import { AllCompanyProps } from '@/types';
+import {GetSaleSuccessResponse } from '@/types';
 import { deviceHeight } from '@/helper';
 import NotFound from '@/component/icons/NotFound';
 import DefaultTable from '@/component/Table/defaultTable';
-import CartList from '@/screen/Home/_component/CartList';
+import CartList from './_component/CartList';
 import CustomHeader from '@/navigation/Header';
-import { DefaultModal } from '@/component/Modal';
 import Filter from '@/component/Filter';
+import useSale from '@/hooks/useSale';
 
-export default function Home() {
+export default function Sales() {
   const {
     loading,
-    allCompanies,
     isConnected,
     loadMore,
     loadingMore,
     hasNextPage,
-    onSubmitDelete,
-    onSubmitEdit,
-    onSubmitDetail,
-    visible,
-    onSubmitCancel,
-    onSubmitConfirm,
     onSubmitCreate,
-    onSubmitRefresh,
-    refreshing,
+    onSubmitEdit,
+    saleSuccess
   } =
-    useHome();
+    useSale();
   return (
     <View style={styles.container}>
       <CustomHeader title="All Companies" />
       <Filter onHandlerCreate={onSubmitCreate} />
       {loading ?
         <Activity style={styles.activityIndicator} />
-        : allCompanies.length > 0 ?
+        : saleSuccess.length > 0 ?
           <>
             {isConnected ? (
               <VerticalFlatList
-                data={isConnected ? allCompanies : []}
+                data={isConnected ? saleSuccess : []}
                 gap={10}
                 columns={1}
                 keyExtractor={company => String(company?.id ?? '')}
                 onEndReached={() => loadMore()}
                 onEndReachedThreshold={0.3}
-                onRefresh={() => onSubmitRefresh()}
-                refreshing={refreshing}
                 ListFooterComponent={
                   loadingMore ? (
                     <Activity style={styles.footerLoading} />
-                  ) : !hasNextPage && allCompanies.length > 0 ? (
+                  ) : !hasNextPage && saleSuccess.length > 0 ? (
                     <Text style={styles.footerText}>No more data</Text>
                   ) : null
                 }
-                renderItem={({ item: company }: { item: AllCompanyProps }) => (
+                renderItem={({ item: item }: { item: GetSaleSuccessResponse }) => (
                   <DefaultTable
                     containerStyle={styles.tableContainer}
-                    // onClickHistory={() =>
-                    //   onHandlerHistory(company.id, company.name)
-                    // }
-                    onClickEdit={() => onSubmitEdit(company)}
-                    onClickDelete={() => onSubmitDelete(company.id)}
+                    onClickEdit={() => onSubmitEdit(item)}
 
                   >
-                    <CartList key={company.id} element={company} onCallback={() => onSubmitDetail(company)} />
+                    <CartList key={item.id} element={item} />
                   </DefaultTable>
                 )}
               />
@@ -82,13 +68,6 @@ export default function Home() {
               <NotFound size={120} />
             </View>
           )}
-                <DefaultModal
-        isVisible={visible}
-        onClose={onSubmitCancel}
-        onConfirm={onSubmitConfirm}
-        title="Delete Company"
-        description="Are you sure you want to delete this company?"
-      />
     </View>
   );
 }
@@ -125,4 +104,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
 });

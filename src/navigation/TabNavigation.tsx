@@ -6,7 +6,7 @@ import { MaterialIcons, AntDesign, Feather } from '@/component/icons/VectorIcon'
 import { Colors, FontFamily } from '@/theme';
 import useDraftStore from '@/zustland/draftStore';
 
-import type { RootStackParamList, TabParamList, SellerParamList, BuyerParamList, ReturnProductParamList, AccountListParamList } from './types';
+import type { RootStackParamList, TabParamList, SellerParamList, BuyerParamList, ReturnProductParamList, AccountListParamList, AdditionalItemsParamList } from './types';
 //-------------Home----------------
 import Home from '@/screen/Home';
 import Detail from '@/screen/Home/Detail';
@@ -42,6 +42,13 @@ import ReturnProductCreate from '@/screen/ReturnProduct/Create';
 import AccountList from '@/screen/AccountList';
 import AccountListHistory from '@/screen/AccountList/AccountListHistory';
 
+//-------------Additional Items----------------
+import AdditionalItems from '@/screen/AdditionalItems';
+
+//-------------Sales----------------
+import Sales from '@/screen/Sales';
+
+
 const Tab = createBottomTabNavigator<TabParamList>();
 const HomeStack = createNativeStackNavigator<RootStackParamList>();
 const SettingsStack = createNativeStackNavigator<RootStackParamList>();
@@ -50,7 +57,7 @@ const SellerStack = createNativeStackNavigator<SellerParamList>();
 const BuyerStack = createNativeStackNavigator<BuyerParamList>();
 const ReturnProductStack = createNativeStackNavigator<ReturnProductParamList>();
 const AccountListStack = createNativeStackNavigator<AccountListParamList>();
-
+const AdditionalItemsStack = createNativeStackNavigator<AdditionalItemsParamList>();
 
 const baseScreenOptions = {
   headerShown: false,
@@ -123,6 +130,9 @@ function TabBarIcon({
       </View>
     );
   }
+  if (routeName === 'AdditionalItemsScreen') {
+    return <Feather name="sliders" size={size} color={color} />;
+  }
   // Settings tab (Ionicons)
   return (
     <Feather
@@ -183,11 +193,19 @@ const HomeStackScreen = () => {
       <HomeStack.Screen name="ReturnProductStack" component={ReturnProductStackScreen} />
       <HomeStack.Screen name="Detail" component={Detail} />
       <HomeStack.Screen name="HomeCreate" component={HomeCreate} />
-      <HomeStack.Screen name="AccountListStack" component={AccountListStackScreen} />
+      <HomeStack.Screen name="Sales" component={Sales} />
     </HomeStack.Navigator>
   );
 };
 
+const AdditionalItemsStackScreen = () => {
+  return (
+    <AdditionalItemsStack.Navigator screenOptions={{ headerShown: false }}>
+      <AdditionalItemsStack.Screen name="AdditionalItems" component={AdditionalItems} />
+      <AdditionalItemsStack.Screen name="AccountListStack" component={AccountListStackScreen} />
+    </AdditionalItemsStack.Navigator>
+  );
+};
 
 const DraftStackScreen = () => {
   return (
@@ -224,6 +242,7 @@ export default function TabNavigation() {
       screenOptions={screenOptions}>
       <Tab.Screen name="HomeScreen" component={HomeStackScreen} />
       <Tab.Screen name="DraftScreen" component={DraftStackScreen} />
+      <Tab.Screen name="AdditionalItemsScreen" component={AdditionalItemsStackScreen} />
       <Tab.Screen name="SettingsScreen" component={SettingStackScreen} />
     </Tab.Navigator>
   );

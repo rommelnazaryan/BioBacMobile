@@ -301,3 +301,66 @@ export type GetAccountHistoryResponse = {
     note: string;
     timestamp: string;  
 };
+
+export type GetSaleSuccessResponse = {
+  
+    createdAt: string;
+    updatedAt: string;
+    id: number;
+    dealName: string;
+    deliveryAddress: string;
+    deliveryCost: number;
+    ourCompany: {
+      createdAt: string;
+      updatedAt: string;
+      id: number;
+      name: string;
+      emails: string[];
+      websites: string[];
+      phones: string[];
+      detail: {
+        id: number;
+        inn: string;
+        kpp: string | null;
+        ogrn: string | null;
+        okpo: null
+      },
+      accounts: GetAccountResponse[];
+      attributes: []
+    },
+    company: null | AllCompanyProps,
+    serviceCompany: null | AllCompanyProps,
+    status: { 
+      createdAt: string;
+      updatedAt: string;
+      id: number;
+      name: string;
+    },
+    items: [], 
+    totalAmount: number;
+    receivedAmount: number | null;
+    orderDate: string;
+    saleDate: string | null;
+    contactPerson: null;
+    deliveryMethod: {
+      id: number;
+      name: string;
+    },
+    documentTransferForm: null | string;
+    transactionType: null | string;
+    transportCompany: null | string;
+    saleStage: {
+      createdAt: string;
+      updatedAt: string;
+      id: number;
+      name: string;
+    },
+    deliveryPayer: null,
+    contacts: null;
+    createdById: number;
+    creatorName: string;
+    deliveryPayerId: number | null;
+    deliveryPayerName: string | null;
+    warehouseId: number;
+  
+};
