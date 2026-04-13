@@ -2,21 +2,21 @@ import {Text, StyleSheet, TouchableOpacity} from 'react-native';
 import React from 'react';
 import {Colors} from '@/theme/Colors';
 import {FontFamily, FontSizes, Shadows} from '@/theme';
-import {HomeListProps} from '@/types';
 import {
   NotFound,
   ShoppingCartIcon,
   SalesIcon,
-  PaymentIcon
+  PaymentIcon,
+  ApartmentIcon
 } from '@/component/icons';
 import FontAwesome  from 'react-native-vector-icons/FontAwesome';
 import {t} from '@/locales';
-export default function HomeList({
+export default function ItemList({
   item,
   onCallback,
 }: {
   item: any;
-  onCallback: (item: HomeListProps) => void;
+  onCallback: (item: any) => void;
 }) {
   const SvgIcon =
     item.iconName === 'PaymentIcon'
@@ -25,6 +25,8 @@ export default function HomeList({
     ? ShoppingCartIcon
       : item.iconName === 'SalesIcon'
       ? SalesIcon
+      : item.iconName === 'AccountListIcon'
+      ? ApartmentIcon
     : NotFound;
   // const SvgIcon =
   //   item.iconName === 'ApartmentIcon'
@@ -58,6 +60,8 @@ export default function HomeList({
           ? t('company.sales')
           : item.label === 'phone'
           ? t('common.phone')
+          : item.label === 'account list'
+          ? t('company.companyAccountList')
           : 'other'}
         {/* {item.label === 'buyers'
           ? t('company.companyBuyerList')

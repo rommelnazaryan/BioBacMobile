@@ -27,6 +27,7 @@ export default function useHome() {
   const [hasNextPage, setHasNextPage] = useState(true);
   const getAllCompaniesRef = useRef<() => void>(() => {});
   const [allCompanies, setAllCompanies] = useState<AllCompanyProps[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
   // get profile //
   const getProfile = useCallback(() => {
     if (isConnected) {
@@ -151,7 +152,7 @@ export default function useHome() {
         } else if (typeof metadata?.totalPages === 'number') {
           setHasNextPage(page + 1 < metadata.totalPages);
         }
-
+        setRefreshing(false);
         setLoading(false);
         setLoadingMore(false);
       },
@@ -174,15 +175,6 @@ export default function useHome() {
     }
     setPage(p => p + 1);
   }, [hasNextPage, loading, loadingMore]);
-
-
-  // navigate to history //
-  // const onHandlerHistory = (companyId: number, name: string) => {
-  //   navigation.navigate('BuyerStack', {
-  //     screen: 'HistoryBuyers',
-  //     params: {item: {id: companyId, name: name}},
-  //   });
-  // };
 
 
   // submit delete //
@@ -218,8 +210,14 @@ export default function useHome() {
   const onSubmitCreate = () => {
     navigation.navigate('HomeCreate', {
       item: undefined,
-      key: 'edit',
+      key: 'create',
     });
+  };
+
+  // submit refresh //
+  const onSubmitRefresh = () => {
+    setRefreshing(true);
+    getAllCompanies();
   };
 
   // submit edit //
@@ -260,6 +258,8 @@ export default function useHome() {
     onSubmitCreate,
     onSubmitEdit,
     visible,
-    onSubmitDetail
+    onSubmitDetail,
+    onSubmitRefresh,
+    refreshing
   };
 }

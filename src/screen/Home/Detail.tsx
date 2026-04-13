@@ -2,7 +2,6 @@ import { View, StyleSheet, ScrollView } from 'react-native'
 import React, { Fragment } from 'react'
 import { Colors } from '@/theme/Colors';
 import CustomHeader from '@/navigation/Header';
-import HomeList from './_component/HomeList';
 import { HOME_LIST } from '@/static';
 import { HomeListProps } from '@/types';
 import useDetail from '@/hooks/useHome/useDetail';
@@ -14,6 +13,7 @@ import Activity from '@/component/ActivityIndicator';
 import DefaultTable from '@/component/Table/defaultTable';
 import HistoryCard from '../Buyers/_component/HistoryCard';
 import { deviceHeight } from '@/helper';
+import ItemList from '@/component/list/ItemList';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Detail'>;
 
@@ -24,7 +24,6 @@ export default function Detail(route: Props) {
     loadMore,
     history, onSubmitDetail } = useDetail(route);
 
-  console.log(history)
   return (
     <ScrollView style={styles.container}>
       <CustomHeader title={item.name} showBack={true} />
@@ -32,7 +31,7 @@ export default function Detail(route: Props) {
       <View style={styles.linstContainer}>
         {HOME_LIST.map((item) => (
           <View key={item.key} style={styles.itemContainer}>
-            <HomeList
+            <ItemList
               item={item}
               onCallback={item => onSubmitDetail(item as HomeListProps)}
             />
