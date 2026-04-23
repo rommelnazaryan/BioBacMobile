@@ -84,7 +84,7 @@ export default function useDetail(route: Props) {
         Linking.openURL(`tel:${item.phones[0]}`);
         break;
       case 'Sales':
-        navigation.navigate('Sales');
+        navigation.navigate('SalesStack');
         break;
       default:
         break;

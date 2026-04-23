@@ -18,7 +18,7 @@ import { GetAssortment } from '@/services/Company/GetAssortment';
 import { CreateReturn } from '@/services/Company/CreateReturn';
 import { UpdateReturn } from '@/services/Company/UpdateReturn';
 import { GetSaleLookup } from '@/services/Company/GetSaleLookup';
-import { GetSele } from '@/services/Company/Seller';
+import { GetSele } from '@/services/Sale/Seller';
 //create empty item //
 export type ReturnProductFormItem = {
   id: number;

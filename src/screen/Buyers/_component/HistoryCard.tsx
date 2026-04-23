@@ -5,7 +5,6 @@ import { FontFamily, FontSizes } from '@/theme';
 import NotFound from '@/component/icons/NotFound';
 import { t } from '@/locales';
 export default function HistoryCard({ element }: { element: getHistoryProps }) {
-    console.log('element', element);
     const createdAtDate = element.createdAt.split(':')[0]
     const createdAt = element.createdAt.split(':')[0]
     return (

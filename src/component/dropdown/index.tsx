@@ -6,6 +6,8 @@ import {Colors, FontFamily, FontSizes, Shadows} from '@/theme';
 import {t} from '@/locales';
 import { DropdownOptions } from '@/navigation/types';
 
+export {default as DropdownMultiSelect} from './MultiSelect';
+
 type DropdownComponentProps = {
   style?: ViewStyle;
   data: DropdownOptions[];

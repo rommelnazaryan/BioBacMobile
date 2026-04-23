@@ -238,11 +238,9 @@ export default function useBuyerCreate(
           navigation.goBack();
         },
         onUnauthorized: () => {
-          console.log('unauthorized');
           show('Unauthorized', {type: 'error'});
         },
         onError: error => {
-          console.log('error', error);
           show((error as Error)?.message ?? 'Failed to create company', {
             type: 'error',
           });

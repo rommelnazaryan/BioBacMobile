@@ -1,4 +1,4 @@
-import {AllCompanyProps, historyProps, HomeListProps, ReturnProductProps} from '@/types';
+import {AllCompanyProps, GetSaleSuccessResponse, historyProps, HomeListProps, ReturnProductProps} from '@/types';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import type {NavigatorScreenParams} from '@react-navigation/native';
 
@@ -41,7 +41,7 @@ export type RootStackParamList = {
   Detail: {item: AllCompanyProps};
   HomeCreate: {item: AllCompanyProps | undefined,key: 'create' | 'edit'};
   AccountListStack: NavigatorScreenParams<AccountListParamList> | undefined;
-  Sales: undefined;
+  SalesStack: NavigatorScreenParams<SalesParamList> | undefined;
 };
 
 export type TabParamList = {
@@ -66,4 +66,10 @@ export type DropdownOptions = {
 export type AdditionalItemsParamList = {
   AdditionalItems: undefined;
   AccountListStack: NavigatorScreenParams<AccountListParamList> | undefined;
+};
+
+export type SalesParamList = {
+  Sales: undefined;
+  SalesCreate: {item: GetSaleSuccessResponse | undefined,key: 'create' | 'edit'};
+  CreateContactPerson: undefined;
 };

@@ -181,7 +181,6 @@ export default function usePayment() {
         show((error as Error).message, {type: 'error'});
       },
       onUnauthorized: error => {
-        console.log('unauthorized', error);
       },
     });
   }, [show]);
@@ -275,7 +274,6 @@ export default function usePayment() {
 
   // submit payment
   const onSubmit = () => {
-    console.log('getValues',getValues());
     if (!isConnected) {
       show('Please check your internet connection', {type: 'error'});
       return;
@@ -323,7 +321,7 @@ export default function usePayment() {
           show((error as Error)?.message ?? 'Error', {type: 'error'});
         },
         onUnauthorized: error => {
-          console.log('unauthorized', error);
+          show('Unauthorized', {type: 'error'});
         },
       },
     );
@@ -339,8 +337,7 @@ export default function usePayment() {
     navigation.goBack()
   };
 
-  const onInvalidSubmit = (formErrors: FieldErrors<PaymentFormValues>) => {
-    console.log('payment form errors', formErrors,getValues());
+  const onInvalidSubmit = () => {
     show('Please complete required fields', {type: 'error'});
   };
 

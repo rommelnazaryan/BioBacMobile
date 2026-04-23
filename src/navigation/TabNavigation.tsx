@@ -6,7 +6,7 @@ import { MaterialIcons, AntDesign, Feather } from '@/component/icons/VectorIcon'
 import { Colors, FontFamily } from '@/theme';
 import useDraftStore from '@/zustland/draftStore';
 
-import type { RootStackParamList, TabParamList, SellerParamList, BuyerParamList, ReturnProductParamList, AccountListParamList, AdditionalItemsParamList } from './types';
+import type { RootStackParamList, TabParamList, SellerParamList, BuyerParamList, ReturnProductParamList, AccountListParamList, AdditionalItemsParamList, SalesParamList } from './types';
 //-------------Home----------------
 import Home from '@/screen/Home';
 import Detail from '@/screen/Home/Detail';
@@ -47,7 +47,8 @@ import AdditionalItems from '@/screen/AdditionalItems';
 
 //-------------Sales----------------
 import Sales from '@/screen/Sales';
-
+import SalesCreate from '@/screen/Sales/Create';
+import CreateContactPerson from '@/screen/Sales/CreateContactPerson';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const HomeStack = createNativeStackNavigator<RootStackParamList>();
@@ -58,6 +59,7 @@ const BuyerStack = createNativeStackNavigator<BuyerParamList>();
 const ReturnProductStack = createNativeStackNavigator<ReturnProductParamList>();
 const AccountListStack = createNativeStackNavigator<AccountListParamList>();
 const AdditionalItemsStack = createNativeStackNavigator<AdditionalItemsParamList>();
+const SalesStack = createNativeStackNavigator<SalesParamList>();
 
 const baseScreenOptions = {
   headerShown: false,
@@ -181,6 +183,15 @@ const AccountListStackScreen = () => {
   );
 };
 
+const SalesStackScreen = () => {
+  return (
+    <SalesStack.Navigator screenOptions={{ headerShown: false }}>
+      <SalesStack.Screen name="Sales" component={Sales} />
+      <SalesStack.Screen name="SalesCreate" component={SalesCreate} />
+      <SalesStack.Screen name="CreateContactPerson" component={CreateContactPerson} />
+    </SalesStack.Navigator>
+  );
+};
 
 const HomeStackScreen = () => {
   return (
@@ -193,7 +204,7 @@ const HomeStackScreen = () => {
       <HomeStack.Screen name="ReturnProductStack" component={ReturnProductStackScreen} />
       <HomeStack.Screen name="Detail" component={Detail} />
       <HomeStack.Screen name="HomeCreate" component={HomeCreate} />
-      <HomeStack.Screen name="Sales" component={Sales} />
+      <HomeStack.Screen name="SalesStack" component={SalesStackScreen} />
     </HomeStack.Navigator>
   );
 };

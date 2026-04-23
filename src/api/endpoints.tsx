@@ -27,6 +27,9 @@ type Endpoints = {
   GetAccountList: string;
   GetAccountHistory: string;
   GetSaleSuccess: string;
+  GetLine: string;
+  GetContactPerson: string;
+  GetSeller: string;
 }
 
 export const endpoints:Endpoints = {
@@ -41,7 +44,7 @@ export const endpoints:Endpoints = {
   // company //
   GetAllCompanies: 'company/all',
   GetBuyers: 'company/buyer',
-  GetSale: 'company/sale/',
+  GetSeller: 'company/seller',
   GetCompanyHistory: 'company/company-history/',
   DeleteCompany: 'company/delete/',
   GetCompanyAccount: 'company/account',
@@ -54,6 +57,8 @@ export const endpoints:Endpoints = {
   GetSaleLookup: 'company/sale/lookup/',
   GetReturnProductAll: 'company/return/all',
   GetReturnProduct: 'company/return/',
+  GetLine: 'company/line',
+  GetContactPerson: 'company/contact-person',
 
   //payment
   GetPaymentCategory: 'company/payment-category',
@@ -73,4 +78,6 @@ export const endpoints:Endpoints = {
 
   //sale
   GetSaleSuccess: 'company/sale/success/all',
+  GetSale: 'company/sale/',
+
 };
