@@ -17,6 +17,7 @@ type MultiSelectDropdownProps = {
   search?: boolean;
   disable?: boolean;
   placeholder?: string;
+  dropdownPosition?: 'top' | 'bottom';
 };
 
 const normalizeValue = (value: DropdownValue | null | undefined) => {
@@ -36,6 +37,7 @@ const MultiSelectDropdown = ({
   search = false,
   disable = false,
   placeholder,
+  dropdownPosition = 'bottom',
 }: MultiSelectDropdownProps) => {
   const [_isFocused, setIsFocused] = useState(false);
   const isEmpty = data.length === 0;
@@ -183,6 +185,7 @@ const MultiSelectDropdown = ({
         searchPlaceholder="Search..."
         value={normalizedValue}
         onChange={handleChange}
+        dropdownPosition={dropdownPosition}
         onFocus={() => {
           setIsFocused(true);
         }}

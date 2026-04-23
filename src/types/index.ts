@@ -63,11 +63,11 @@ export type AllCompanyProps = {
     contractFormName: string;
     bonus: number | null;
   };
-  contactPerson: { id: number; name: string }[];
+  contactPerson: { id: number; firstName: string; lastName: string }[];
   cooperation: { id: number; name: string };
   createdAt: string;
   deleted: boolean;
-  detail: { id: number; inn: string; kpp: string; ogrn: string; okpo: string };
+  detail: { id: number; inn: string; kpp: string; ogrn: string; okpo: string } | null;
   emails: string[];
   externalEmails: string[];
   externalPhones: string[];
@@ -215,6 +215,7 @@ export type CreateCompanyRequest = {
   addressTT?: string[];
   localAddress?: string;
   warehouseAddress?: string;
+  contactPersonIds?: number[];
 };
 
 export type ReturnProductItemProps = {

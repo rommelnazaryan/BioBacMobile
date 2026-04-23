@@ -13,6 +13,7 @@ import CustomHeader from '@/navigation/Header';
 import { DefaultModal } from '@/component/Modal';
 import Filter from '@/component/Filter';
 import Search from '@/component/Search';
+import HomeFilter from './_component/HomeFilter';
 
 export default function Home() {
   const {
@@ -22,8 +23,6 @@ export default function Home() {
     loadMore,
     loadingMore,
     hasNextPage,
-    onSubmitDelete,
-    onSubmitEdit,
     onSubmitDetail,
     visible,
     onSubmitCancel,
@@ -32,15 +31,22 @@ export default function Home() {
     onSubmitRefresh,
     refreshing,
     onSubmitSearch,
+    lineList,
+    selectedLineValues,
+    setSelectedLineValues,
+    onSubmitFilter,
+    onSubmitReset,
+    onSubmitEdit,
   } =
     useHome();
   return (
     <View style={styles.container}>
       <CustomHeader title="All Companies" />
-      <View style={styles.containerWrapper}>
-        <Search onChangeText={onSubmitSearch} />
-        <Filter onHandlerCreate={onSubmitCreate} containerStyle={styles.filterContainer} buttonStyle={styles.buttonStyle} />
-      </View>
+      <Filter onHandlerCreate={onSubmitCreate} filter={true} onSubmit={onSubmitFilter} onSubmitReset={onSubmitReset}>
+        <HomeFilter data={lineList} onClick={setSelectedLineValues} selectedLineValues={selectedLineValues} />
+      </Filter>
+      <Search onChangeText={onSubmitSearch} />
+
       {loading ?
         <Activity style={styles.activityIndicator} />
         : allCompanies.length > 0 ?
@@ -68,11 +74,10 @@ export default function Home() {
                     // onClickHistory={() =>
                     //   onHandlerHistory(company.id, company.name)
                     // }
-                    onClickEdit={() => onSubmitEdit(company)}
-                    onClickDelete={() => onSubmitDelete(company.id)}
-
+                    // onClickEdit={() => onSubmitEdit(company)}
+                    // onClickDelete={() => onSubmitDelete(company.id)}
                   >
-                    <CartList key={company.id} element={company} onCallback={() => onSubmitDetail(company)} />
+                    <CartList key={company.id} element={company} onCallback={() => onSubmitDetail(company)} onSubmitEdit={() => onSubmitEdit(company)} />
                   </DefaultTable>
                 )}
               />
@@ -87,7 +92,7 @@ export default function Home() {
               <NotFound size={120} />
             </View>
           )}
-                <DefaultModal
+        <DefaultModal
         isVisible={visible}
         onClose={onSubmitCancel}
         onConfirm={onSubmitConfirm}
@@ -130,19 +135,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  filterContainer: {
-    width: '15%',
-    alignSelf: 'flex-end',
-  },
-  buttonStyle: {
-    width: '100%',
-  },
-  containerWrapper:{
-    width: '93%',
-    alignSelf: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  }
+
+
 });

@@ -30,6 +30,8 @@ type Endpoints = {
   GetLine: string;
   GetContactPerson: string;
   GetSeller: string;
+  GetByLines: string;
+  GetCompanyFns: string;
 }
 
 export const endpoints:Endpoints = {
@@ -59,6 +61,8 @@ export const endpoints:Endpoints = {
   GetReturnProduct: 'company/return/',
   GetLine: 'company/line',
   GetContactPerson: 'company/contact-person',
+  GetByLines: 'company/all/by-lines',
+  GetCompanyFns: 'company/fns/',
 
   //payment
   GetPaymentCategory: 'company/payment-category',

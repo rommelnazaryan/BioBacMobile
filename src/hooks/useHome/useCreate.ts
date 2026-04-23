@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
 import {yupResolver} from '@hookform/resolvers/yup';
-import {useForm} from 'react-hook-form';
+import {useForm, useWatch} from 'react-hook-form';
 import {useCallback, useEffect, useState} from 'react';
 import useNetworkStore from '@/zustland/networkStore';
 import {useToast} from '@/component/toast/ToastProvider';
@@ -19,6 +19,43 @@ import useDraftStore from '@/zustland/draftStore';
 import type {NativeStackNavigationProp, NativeStackScreenProps} from '@react-navigation/native-stack';
 import {UpdateCompany} from '@/services/Company/UpdateCompany';
 import { CreateCompany } from '@/services/Company/CreateSeller';
+import { GetContactPerson } from '@/services/Company/GetcontactPerson';
+import { GetCompanyFns } from '@/services/Company/GetCompanyFns';
+
+const findFirstStringValue = (
+  source: unknown,
+  candidateKeys: string[],
+): string | undefined => {
+  if (!source || typeof source !== 'object') {
+    return undefined;
+  }
+
+  const entries = Object.entries(source as Record<string, unknown>);
+
+  for (const [key, value] of entries) {
+    if (candidateKeys.includes(key) && typeof value === 'string' && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  for (const [, value] of entries) {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const nestedValue = findFirstStringValue(item, candidateKeys);
+        if (nestedValue) {
+          return nestedValue;
+        }
+      }
+    } else if (value && typeof value === 'object') {
+      const nestedValue = findFirstStringValue(value, candidateKeys);
+      if (nestedValue) {
+        return nestedValue;
+      }
+    }
+  }
+
+  return undefined;
+};
 
 export default function useHomeCreate(
   route: NativeStackScreenProps<RootStackParamList, 'HomeCreate'>,
@@ -37,11 +74,22 @@ export default function useHomeCreate(
   const [longitude, setLongitude] = useState<string>('');
   const [showMap, setShowMap] = useState(false);
   const [keyValue, setKeyValue] = useState<string>('');
+  const [contactPersonList, setContactPersonList] = useState<DropdownOptions[]>([]);
+  const [phoneList, setPhoneList] = useState<string[]>([]);
   const validationSchema = Yup.object().shape({
+    TIN: Yup.string().trim(),
     companyName: Yup.string().trim().required('Required'),
     generalDirector: Yup.string().trim().required('Required'),
-    companyPhone: Yup.string().trim().required('Required'),
+    companyPhone: Yup.string()
+      .trim()
+      .test('company-phone-required', 'Required', value => {
+        return Boolean(value?.trim()) || phoneList.length > 0;
+      }),
     companyGroup: Yup.string().trim().required('Required'),
+    contactPerson: Yup.array()
+      .of(Yup.mixed<string | number>().required())
+      .min(1, 'Required')
+      .required('Required'),
     creditorAmount: Yup.string().trim(),
     debtorAmount: Yup.string().trim(),
     actualAddress: Yup.string().trim(),
@@ -56,11 +104,14 @@ export default function useHomeCreate(
     formState: {errors},
     getValues,
     setValue,
+    clearErrors,
   } = useForm({
     defaultValues: {
+      TIN: '',
       companyName: '',
       generalDirector: '',
       companyPhone: '',
+      contactPerson: [],
       actualAddress: '',
       addressTT: '',
       localAddress: '',
@@ -72,6 +123,10 @@ export default function useHomeCreate(
     mode: 'onSubmit',
     resolver: yupResolver(validationSchema),
   });
+  const tinValue = useWatch({
+    control,
+    name: 'TIN',
+  });
 
   useEffect(() => {
     if (item) {
@@ -79,6 +134,11 @@ export default function useHomeCreate(
       setValue('companyName', anyItem.name ?? '');
       setValue('generalDirector', anyItem.ceo ?? '');
       setValue('companyPhone', anyItem.phones?.[0] ?? '');
+      setPhoneList(anyItem.phones?.slice?.(1) ?? []);
+      setValue(
+        'contactPerson',
+        anyItem.contactPerson?.map?.((contact: {id: number}) => contact.id) ?? [],
+      );
       const companyGroupId = anyItem.companyGroup?.id ?? anyItem.companyGroupId;
       setValue('companyGroup', companyGroupId != null ? String(companyGroupId) : '');
       setValue('creditorAmount', String(item.creditorAmount ?? 0));
@@ -94,6 +154,77 @@ export default function useHomeCreate(
     setKeyValue(key);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item, setValue, key]);
+
+  useEffect(() => {
+    const normalizedTin = tinValue?.trim();
+
+    if (!isConnected || !normalizedTin || normalizedTin.length < 3) {
+      return;
+    }
+    console.log(normalizedTin);
+    const numericTin = Number(normalizedTin);
+    if (Number.isNaN(numericTin)) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      GetCompanyFns(numericTin, {
+        onSuccess: res => {
+          const responseData =
+            (res as {data?: unknown})?.data ??
+            (res as {result?: unknown})?.result ??
+            res;
+
+          const companyName = findFirstStringValue(responseData, [
+            'name',
+            'fullName',
+            'shortName',
+            'companyName',
+            'organizationName',
+            'legalName',
+          ]);
+          const directorName = findFirstStringValue(responseData, [
+            'ceo',
+            'director',
+            'directorName',
+            'manager',
+            'managerName',
+            'headName',
+            'fio',
+          ]);
+          const actualAddress = findFirstStringValue(responseData, [
+            'address',
+            'fullAddress',
+            'actualAddress',
+            'legalAddress',
+            'localAddress',
+            'registrationAddress',
+          ]);
+
+          if (companyName) {
+            setValue('companyName', companyName);
+          }
+
+          if (directorName) {
+            setValue('generalDirector', directorName);
+          }
+
+          if (actualAddress) {
+            setValue('actualAddress', actualAddress);
+            setValue('localAddress', actualAddress);
+          }
+        },
+        onUnauthorized: () => {
+          show('Unauthorized', {type: 'error'});
+        },
+        onError: (error) => {
+          show((error as Error)?.message ?? 'Failed to get company fns', {type: 'error'});
+        },
+      });
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [isConnected, setValue, tinValue, show]);
 
   // open date picker
   const onOpenDate = () => {
@@ -133,9 +264,9 @@ export default function useHomeCreate(
       onSuccess: res => {
         const {data} = res as {data: CompanyGroupParamList[]};
         const companyGroupOptions: DropdownOptions[] = data.map(
-          (item: CompanyGroupParamList) => ({
-            label: item.name,
-            value: item.id,
+          (groupItem: CompanyGroupParamList) => ({
+            label: groupItem.name,
+            value: groupItem.id,
           }),
         );
         setCompanyGroup(companyGroupOptions);
@@ -149,6 +280,32 @@ export default function useHomeCreate(
       },
     });
   }, [isConnected, show, setCompanyGroup]);
+
+  // get Contact Person
+  const getContactPerson = useCallback(async () => {
+    if (!isConnected) return;
+    await GetContactPerson({
+      onSuccess: res => {
+        const { data } = res as { data: { id: number; firstName: string; lastName: string }[] };
+        const companyOptions: any[] = data.map(
+          (contactItem: { firstName: string; lastName: string; id: number }) => ({
+            label: `${contactItem.firstName} ${contactItem.lastName}`,
+            value: contactItem.id,
+          }),
+        );
+        setContactPersonList(companyOptions as []);
+      },
+      onUnauthorized: () => {
+        show('Unauthorized', { type: 'error' });
+      },
+      onError: () => {
+        show('Failed to get company group', { type: 'error' });
+      },
+    });
+
+  }, [isConnected, show])
+
+
 
   // get location
   const onPressGetLocation = async () => {
@@ -169,24 +326,62 @@ export default function useHomeCreate(
     setShowMap(false);
   };
 
+  // create contact person
+  const onSubmitCreateContactPerson = useCallback(async () => {
+    navigation.navigate('SalesStack', {
+      screen: 'CreateContactPerson',
+    });
+  }, [navigation]);
+
+  const handlePlusClick = useCallback(() => {
+    const phoneValue = getValues().companyPhone?.trim();
+
+    if (!phoneValue) {
+      show('Please enter phone number', {type: 'error'});
+      return;
+    }
+
+    if (phoneList.includes(phoneValue)) {
+      show('Phone number already added', {type: 'error'});
+      return;
+    }
+
+    setPhoneList(prev => [...prev, phoneValue]);
+    setValue('companyPhone', '');
+    clearErrors('companyPhone');
+  }, [clearErrors, getValues, phoneList, setValue, show]);
+
+  const onRemovePhone = useCallback((phone: string) => {
+    setPhoneList(prev => prev.filter(phoneItem => phoneItem !== phone));
+  }, []);
+
+
   // create company (buyer)
   const onCreateCompany = useCallback(async () => {
     if (date === '') {
       setErrorDate('Required');
       return;
     }
+    const companyPhoneValue = getValues().companyPhone?.trim();
+    const phones = companyPhoneValue
+      ? phoneList.includes(companyPhoneValue)
+        ? phoneList
+        : [...phoneList, companyPhoneValue]
+      : phoneList;
+
     const data: CreateCompanyRequest = {
       name: getValues().companyName,
       clientRegisteredDate: `${moment(new Date()).format('DD/MM/YYYY')}:23:59:00`,
       ogrnDate: `${date}:23:59:00`,
       ceo: getValues().generalDirector,
-      phones: [getValues().companyPhone],
+      phones,
       emails: [],
       typeIds: [1],
       cooperationId: 1,
       companyGroupId: Number(getValues().companyGroup),
       longitude: longitude,
       latitude: latitude,
+      contactPersonIds: (getValues().contactPerson ?? []).map(value => Number(value)),
     };
     if (Number(getValues().creditorAmount) > 0) {
       data.creditorAmount = Number(getValues().creditorAmount);
@@ -209,7 +404,7 @@ export default function useHomeCreate(
 
     // if offline, save to draft
     if (!isConnected) {
-      const check = Draft.find(item => item.name === data.name);
+      const check = Draft.find(draftItem => draftItem.name === data.name);
       if(check) {
         show('Company already exists in draft', {type: 'error'});
         return;
@@ -259,12 +454,14 @@ export default function useHomeCreate(
     isConnected,
     item,
     key,
+    phoneList,
   ]);
 
   useFocusEffect(
     useCallback(() => {
       getCompanyGroup();
-    }, [getCompanyGroup]),
+      getContactPerson();
+    }, [getCompanyGroup, getContactPerson]),
   );
 
   useRefetchOnReconnect(getCompanyGroup);
@@ -292,7 +489,12 @@ export default function useHomeCreate(
     setLongitude,
     onCreateCompany,
     errorDate,
-    keyValue
+    keyValue,
+    onSubmitCreateContactPerson,
+    contactPersonList,
+    handlePlusClick,
+    phoneList,
+    onRemovePhone,
   };
 }
 

@@ -11,6 +11,8 @@ import useNetworkStore from '@/zustland/networkStore';
 import {GetAllCompanies} from '@/services/Company/AllCompanies';
 import { DeleteCompany } from '@/services/Company/DeleteCompany';
 import { useToast } from '@/component/toast/ToastProvider';
+import { GetLine } from '@/services/Company/GetLine';
+import { GetByLines } from '@/services/Company/GetByLines';
 
 export default function useHome() {
   const [loading, setLoading] = useState(false);
@@ -28,6 +30,9 @@ export default function useHome() {
   const getAllCompaniesRef = useRef<() => void>(() => {});
   const [allCompanies, setAllCompanies] = useState<AllCompanyProps[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [lineList, setLineList] = useState<any[]>([]);
+  const [selectedLineValues, setSelectedLineValues] = useState<Array<number>>([]);
+
   // get profile //
   const getProfile = useCallback(() => {
     if (isConnected) {
@@ -166,8 +171,6 @@ export default function useHome() {
   }, [page, isConnected]);
 
 
-
-
   // load more data //
   const loadMore = useCallback(() => {
     if (loading || loadingMore || !hasNextPage) {
@@ -217,6 +220,7 @@ export default function useHome() {
   // submit refresh //
   const onSubmitRefresh = () => {
     setRefreshing(true);
+    setLoading(true);
     getAllCompanies();
   };
 
@@ -233,11 +237,69 @@ export default function useHome() {
     navigation.navigate('Detail', {item: company});
   };
 
+  // get Line
+  const getLine = useCallback(async () => {
+    if (!isConnected) return;
+    await GetLine({
+      onSuccess: res => {
+        const { data } = res as { data: { id: number; name: string}[] };
+        const companyOptions: any[] = data.map(
+          (item: { name: string; id: number }) => ({
+            label: item.name,
+            value: item.id,
+          }),
+        );
+        setLineList(companyOptions as []);
+      },
+      onUnauthorized: () => {
+        show('Unauthorized', { type: 'error' });
+      },
+      onError: () => {
+        show('Failed to get company group', { type: 'error' });
+      },
+    });
+
+  }, [isConnected, show])
+
+
+  // submit filter //
+  const onSubmitFilter = async() => {
+    setLoading(true);
+    if (!isConnected) {
+      setLoading(false);
+      return;
+    }
+    await GetByLines(selectedLineValues,{
+      onSuccess: res => {
+        const { data } = res as { data: AllCompanyProps[] };
+        setAllCompanies(data);
+        setLoading(false);
+      },
+      onUnauthorized: () => {
+        show('Unauthorized', { type: 'error' });
+        setLoading(true);
+      },
+      onError: (error) => {
+        show((error as Error).message, { type: 'error' });
+        setLoading(true);
+      },
+    });
+  };
+
+  // submit reset //
+  const onSubmitReset = () => {
+    setSelectedLineValues([]);
+    getAllCompanies();
+  };
+
+
+
   useFocusEffect(
     useCallback(() => {
       getProfile();
       getAllCompanies();
-    }, [getProfile, getAllCompanies]),
+      getLine();
+    }, [getProfile, getAllCompanies, getLine]),
   );
 
 
@@ -269,6 +331,11 @@ export default function useHome() {
     onSubmitDetail,
     onSubmitRefresh,
     refreshing,
-    onSubmitSearch
+    onSubmitSearch,
+    lineList,
+    onSubmitFilter,
+    selectedLineValues,
+    setSelectedLineValues,
+    onSubmitReset,
   };
 }

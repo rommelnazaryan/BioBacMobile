@@ -89,7 +89,7 @@ const DropdownComponent = ({
           styles.dropdown,
           {
             borderColor: _isFocused ? errorMessage ? Colors.red : Colors.blue : Colors.gray_200,
-            backgroundColor: errorMessage ? Colors.red_100 : Colors.white,
+            backgroundColor: disable ? Colors.gray_200 : errorMessage ? Colors.red_100 : Colors.white,
           },
           style,
         ]}
@@ -104,6 +104,7 @@ const DropdownComponent = ({
         maxHeight={300}
         labelField="label"
         valueField="value"
+        dropdownPosition="top"
         placeholder={isEmpty ? t('common.noData') : 'Select...'}
         searchPlaceholder="Search..."
         value={selectedValue ?? null}

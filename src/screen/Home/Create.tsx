@@ -1,4 +1,4 @@
-import {View, StyleSheet, ScrollView} from 'react-native';
+import {View, StyleSheet, ScrollView, TouchableOpacity, Text, KeyboardAvoidingView} from 'react-native';
 import React from 'react';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {Colors} from '@/theme';
@@ -12,9 +12,10 @@ import Calender from '@/component/calender';
 import TouchableView from '@/component/view/TouchableView';
 import DateIcon from '@/component/icons/DateIcon';
 import moment from 'moment';
-import DropdownComponent from '@/component/dropdown';
+import DropdownComponent, {DropdownMultiSelect} from '@/component/dropdown';
 import MapModal from '@/component/Modal/MapModal';
 import type {RootStackParamList} from '@/navigation/types';
+import { AntDesign } from '@/component/icons/VectorIcon';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'HomeCreate'>;
 
@@ -42,15 +43,36 @@ export default function HomeCreate(route: Props) {
     setLongitude,
     onCreateCompany,
     errorDate,
-    keyValue
-  } = useHomeCreate(route);
+    keyValue,
+    onSubmitCreateContactPerson,
+    contactPersonList,
+    handlePlusClick,
+    phoneList,
+    onRemovePhone,
 
+  } = useHomeCreate(route);
+  const isEditMode = keyValue === 'edit';
+  const keyboardVerticalOffset = 30;
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={keyboardVerticalOffset} style={styles.container}>
       <CustomHeader title={'Company Information'} showBack={true} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollView}>
+        <TextView title="Taxpayer Identification Numbe (TIN)" style={styles.marginTop} />
+        <Controller
+          control={control}
+          name="TIN"
+          render={({field: {onChange, value}}) => (
+            <TextInput
+              placeholder="..."
+              containerStyle={styles.marginTop}
+              inputSize="medium"
+              onChangeText={onChange}
+              value={value}
+            />
+          )}
+        />
         <TextView title="Company Name" style={styles.marginTop} />
         <Controller
           control={control}
@@ -63,6 +85,7 @@ export default function HomeCreate(route: Props) {
               onChangeText={onChange}
               value={value}
               errorMessage={errors.companyName?.message}
+              edit={!isEditMode}
             />
           )}
         />
@@ -79,6 +102,7 @@ export default function HomeCreate(route: Props) {
               onChangeText={onChange}
               value={value}
               errorMessage={errors.generalDirector?.message}
+              edit={!isEditMode}
             />
           )}
         />
@@ -88,6 +112,7 @@ export default function HomeCreate(route: Props) {
           control={control}
           name="companyPhone"
           render={({field: {onChange, value}}) => (
+            <>
             <TextInput
               placeholder="..."
               containerStyle={styles.marginTop}
@@ -96,9 +121,46 @@ export default function HomeCreate(route: Props) {
               keyboard="numeric"
               value={value}
               errorMessage={errors.companyPhone?.message}
+              plusIcon={true}
+              handlePlusClick={handlePlusClick}
+            />
+            {phoneList.length > 0 && (
+              <View style={styles.phoneListContainer}>
+                  {phoneList.map(phone => (
+                      <View key={phone} style={styles.phoneChip}>
+                          <Text style={styles.phoneChipText}>{phone}</Text>
+                          <TouchableOpacity onPress={() => onRemovePhone(phone)}>
+                              <AntDesign name="close" size={18} color={Colors.red} />
+                          </TouchableOpacity>
+                      </View>
+                  ))}
+              </View>
+          )}
+          </>
+          )}
+        />
+
+      <TextView title="Contact Person" style={styles.marginTop} />
+        <Controller
+          control={control}
+          name="contactPerson"
+          render={({field: {onChange, value: accountValue}}) => (
+            <DropdownMultiSelect
+              style={styles.marginTop}
+              data={isConnected ? contactPersonList : []}
+              value={accountValue}
+              onChange={onChange}
+              errorMessage={errors.contactPerson?.message}
             />
           )}
         />
+        <Botton
+          title={'Add More'}
+          onHandler={onSubmitCreateContactPerson}
+          style={styles.contactPersonButton}
+          textStyle={styles.contactPersonButtonText}
+        />
+
 
         <TextView title="Actual Address" style={styles.marginTop} />
         <Controller
@@ -112,6 +174,7 @@ export default function HomeCreate(route: Props) {
               onChangeText={onChange}
               value={value}
               errorMessage={errors.actualAddress?.message}
+              edit={!isEditMode}
             />
           )}
         />
@@ -128,6 +191,7 @@ export default function HomeCreate(route: Props) {
               onChangeText={onChange}
               value={value}
               errorMessage={errors.addressTT?.message}
+              edit={!isEditMode}
             />
           )}
         />
@@ -144,6 +208,7 @@ export default function HomeCreate(route: Props) {
               onChangeText={onChange}
               value={value}
               errorMessage={errors.localAddress?.message}
+              edit={!isEditMode}
             />
           )}
         />
@@ -160,6 +225,7 @@ export default function HomeCreate(route: Props) {
               onChangeText={onChange}
               value={value}
               errorMessage={errors.warehouseAddress?.message}
+              edit={!isEditMode}
             />
           )}
         />
@@ -175,6 +241,7 @@ export default function HomeCreate(route: Props) {
               value={accountValue}
               onClick={({value}) => onChange(value)}
               errorMessage={errors.companyGroup?.message}
+              disable={isEditMode}
             />
           )}
         />
@@ -190,6 +257,7 @@ export default function HomeCreate(route: Props) {
               onChangeText={onChange}
               keyboard="numeric"
               value={value}
+              edit={!isEditMode}
             />
           )}
         />
@@ -205,6 +273,7 @@ export default function HomeCreate(route: Props) {
               onChangeText={onChange}
               keyboard="numeric"
               value={value}
+              edit={!isEditMode}
             />
           )}
         />
@@ -218,6 +287,7 @@ export default function HomeCreate(route: Props) {
           onBlur={showDate}
           icon={<DateIcon size={24} color={Colors.black} />}
           errorMessage={errorDate}
+          disabled={isEditMode}
         />
 
         <Calender
@@ -239,6 +309,7 @@ export default function HomeCreate(route: Props) {
           onChangeText={text => setLatitude(text)}
           keyboard="numeric"
           value={latitude}
+          edit={!isEditMode}
         />
 
         <TextView title="Longitude" style={styles.marginTop} />
@@ -249,6 +320,7 @@ export default function HomeCreate(route: Props) {
           onChangeText={text => setLongitude(text)}
           keyboard="numeric"
           value={longitude}
+          edit={!isEditMode}
         />
 
         <Botton
@@ -256,6 +328,7 @@ export default function HomeCreate(route: Props) {
           onHandler={onPressGetLocation}
           style={styles.locationButton}
           textStyle={styles.locationButtonText}
+          disabled={isEditMode}
         />
         <Botton
           title={keyValue === 'edit' ? 'Update' : 'Create'}
@@ -268,7 +341,7 @@ export default function HomeCreate(route: Props) {
           onSubmit={(lat, lng) => onSubmitMap(lat, lng)}
         />
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -305,6 +378,41 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1,
+  },
+  contactPersonButton: {
+    width: '35%',
+    backgroundColor: Colors.background,
+    borderColor: Colors.gray_300,
+    borderWidth: 1,
+    marginTop: '5%',
+    alignSelf: 'flex-end',
+    marginRight: '4%',
+  },
+  contactPersonButtonText: {
+    color: Colors.gray_400,
+  },
+  phoneListContainer: {
+    width: '93%',
+    alignSelf: 'center',
+    marginTop: 10,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  phoneChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.gray_200,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  phoneChipText: {
+    color: Colors.black,
   },
 });
 

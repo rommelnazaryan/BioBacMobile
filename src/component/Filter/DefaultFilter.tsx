@@ -1,48 +1,38 @@
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, StyleProp, ViewStyle} from 'react-native';
 import React from 'react';
 import BaseModal from '../Modal/BaseModal';
-import TextView from '../view/TextView';
-import Dropdown from '../dropdown';
 import {Colors} from '@/theme';
-import TextInput from '../input/TextInput';
 import Botton from '../button';
 
 export default function DefaultFilter({
   isVisible,
   onClose,
+  children,
+  containerStyle,
+  onSubmit,
+  onSubmitReset,
 }: {
   isVisible: boolean;
   onClose: () => void;
+  children: React.ReactNode;
+  containerStyle?: StyleProp<ViewStyle>;
+  onSubmit: () => void;
+  onSubmitReset: () => void;
 }) {
 
-const firstDropdownData = [
-  {label: 'Name', value: '1'},
-  {label: 'Creditor amount', value: '2'},
-  {label: 'Debtor amount', value: '3'},
-  {label: 'Phone number', value: 'phoneNumber'},
-  {label: 'Email', value: '5'},
-  {label: 'Created at', value: '6'},
-];
+
 
 
   return (
     <BaseModal isVisible={isVisible} onClose={onClose} variant="bottomSheet">
-      <View style={styles.container}>
+      <View style={[styles.container,containerStyle]}>
         <View style={styles.handle} />
-        <TextView title="Field"/>
-        <Dropdown data={firstDropdownData} onClick={() => {}} style={styles.marginField} />
-        <TextView title="Operator" style={styles.marginTop}/>
-        <Dropdown data={[]} onClick={() => {}} style={styles.marginField} />
-        <TextView title="Longitude" style={styles.marginTop} />
-        <TextInput
-          containerStyle={styles.marginField}
-          placeholder="..."
-          inputSize="medium"
-          onChangeText={(text) => console.log(text)}
-          keyboard="numeric"
-          value={''}
-        />
-        <Botton title="Apply" onHandler={() => {}} style={styles.button} />
+         {children}
+         <View style={styles.buttonContainer}>
+         <Botton title="Reset" onHandler={onSubmitReset} style={[styles.button, styles.resetButton]} textStyle={styles.resetButtonText}/>
+         <Botton title="Apply" onHandler={onSubmit} style={styles.button} />
+         </View>
+
       </View>
     </BaseModal>
   );
@@ -51,7 +41,6 @@ const firstDropdownData = [
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    minHeight: 500,
     backgroundColor: Colors.white,
     padding: 10,
     borderTopLeftRadius: 18,
@@ -64,15 +53,24 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.gray_200,
     alignSelf: 'center',
     marginBottom: 10,
-    marginTop: 6,
   },
-  marginTop: {
-    marginTop: '5%',
-  },
-  marginField: {
-    marginTop: '2%',
-  },
-  button: {
+
+  buttonContainer: {
+    width: '93%',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginTop: '10%',
   },
+  button: {
+    width: '45%',
+  },
+  resetButton:{
+    backgroundColor: Colors.white,
+    borderWidth: 2,
+    borderColor: Colors.red,
+  },
+  resetButtonText: {
+    color: Colors.red,
+  }
 });

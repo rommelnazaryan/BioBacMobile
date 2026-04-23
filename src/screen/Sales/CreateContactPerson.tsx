@@ -1,4 +1,4 @@
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
+import { View, StyleSheet, ScrollView, TouchableOpacity, Text,KeyboardAvoidingView } from 'react-native'
 import React from 'react'
 import { Colors } from '@/theme/Colors';
 import CustomHeader from '@/navigation/Header';
@@ -30,11 +30,19 @@ export default function CreateContactPerson() {
         onSelectBuyerSeller,
         errorCompany,
         companyList,
-        isConnected
+        isConnected,
+        handlePlusClick,
+        phoneList,
+        onRemovePhone,
+        handleEmailPlusClick,
+        emailList,
+        onRemoveEmail,
+        isLoading
     } = useSaleCreateContactPerson();
+    const keyboardVerticalOffset = 30;
 
     return (
-        <View style={styles.container}>
+        <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={keyboardVerticalOffset} style={styles.container}>
             <CustomHeader title={'Create Person'} showBack={true} />
             <ScrollView
                 showsVerticalScrollIndicator={false}
@@ -84,15 +92,31 @@ export default function CreateContactPerson() {
                     control={control}
                     name="phone"
                     render={({ field: { onChange, value } }) => (
-                        <TextInput
-                            placeholder="..."
-                            containerStyle={styles.marginTop}
-                            inputSize="medium"
-                            onChangeText={onChange}
-                            value={value}
-                            errorMessage={errors.phone?.message}
-                            keyboard="numeric"
-                        />
+                        <>
+                            <TextInput
+                                placeholder="..."
+                                containerStyle={styles.marginTop}
+                                inputSize="medium"
+                                onChangeText={onChange}
+                                value={value}
+                                errorMessage={errors.phone?.message}
+                                keyboard="numeric"
+                                plusIcon={true}
+                                handlePlusClick={handlePlusClick}
+                            />
+                            {phoneList.length > 0 && (
+                                <View style={styles.phoneListContainer}>
+                                    {phoneList.map(phone => (
+                                        <View key={phone} style={styles.phoneChip}>
+                                            <Text style={styles.phoneChipText}>{phone}</Text>
+                                            <TouchableOpacity onPress={() => onRemovePhone(phone)}>
+                                                <AntDesign name="close" size={18} color={Colors.red} />
+                                            </TouchableOpacity>
+                                        </View>
+                                    ))}
+                                </View>
+                            )}
+                        </>
                     )}
                 />
                 <TextView title="Contact Person Email" style={styles.marginTop} />
@@ -100,6 +124,7 @@ export default function CreateContactPerson() {
                     control={control}
                     name="email"
                     render={({ field: { onChange, value } }) => (
+                        <>
                         <TextInput
                             placeholder="..."
                             containerStyle={styles.marginTop}
@@ -107,7 +132,23 @@ export default function CreateContactPerson() {
                             onChangeText={onChange}
                             value={value}
                             errorMessage={errors.email?.message}
+                            plusIcon={true}
+                            handlePlusClick={handleEmailPlusClick}
                         />
+                             
+                             {emailList.length > 0 && (
+                                <View style={styles.phoneListContainer}>
+                                    {emailList.map(email => (
+                                        <View key={email} style={styles.phoneChip}>
+                                            <Text style={styles.phoneChipText}>{email}</Text>
+                                            <TouchableOpacity onPress={() => onRemoveEmail(email)}>
+                                                <AntDesign name="close" size={18} color={Colors.red} />
+                                            </TouchableOpacity>
+                                        </View>
+                                    ))}
+                                </View>
+                            )}
+                        </>
                     )}
                 />
                 <TextView title="Contact Person Position" style={styles.marginTop} />
@@ -122,6 +163,7 @@ export default function CreateContactPerson() {
                             onChangeText={onChange}
                             value={value}
                             errorMessage={errors.position?.message}
+                            keyboard="numeric"
                         />
                     )}
                 />
@@ -152,7 +194,7 @@ export default function CreateContactPerson() {
                                 style={styles.marginTop}
                                 data={isConnected ? companyList : []}
                                 value={value}
-                                onClick={({ value }) => onChange(value)}
+                                onClick={({ value: selectedValue }) => onChange(selectedValue)}
                                 errorMessage={errorCompany}
                             />
                             )}
@@ -187,10 +229,12 @@ export default function CreateContactPerson() {
                     title={'Create'}
                     onHandler={handleSubmit(onCreateContactPerson)}
                     style={styles.button}
+                    loading={isLoading}
+                    disabled={isLoading}
                 />
             </ScrollView>
 
-        </View>
+        </KeyboardAvoidingView>
     )
 }
 
@@ -223,5 +267,28 @@ const styles = StyleSheet.create({
         borderColor: Colors.gray,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    phoneListContainer: {
+        width: '93%',
+        alignSelf: 'center',
+        marginTop: 10,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+    },
+    phoneChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-start',
+        backgroundColor: Colors.white,
+        borderWidth: 1,
+        borderColor: Colors.gray_200,
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        gap: 8,
+    },
+    phoneChipText: {
+        color: Colors.black,
     }
 });

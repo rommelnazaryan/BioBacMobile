@@ -20,10 +20,12 @@ export default function Search( {onChangeText}: {onChangeText: (text: string) =>
 
 const styles = StyleSheet.create({
   container: {
-    width: '70%',
+    marginTop:'2%',
+    width: '90%',
     flexDirection: 'row',
     alignItems: 'center',
     minWidth: 0,
+    alignSelf: 'center',
   },
   inputContainer: {
     width: '100%',
