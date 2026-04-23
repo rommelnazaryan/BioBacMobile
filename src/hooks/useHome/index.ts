@@ -126,8 +126,8 @@ export default function useHome() {
     isConnected,
   ]);
 
-  // get seller data //
-  const getAllCompanies = useCallback(() => {
+  // get  company data //
+  const getAllCompanies = useCallback((search?: string) => {
     if (!isConnected) {
       setLoading(false);
       return;
@@ -137,7 +137,7 @@ export default function useHome() {
     } else {
       setLoadingMore(true);
     }
-    return GetAllCompanies(page, 0, {
+    return GetAllCompanies(page, 0, search, {
       onSuccess: payload => {
         const {data} = payload as {data: AllCompanyProps[]};
         const {metadata} = payload as unknown as {
@@ -241,6 +241,14 @@ export default function useHome() {
   );
 
 
+  // submit search //
+  const onSubmitSearch = (text: string) => {
+    setPage(0);
+    getAllCompanies(text);
+  };
+
+
+
   useEffect(() => {
     getAllCompaniesRef.current = getAllCompanies;
   }, [getAllCompanies]);
@@ -260,6 +268,7 @@ export default function useHome() {
     visible,
     onSubmitDetail,
     onSubmitRefresh,
-    refreshing
+    refreshing,
+    onSubmitSearch
   };
 }

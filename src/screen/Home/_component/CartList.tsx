@@ -4,7 +4,6 @@ import {AllCompanyProps} from '@/types';
 import {Colors, FontFamily, FontSizes} from '@/theme';
 import {t} from '@/locales';
 export default function CartList({element, onCallback}: {element: AllCompanyProps, onCallback: (element: AllCompanyProps) => void}) {
-  const createdAtDate = element.createdAt.split(':')[0];
   const backgroundColor = element.deleted ? Colors.red_300 : Colors.white;
   return (
     <TouchableOpacity
@@ -14,6 +13,10 @@ export default function CartList({element, onCallback}: {element: AllCompanyProp
         styles.container,
         { backgroundColor: backgroundColor}
       ]}>
+              <View style={styles.row}>
+        <Text style={styles.title}>Counterparty INN:</Text>
+        <Text style={styles.value}>{element.detail.inn}</Text>
+      </View>
       <View style={styles.row}>
         <Text style={styles.title}>{t('common.name')}:</Text>
         <Text style={styles.value}>{element.name}</Text>
@@ -23,13 +26,17 @@ export default function CartList({element, onCallback}: {element: AllCompanyProp
         <Text style={[styles.value,styles.textSize]}>{element.ceo}</Text>
       </View>
       <View style={styles.row}>
+        <Text style={styles.title}>Balance:</Text>
+        <Text style={[styles.value,styles.textSize]}>{element.balance}</Text>
+      </View>
+      {/* <View style={styles.row}>
         <Text style={styles.title}>{t('common.creditorAmount')}:</Text>
         <Text style={styles.value}>{element.creditorAmount}</Text>
       </View>
       <View style={styles.row}>
         <Text style={styles.title}>{t('common.debtorAmount')}:</Text>
         <Text style={styles.value}>{element.debtorAmount}</Text>
-      </View>
+      </View> */}
       <View style={styles.row}>
         <Text style={styles.title}>{t('common.phoneNumber')}:</Text>
         <Text style={styles.value}>{element.phones[0]}</Text>
@@ -42,7 +49,7 @@ export default function CartList({element, onCallback}: {element: AllCompanyProp
         <Text style={styles.title}>{t('Actual Address')}:</Text>
         <Text style={[styles.value,styles.textSize]}>{element.actualAddress}</Text>
       </View>
-      <View style={styles.row}>
+      {/* <View style={styles.row}>
         <Text style={styles.title}>{t('Point of Sale Address')}:</Text>
         <Text style={[styles.value,styles.textSize]}>{element.addressTT}</Text>
       </View>
@@ -57,7 +64,7 @@ export default function CartList({element, onCallback}: {element: AllCompanyProp
       <View style={styles.row}>
         <Text style={styles.title}>{t('common.createdAt')}:</Text>
         <Text style={styles.value}>{createdAtDate}</Text>
-      </View>
+      </View> */}
     </TouchableOpacity>
   );
 }

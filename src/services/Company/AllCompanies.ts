@@ -11,6 +11,7 @@ export type AllCompanyResult<T> = StatusResult<T>;
 export const GetAllCompanies = async <T extends object>(
   page: number = 0,
   value: number = 0,
+  search?: string,
   result: AllCompanyCallbacks<T> = {},
 ): Promise<AllCompanyResult<T>> => {
   const data =
@@ -22,7 +23,7 @@ export const GetAllCompanies = async <T extends object>(
   return requestWithStatus<T>({
     config: {
       method: 'POST',
-      url: `${endpoints.GetAllCompanies}?sortBy=id&sortDir=DESC&page=${page}&size=20`,
+      url: `${endpoints.GetAllCompanies}?sortBy=id&sortDir=DESC&page=${page}&size=20${search ? `&search=${search}` : ''}`,
       data
     },
     callbacks: result,

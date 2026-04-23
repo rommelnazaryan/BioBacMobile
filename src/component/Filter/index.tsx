@@ -1,4 +1,4 @@
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, StyleProp, ViewStyle} from 'react-native';
 import React, {useState} from 'react';
 import { Colors } from '@/theme';
 import Button from '../button';
@@ -10,14 +10,16 @@ import DefaultFilter from './DefaultFilter';
 type Props = {
   onHandlerCreate?: () => void;
   filter?: boolean;
+  containerStyle?: StyleProp<ViewStyle>;
+  buttonStyle?: StyleProp<ViewStyle>;
 }
 
 
-export default function Filter({onHandlerCreate, filter}: Props) {
+export default function Filter({onHandlerCreate, filter,containerStyle,buttonStyle}: Props) {
   const [visible, setVisible] = useState(false);
   return (
     <>
-      <View style={styles.buttonContainer}>
+      <View style={[styles.buttonContainer,containerStyle]}>
         {filter && (
           <Button
             title={t('common.Filter')}
@@ -31,7 +33,7 @@ export default function Filter({onHandlerCreate, filter}: Props) {
           <Button
             titleIcon={<AntDesign name="plus" size={24} color={Colors.white} />}
             onHandler={onHandlerCreate}
-            style={styles.button}
+            style={[styles.button,buttonStyle]}
           />
         )}
       </View>
@@ -54,9 +56,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'flex-end',
-        marginBottom: 10,
         gap: 10,
-        width: '93%',
-        alignSelf: 'center',
+        flexShrink: 0,
       },
 });

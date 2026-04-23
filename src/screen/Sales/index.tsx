@@ -26,7 +26,7 @@ export default function Sales() {
     useSale();
   return (
     <View style={styles.container}>
-      <CustomHeader title="All Companies" />
+      <CustomHeader title="Sales" />
       <Filter onHandlerCreate={onSubmitCreate} />
       {loading ?
         <Activity style={styles.activityIndicator} />

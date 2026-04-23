@@ -127,7 +127,6 @@ const TextInputComponent = (props: Props) => {
             styles.container,
             props.containerStyle,
             sizeStyle,
-
             borderStyle,
             backgroundColor,
           ]}>

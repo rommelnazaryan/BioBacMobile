@@ -34,7 +34,6 @@ export default function useSplash() {
   useEffect(() => {
     setTimeout(() => {
       if (isLoggedIn) {
-        console.log('isLoggedIn', isLoggedIn);
         if (isConnected) {
           getAllPermissions();
           return;

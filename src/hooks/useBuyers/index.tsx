@@ -31,7 +31,7 @@ export default function useBuyers(route: Props) {
 
 
 
-  // get seller data //
+  // get bayer data //
   const getAllCompanies = useCallback(() => {
     if (!isConnected) {
       setLoading(false);

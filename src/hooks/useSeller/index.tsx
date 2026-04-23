@@ -76,13 +76,13 @@ export default function useSeller(route: Props) {
       onUnauthorized: () => {
         onSubmitRefreshToken();
       },
-      onError: (error, status) => {
+      onError: (error) => {
         setLoading(false);
         setLoadingMore(false);
-        console.log('GetAllCompanies error', {status, error});
+        show('Failed to get companies', {type: 'error'});
       },
     });
-  }, [page, onSubmitRefreshToken, isConnected]);
+  }, [page, onSubmitRefreshToken, isConnected, show]);
 
   // load more data //
   const loadMore = useCallback(() => {

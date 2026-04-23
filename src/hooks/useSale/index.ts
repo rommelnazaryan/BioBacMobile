@@ -71,17 +71,17 @@ export default function useSale() {
 
   // submit create buyer //
   const onSubmitCreate = () => {
-    navigation.navigate('HomeCreate', {
-      item: undefined,
-      key: 'create',
+    navigation.navigate('SalesStack', {
+      screen: 'SalesCreate',
+      params: {item: undefined, key: 'create'},
     });
   };
 
   // submit edit //
-  const onSubmitEdit = (company: GetSaleSuccessResponse) => {
-    navigation.navigate('HomeCreate', {
-      item: company,
-      key: 'edit',
+  const onSubmitEdit = (item: GetSaleSuccessResponse) => {
+    navigation.navigate('SalesStack', {
+      screen: 'CreateSale',
+      params: {item: item, key: 'edit'},
     });
   };
 

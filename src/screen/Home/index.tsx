@@ -12,6 +12,7 @@ import CartList from '@/screen/Home/_component/CartList';
 import CustomHeader from '@/navigation/Header';
 import { DefaultModal } from '@/component/Modal';
 import Filter from '@/component/Filter';
+import Search from '@/component/Search';
 
 export default function Home() {
   const {
@@ -30,12 +31,16 @@ export default function Home() {
     onSubmitCreate,
     onSubmitRefresh,
     refreshing,
+    onSubmitSearch,
   } =
     useHome();
   return (
     <View style={styles.container}>
       <CustomHeader title="All Companies" />
-      <Filter onHandlerCreate={onSubmitCreate} />
+      <View style={styles.containerWrapper}>
+        <Search onChangeText={onSubmitSearch} />
+        <Filter onHandlerCreate={onSubmitCreate} containerStyle={styles.filterContainer} buttonStyle={styles.buttonStyle} />
+      </View>
       {loading ?
         <Activity style={styles.activityIndicator} />
         : allCompanies.length > 0 ?
@@ -125,4 +130,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  filterContainer: {
+    width: '15%',
+    alignSelf: 'flex-end',
+  },
+  buttonStyle: {
+    width: '100%',
+  },
+  containerWrapper:{
+    width: '93%',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  }
 });

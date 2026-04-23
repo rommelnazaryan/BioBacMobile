@@ -51,7 +51,6 @@ export default function useDraft() {
         setLoading(false);
       },
       onError: (error) => {
-        console.log('error', error);
         show((error as Error)?.message ?? 'Failed to create company', {
           type: 'error',
         });
