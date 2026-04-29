@@ -59,7 +59,7 @@ export default function Buyers(route: Props) {
                 loadingMore ? (
                   <Activity style={styles.footerLoading} />
                 ) : !hasNextPage && seller.length > 0 ? (
-                  <Text style={styles.footerText}>No more data</Text>
+                  <Text style={styles.footerText}>{t('common.noMoreData')}</Text>
                 ) : null
               }
               renderItem={({item: company}: {item: AllCompanyProps}) => (
@@ -93,8 +93,8 @@ export default function Buyers(route: Props) {
         isVisible={visible}
         onClose={onSubmitCancel}
         onConfirm={onSubmitConfirm}
-        title="Delete Company"
-        description="Are you sure you want to delete this company?"
+        title={t('common.deleteCompanyTitle')}
+        description={t('common.deleteCompanyDescription')}
       />
     </View>
   );

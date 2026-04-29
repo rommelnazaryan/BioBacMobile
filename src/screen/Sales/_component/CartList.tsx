@@ -15,31 +15,31 @@ export default function CartList({element}: {element: GetSaleSuccessResponse}) {
         <Text style={styles.value}>{element.id}</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.title}>Total amount:</Text>
+        <Text style={styles.title}>{t('common.totalAmount')}:</Text>
         <Text style={[styles.value,styles.textSize]}>{element.totalAmount}</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.title}>Creator:</Text>
+        <Text style={styles.title}>{t('common.creator')}:</Text>
         <Text style={styles.value}>{element.creatorName}</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.title}>Name:</Text>
+        <Text style={styles.title}>{t('common.name')}:</Text>
         <Text style={styles.value}>{element.dealName}</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.title}>Counterparty:</Text>
+        <Text style={styles.title}>{t('common.counterparty')}:</Text>
         <Text style={styles.value}>{element.company?.name}</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.title}>Our Company:</Text>
+        <Text style={styles.title}>{t('common.ourCompany')}:</Text>
         <Text style={styles.value}>{element.ourCompany?.name}</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.title}>Order date:</Text>
+        <Text style={styles.title}>{t('common.orderDate')}:</Text>
         <Text style={[styles.value,styles.textSize]}>{element.orderDate}</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.title}>Sale date:</Text>
+        <Text style={styles.title}>{t('common.saleDate')}:</Text>
         <Text style={[styles.value,styles.textSize]}>{element.saleDate}</Text>
       </View>
 

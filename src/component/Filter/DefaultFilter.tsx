@@ -3,6 +3,7 @@ import React from 'react';
 import BaseModal from '../Modal/BaseModal';
 import {Colors} from '@/theme';
 import Botton from '../button';
+import {t} from '@/locales';
 
 export default function DefaultFilter({
   isVisible,
@@ -29,8 +30,8 @@ export default function DefaultFilter({
         <View style={styles.handle} />
          {children}
          <View style={styles.buttonContainer}>
-         <Botton title="Reset" onHandler={onSubmitReset} style={[styles.button, styles.resetButton]} textStyle={styles.resetButtonText}/>
-         <Botton title="Apply" onHandler={onSubmit} style={styles.button} />
+         <Botton title={t('common.reset')} onHandler={onSubmitReset} style={[styles.button, styles.resetButton]} textStyle={styles.resetButtonText}/>
+         <Botton title={t('common.apply')} onHandler={onSubmit} style={styles.button} />
          </View>
 
       </View>

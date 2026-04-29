@@ -16,6 +16,8 @@ import DropdownComponent from '@/component/dropdown';
 import type { DropdownOptions, ReturnProductParamList } from '@/navigation/types';
 import { AntDesign } from '@/component/icons/VectorIcon';
 import DeleteIcon from 'react-native-vector-icons/Ionicons';
+import { t } from '@/locales';
+import { formatted } from '@/helper/Regx';
 
 type Props = NativeStackScreenProps<ReturnProductParamList, 'ReturnProductCreate'>;
 
@@ -23,7 +25,6 @@ export default function BuyerCreate(route: Props) {
   const {
     control,
     handleSubmit,
-    errors,
     onOpenDate,
     onclearDate,
     onCloseDate,
@@ -39,9 +40,6 @@ export default function BuyerCreate(route: Props) {
     onChangeItem,
     onDeleteItem,
     onSubmitAddItem,
-    companyList,
-    warehousesList,
-    onSubmitGetProduct,
     onSubmitGetSaleLookup,
     productList,
     saleList,
@@ -49,47 +47,23 @@ export default function BuyerCreate(route: Props) {
     setProductLable
   } = useReturnProductCreate(route);
 
+  const totalPrice = items.reduce((sum, currentItem) => {
+    const quantity = Number(currentItem.quantity) || 0;
+    const returnPrice = Number(currentItem.returnPrice) || 0;
+
+    return sum + quantity * returnPrice;
+  }, 0);
 
   const keyboardVerticalOffset = 30;
   return (
     <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={keyboardVerticalOffset} style={styles.container}>
-      <CustomHeader title={'Return Products Information'} showBack={true} />
+      <CustomHeader title={t('common.returnProductsInformation')} showBack={true} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        stickyHeaderIndices={[6]}
         contentContainerStyle={styles.scrollView}>
-        <TextView title="Company" style={styles.marginTop} />
-        <Controller
-          control={control}
-          name="Company"
-          render={({ field: { onChange, value: accountValue } }) => (
-            <DropdownComponent
-              style={styles.marginTop}
-              data={!isConnected ? [] : companyList as DropdownOptions[]}
-              value={+accountValue}
-              onClick={({ value }) => {
-                onSubmitGetProduct(value)
-                onChange(value)
-              }}
-              errorMessage={errors.Company?.message}
-            />
-          )}
-        />
-        <TextView title="Warehouse" style={styles.marginTop} />
-        <Controller
-          control={control}
-          name="Warehouse"
-          render={({ field: { onChange, value: accountValue } }) => (
-            <DropdownComponent
-              style={styles.marginTop}
-              data={!isConnected ? [] : warehousesList as DropdownOptions[]}
-              value={+accountValue}
-              onClick={({ value }) => onChange(value)}
-              errorMessage={errors.Warehouse?.message}
-            />
-          )}
-        />
-        <TextView title="Return Date" style={styles.marginTop} />
+        <TextView title={t('common.returnDate')} style={styles.marginTop} />
         <TouchableView
           title={date}
           style={styles.marginTop}
@@ -109,7 +83,7 @@ export default function BuyerCreate(route: Props) {
               : undefined
           }
         />
-        <TextView title="Comment" style={styles.marginTop} />
+        <TextView title={t('common.comment')} style={styles.marginTop} />
         <Controller
           control={control}
           name="Comment"
@@ -124,74 +98,85 @@ export default function BuyerCreate(route: Props) {
           )}
         />
         <View style={styles.addItemContainer}>
-          <Text style={styles.addItemText} >Items</Text>
+          <Text style={styles.addItemText} >{t('common.items')}</Text>
           <Botton
-            title={'Add Item'}
+            title={t('common.addItem')}
             onHandler={onSubmitAddItem}
-            style={styles.addItemButton}
+            style={[styles.addItemButton]}
             icon={<AntDesign name="plus" size={24} color={Colors.gray_400} />}
             textStyle={styles.addItemButtonText}
           />
         </View>
+        <View style={styles.stickyTotalContainer}>
+          <TextView title={t('common.totalPrice')} style={styles.stickyTotalLabel} />
+          <Text style={styles.totalPriceText}>{`${formatted(totalPrice)},00 руб.`}</Text>
+        </View>
         {items.map((item, index) => (
-
           <View key={item.id} style={styles.addItemListContainer}>
             {items.length > 1 ? (
               <TouchableOpacity
                 style={styles.deleteItemButton}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 onPress={() => onDeleteItem(index)}>
-                <DeleteIcon name="trash-outline" size={24} color={Colors.red} />
+                <DeleteIcon name="close" size={24} color={Colors.red} />
               </TouchableOpacity>
             ) : null}
-            <TextView title="Product" />
-            <DropdownComponent
-              style={styles.marginTop}
-              data={!isConnected ? [] : productList as DropdownOptions[]}
-              value={item.productId}
-              onClick={({ value, label }) => {
-                setProductLable(label)
-                onSubmitGetSaleLookup(productId)
-                onChangeItem(index, 'productId', value)
-              }}
-              errorMessage={itemErrors[item.id as number]?.productId ?? ''}
-            />
-            <TextView title="Quantity" style={styles.marginTop} />
-            <TextInput
-              containerStyle={[styles.marginTop,]}
-              inputStyle={styles.textInput}
-              placeholder="..."
-              inputSize="medium"
-              onChangeText={value => onChangeItem(index, 'quantity', +value)}
-              keyboard="numeric"
-              value={String(item.quantity ?? '')}
-            />
-            <TextView title="Return Price" style={styles.marginTop} />
-            <TextInput
-              containerStyle={styles.marginTop}
-              inputStyle={styles.textInput}
-              placeholder="..."
-              inputSize="medium"
-              onChangeText={value => onChangeItem(index, 'returnPrice', +value)}
-              keyboard="numeric"
-              value={String(item.returnPrice ?? '')}
-            />
-            <TextView title="Sale" style={styles.marginTop} />
-            <DropdownComponent
-              style={styles.marginTop}
-              data={!isConnected ? [] : saleList as DropdownOptions[]}
-              value={item.sale}
-              onClick={({ value, label }) => onChangeItem(index, 'sale', +value, label)}
-              disable={false}
-            />
+            <View style={styles.itemHeaderRow}>
+              <Text style={styles.text}>{t('common.product')}</Text>
+              <Text style={styles.text}>{t('common.quantity')}</Text>
+              <Text style={styles.text}>{t('common.returnPrice')}</Text>
+              <Text style={styles.text}>{t('common.sale')}</Text>
+            </View>
+
+            <View style={styles.itemFieldsRow}>
+              <View style={styles.productFieldContainer}>
+                <DropdownComponent
+                  data={!isConnected ? [] : productList as DropdownOptions[]}
+                  value={item.productId}
+                  onClick={({ value, label }) => {
+                    setProductLable(label)
+                    onSubmitGetSaleLookup(productId)
+                    onChangeItem(index, 'productId', value)
+                  }}
+                  errorMessage={itemErrors[item.id as number]?.productId ?? ''}
+                />
+              </View>
+              <View style={styles.compactFieldContainer}>
+                <TextInput
+                  inputStyle={[styles.textInput]}
+                  placeholder="..."
+                  inputSize="medium"
+                  onChangeText={value => onChangeItem(index, 'quantity', +value)}
+                  keyboard="numeric"
+                  value={String(item.quantity ?? '')}
+                />
+              </View>
+              <View style={styles.compactFieldContainer}>
+                <TextInput
+                  inputStyle={styles.textInput}
+                  placeholder="..."
+                  inputSize="medium"
+                  onChangeText={value => onChangeItem(index, 'returnPrice', +value)}
+                  keyboard="numeric"
+                  value={String(item.returnPrice ?? '')}
+                />
+              </View>
+              <View style={styles.productFieldContainer}>
+                <DropdownComponent
+                  data={!isConnected ? [] : saleList as DropdownOptions[]}
+                  value={item.sale}
+                  onClick={({ value, label }) => onChangeItem(index, 'sale', +value, label)}
+                  disable={false}
+                />
+              </View>
+            </View>
           </View>
         ))}
+
         <Botton
-          title={keyValue === 'edit' ? 'Update' : 'Create'}
+          title={keyValue === 'edit' ? t('common.update') : t('common.create')}
           onHandler={handleSubmit(onCreateCompany)}
           style={styles.button}
         />
-
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -215,46 +200,84 @@ const styles = StyleSheet.create({
 
   addItemContainer: {
     marginTop: '5%',
-    width: '90%',
+    width: '95%',
     alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 12,
   },
   addItemButton: {
-    width: '32%',
+    width: '48%',
     height: 50,
     backgroundColor: Colors.background,
     borderColor: Colors.gray,
     borderWidth: 1,
+    paddingHorizontal: 10,
   },
   addItemButtonText: {
     color: Colors.gray_400,
+    fontSize: FontSizes.small,
   },
   addItemText: {
     fontFamily: FontFamily.semiBold,
     fontSize: FontSizes.large,
     color: Colors.black,
+    flex: 1,
   },
   addItemListContainer: {
     marginTop: '5%',
-    width: '93%',
+    width: '98%',
     alignSelf: 'center',
     flexDirection: 'column',
     borderWidth: 1,
     borderColor: Colors.gray_400,
     borderRadius: 10,
     paddingVertical: 15,
+    paddingHorizontal: 5,
   },
   textInput: {
     width: '98%',
   },
+  itemHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
+  },
+  itemFieldsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  productFieldContainer: {
+    width: '30%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  compactFieldContainer: {
+    width: '20%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   deleteItemButton: {
-    width: 30,
-    height: 30,
     position: 'absolute',
-    right: 10,
-    top: 10,
+    right: 0,
+    top: 0,
+    // width: '30%',
+    // height:40,
+    // alignSelf: 'flex-end',
+    // justifyContent: 'center',
+    // alignItems: 'center',
+    // backgroundColor: Colors.background,
+    // borderWidth: 2,
+    // borderColor: Colors.red_300,
+    // padding: 5,
+    // marginTop: 10,
+  },
+  deleteItemButtonText: {
+    color: Colors.red_300,
+    fontSize: FontSizes.small,
+    fontFamily: FontFamily.semiBold,
   },
   errorMessage: {
     color: Colors.red,
@@ -262,6 +285,26 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.semiBold,
     marginLeft: '5%',
     marginTop: 10,
+  },
+  text: {
+    fontFamily: FontFamily.regular,
+    fontSize: FontSizes.small,
+    color: Colors.black,
+  },
+  totalPriceText: {
+    width: '90%',
+    alignSelf: 'center',
+    fontFamily: FontFamily.semiBold,
+    fontSize: FontSizes.medium,
+    color: Colors.black,
+  },
+  stickyTotalContainer: {
+    width: '100%',
+    backgroundColor: Colors.background,
+    paddingVertical: 10,
+  },
+  stickyTotalLabel: {
+    marginTop: 0,
   },
 });
 

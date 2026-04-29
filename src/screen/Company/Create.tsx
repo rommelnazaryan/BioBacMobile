@@ -4,7 +4,7 @@ import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {Colors} from '@/theme';
 import {Controller} from 'react-hook-form';
 import TextView from '@/component/view/TextView';
-import useHomeCreate from '@/hooks/useHome/useCreate';
+import useCompanyCreate from '@/hooks/useCompany/useCreate';
 import TextInput from '@/component/input/TextInput';
 import Botton from '@/component/button';
 import CustomHeader from '@/navigation/Header';
@@ -14,10 +14,11 @@ import DateIcon from '@/component/icons/DateIcon';
 import moment from 'moment';
 import DropdownComponent, {DropdownMultiSelect} from '@/component/dropdown';
 import MapModal from '@/component/Modal/MapModal';
-import type {RootStackParamList} from '@/navigation/types';
+import type {CompanyParamList} from '@/navigation/types';
 import { AntDesign } from '@/component/icons/VectorIcon';
+import { t } from '@/locales';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'HomeCreate'>;
+type Props = NativeStackScreenProps<CompanyParamList, 'HomeCreate'>;
 
 export default function HomeCreate(route: Props) {
   const {
@@ -50,16 +51,16 @@ export default function HomeCreate(route: Props) {
     phoneList,
     onRemovePhone,
 
-  } = useHomeCreate(route);
+  } = useCompanyCreate(route);
   const isEditMode = keyValue === 'edit';
   const keyboardVerticalOffset = 30;
   return (
     <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={keyboardVerticalOffset} style={styles.container}>
-      <CustomHeader title={'Company Information'} showBack={true} />
+      <CustomHeader title={t('common.companyInformation')} showBack={true} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollView}>
-        <TextView title="Taxpayer Identification Numbe (TIN)" style={styles.marginTop} />
+        <TextView title={t('common.tin')} style={styles.marginTop} />
         <Controller
           control={control}
           name="TIN"
@@ -70,10 +71,11 @@ export default function HomeCreate(route: Props) {
               inputSize="medium"
               onChangeText={onChange}
               value={value}
+              edit={!isEditMode}
             />
           )}
         />
-        <TextView title="Company Name" style={styles.marginTop} />
+        <TextView title={t('common.companyName')} style={styles.marginTop} />
         <Controller
           control={control}
           name="companyName"
@@ -90,7 +92,7 @@ export default function HomeCreate(route: Props) {
           )}
         />
 
-        <TextView title="General Director" style={styles.marginTop} />
+        <TextView title={t('common.generalDirector')} style={styles.marginTop} />
         <Controller
           control={control}
           name="generalDirector"
@@ -107,7 +109,7 @@ export default function HomeCreate(route: Props) {
           )}
         />
 
-        <TextView title="Company Phone" style={styles.marginTop} />
+        <TextView title={t('common.companyPhone')} style={styles.marginTop} />
         <Controller
           control={control}
           name="companyPhone"
@@ -129,9 +131,11 @@ export default function HomeCreate(route: Props) {
                   {phoneList.map(phone => (
                       <View key={phone} style={styles.phoneChip}>
                           <Text style={styles.phoneChipText}>{phone}</Text>
-                          <TouchableOpacity onPress={() => onRemovePhone(phone)}>
+                          {!isEditMode && (
+                            <TouchableOpacity onPress={() => onRemovePhone(phone)}>
                               <AntDesign name="close" size={18} color={Colors.red} />
-                          </TouchableOpacity>
+                            </TouchableOpacity>
+                          )}
                       </View>
                   ))}
               </View>
@@ -140,7 +144,7 @@ export default function HomeCreate(route: Props) {
           )}
         />
 
-      <TextView title="Contact Person" style={styles.marginTop} />
+      <TextView title={t('common.contactPerson')} style={styles.marginTop} />
         <Controller
           control={control}
           name="contactPerson"
@@ -155,14 +159,14 @@ export default function HomeCreate(route: Props) {
           )}
         />
         <Botton
-          title={'Add More'}
+          title={t('common.addMore')}
           onHandler={onSubmitCreateContactPerson}
           style={styles.contactPersonButton}
           textStyle={styles.contactPersonButtonText}
         />
 
 
-        <TextView title="Actual Address" style={styles.marginTop} />
+        <TextView title={t('common.actualAddress')} style={styles.marginTop} />
         <Controller
           control={control}
           name="actualAddress"
@@ -179,7 +183,7 @@ export default function HomeCreate(route: Props) {
           )}
         />
 
-        <TextView title="Point of Sale Address" style={styles.marginTop} />
+        <TextView title={t('common.pointOfSaleAddress')} style={styles.marginTop} />
         <Controller
           control={control}
           name="addressTT"
@@ -196,7 +200,7 @@ export default function HomeCreate(route: Props) {
           )}
         />
 
-        <TextView title="Legal Address" style={styles.marginTop} />
+        <TextView title={t('common.legalAddress')} style={styles.marginTop} />
         <Controller
           control={control}
           name="localAddress"
@@ -213,7 +217,7 @@ export default function HomeCreate(route: Props) {
           )}
         />
 
-        <TextView title="Warehouse Address" style={styles.marginTop} />
+        <TextView title={t('common.warehouseAddress')} style={styles.marginTop} />
         <Controller
           control={control}
           name="warehouseAddress"
@@ -230,7 +234,7 @@ export default function HomeCreate(route: Props) {
           )}
         />
 
-        <TextView title="Company Group" style={styles.marginTop} />
+        <TextView title={t('common.companyGroup')} style={styles.marginTop} />
         <Controller
           control={control}
           name="companyGroup"
@@ -246,7 +250,7 @@ export default function HomeCreate(route: Props) {
           )}
         />
 
-        <TextView title="Creditor amount" style={styles.marginTop} />
+        <TextView title={t('common.creditorAmount')} style={styles.marginTop} />
         <Controller
           control={control}
           name="creditorAmount"
@@ -262,7 +266,7 @@ export default function HomeCreate(route: Props) {
           )}
         />
 
-        <TextView title="Debtor amount" style={styles.marginTop} />
+        <TextView title={t('common.debtorAmount')} style={styles.marginTop} />
         <Controller
           control={control}
           name="debtorAmount"
@@ -278,7 +282,7 @@ export default function HomeCreate(route: Props) {
           )}
         />
 
-        <TextView title="Date" style={styles.marginTop} />
+        <TextView title={t('common.date')} style={styles.marginTop} />
         <TouchableView
           title={date}
           style={styles.marginTop}
@@ -301,7 +305,7 @@ export default function HomeCreate(route: Props) {
           }
         />
 
-        <TextView title="Latitude" style={styles.marginTop} />
+        <TextView title={t('common.latitude')} style={styles.marginTop} />
         <TextInput
           containerStyle={styles.marginTop}
           placeholder="..."
@@ -312,7 +316,7 @@ export default function HomeCreate(route: Props) {
           edit={!isEditMode}
         />
 
-        <TextView title="Longitude" style={styles.marginTop} />
+        <TextView title={t('common.longitude')} style={styles.marginTop} />
         <TextInput
           containerStyle={styles.marginTop}
           placeholder="..."
@@ -324,14 +328,14 @@ export default function HomeCreate(route: Props) {
         />
 
         <Botton
-          title="Show Map"
+          title={t('common.showMap')}
           onHandler={onPressGetLocation}
           style={styles.locationButton}
           textStyle={styles.locationButtonText}
           disabled={isEditMode}
         />
         <Botton
-          title={keyValue === 'edit' ? 'Update' : 'Create'}
+          title={keyValue === 'edit' ? t('common.update') : t('common.create')}
           onHandler={handleSubmit(onCreateCompany)}
           style={styles.button}
         />

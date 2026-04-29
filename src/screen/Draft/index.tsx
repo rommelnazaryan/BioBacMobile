@@ -9,12 +9,13 @@ import NotFound from '@/component/icons/NotFound';
 import DefaultTable from '@/component/Table/defaultTable';
 import {DefaultModal} from '@/component/Modal';
 import Button from '@/component/button';
+import {t} from '@/locales';
 
 export default function Draft() {
   const { Draft, onSubmitDelete ,visible, onSubmitCancel, onSubmitConfirm,onSubmit,loading,onSubmitEdit} = useDraft();
   return (
     <View style={styles.container}>
-      <CustomHeader title="Draft" showBack={true} />
+      <CustomHeader title={t('common.draft')} showBack={true} />
       {Draft.length === 0 ? (
         <View style={styles.emptyContainer}>
           <NotFound size={120} />
@@ -37,7 +38,7 @@ export default function Draft() {
                     <Text style={styles.cardTitle}>{company.key}</Text>
                     </View>
                   <Card element={company}/>
-                  <Button title="Confirm" onHandler={() => onSubmit(company,index)} style={styles.button} loading={loading}/>
+                  <Button title={t('common.confirm')} onHandler={() => onSubmit(company,index)} style={styles.button} loading={loading}/>
                 </DefaultTable>
               )}
             />
@@ -46,8 +47,8 @@ export default function Draft() {
         isVisible={visible}
         onClose={onSubmitCancel}
         onConfirm={onSubmitConfirm}
-        title="Delete Company"
-        description="Are you sure you want to delete this company?"
+        title={t('common.deleteCompanyTitle')}
+        description={t('common.deleteCompanyDescription')}
       />
     </View>
   )

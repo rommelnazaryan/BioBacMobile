@@ -6,11 +6,11 @@ import { MaterialIcons, AntDesign, Feather } from '@/component/icons/VectorIcon'
 import { Colors, FontFamily } from '@/theme';
 import useDraftStore from '@/zustland/draftStore';
 
-import type { RootStackParamList, TabParamList, SellerParamList, BuyerParamList, ReturnProductParamList, AccountListParamList, AdditionalItemsParamList, SalesParamList } from './types';
+import type { RootStackParamList, TabParamList, SellerParamList, BuyerParamList, ReturnProductParamList, AccountListParamList, SalesParamList, CompanyParamList, PreOrderParamList } from './types';
 //-------------Home----------------
 import Home from '@/screen/Home';
-import Detail from '@/screen/Home/Detail';
-import HomeCreate from '@/screen/Home/Create';
+import Detail from '@/screen/Company/Detail';
+import HomeCreate from '@/screen/Company/Create';
 //-------------Buyers----------------
 import Buyers from '@/screen/Buyers';
 import HistoryBuyers from '@/screen/Buyers/HistoryBuyers';
@@ -38,17 +38,28 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import ReturnProduct from '@/screen/ReturnProduct';
 import ReturnProductCreate from '@/screen/ReturnProduct/Create';
 
+//-------------Company----------------
+import Company from '@/screen/Company';
+
+
 //-------------Account List----------------
 import AccountList from '@/screen/AccountList';
 import AccountListHistory from '@/screen/AccountList/AccountListHistory';
 
 //-------------Additional Items----------------
-import AdditionalItems from '@/screen/AdditionalItems';
+// import AdditionalItems from '@/screen/AdditionalItems';
 
 //-------------Sales----------------
 import Sales from '@/screen/Sales';
 import SalesCreate from '@/screen/Sales/Create';
 import CreateContactPerson from '@/screen/Sales/CreateContactPerson';
+
+//-------------Phone----------------
+import Phone from '@/screen/Phone';
+
+//-------------Pre Order----------------
+import PreOrder from '@/screen/PreOrder';
+
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const HomeStack = createNativeStackNavigator<RootStackParamList>();
@@ -58,8 +69,11 @@ const SellerStack = createNativeStackNavigator<SellerParamList>();
 const BuyerStack = createNativeStackNavigator<BuyerParamList>();
 const ReturnProductStack = createNativeStackNavigator<ReturnProductParamList>();
 const AccountListStack = createNativeStackNavigator<AccountListParamList>();
-const AdditionalItemsStack = createNativeStackNavigator<AdditionalItemsParamList>();
+// const AdditionalItemsStack = createNativeStackNavigator<AdditionalItemsParamList>();
 const SalesStack = createNativeStackNavigator<SalesParamList>();
+const CompanyStack = createNativeStackNavigator<CompanyParamList>();
+const PreOrderStack = createNativeStackNavigator<PreOrderParamList>();
+
 
 const baseScreenOptions = {
   headerShown: false,
@@ -193,30 +207,52 @@ const SalesStackScreen = () => {
   );
 };
 
+const CompanyStackScreen = () => {
+  return (
+    <CompanyStack.Navigator screenOptions={{ headerShown: false }}>
+      <CompanyStack.Screen name="Company" component={Company} />
+      <CompanyStack.Screen name="Payment" component={Payment} />
+      <CompanyStack.Screen name="PaymentHistory" component={PaymentHistory} />
+      <CompanyStack.Screen name="ReturnProductStack" component={ReturnProductStackScreen} />
+      <CompanyStack.Screen name="Detail" component={Detail} />
+      <CompanyStack.Screen name="HomeCreate" component={HomeCreate} />
+      <CompanyStack.Screen name="Phone" component={Phone} />
+      <CompanyStack.Screen name="SalesStack" component={SalesStackScreen} />
+    </CompanyStack.Navigator>
+  );
+};
+
+const PreOrderStackScreen = () => {
+  return (
+    <PreOrderStack.Navigator screenOptions={{ headerShown: false }}>
+      <PreOrderStack.Screen name="PreOrder" component={PreOrder} />
+    </PreOrderStack.Navigator>
+  );
+};
+
+
 const HomeStackScreen = () => {
   return (
     <HomeStack.Navigator screenOptions={{ headerShown: false }}>
       <HomeStack.Screen name="Home" component={Home} />
       <HomeStack.Screen name="BuyerStack" component={BuyerStackScreen} />
       <HomeStack.Screen name="SellerStack" component={SellerStackScreen} />
-      <HomeStack.Screen name="Payment" component={Payment} />
-      <HomeStack.Screen name="PaymentHistory" component={PaymentHistory} />
-      <HomeStack.Screen name="ReturnProductStack" component={ReturnProductStackScreen} />
-      <HomeStack.Screen name="Detail" component={Detail} />
-      <HomeStack.Screen name="HomeCreate" component={HomeCreate} />
-      <HomeStack.Screen name="SalesStack" component={SalesStackScreen} />
+      <HomeStack.Screen name="CompanyStack" component={CompanyStackScreen} />
+      <CompanyStack.Screen name="SalesStack" component={SalesStackScreen} />
+      <HomeStack.Screen name="AccountListStack" component={AccountListStackScreen} />
+      <HomeStack.Screen name="PreOrderStack" component={PreOrderStackScreen} />
     </HomeStack.Navigator>
   );
 };
 
-const AdditionalItemsStackScreen = () => {
-  return (
-    <AdditionalItemsStack.Navigator screenOptions={{ headerShown: false }}>
-      <AdditionalItemsStack.Screen name="AdditionalItems" component={AdditionalItems} />
-      <AdditionalItemsStack.Screen name="AccountListStack" component={AccountListStackScreen} />
-    </AdditionalItemsStack.Navigator>
-  );
-};
+// const AdditionalItemsStackScreen = () => {
+//   return (
+//     <AdditionalItemsStack.Navigator screenOptions={{ headerShown: false }}>
+//       <AdditionalItemsStack.Screen name="AdditionalItems" component={AdditionalItems} />
+//       <AdditionalItemsStack.Screen name="AccountListStack" component={AccountListStackScreen} />
+//     </AdditionalItemsStack.Navigator>
+//   );
+// };
 
 const DraftStackScreen = () => {
   return (
@@ -253,7 +289,7 @@ export default function TabNavigation() {
       screenOptions={screenOptions}>
       <Tab.Screen name="HomeScreen" component={HomeStackScreen} />
       <Tab.Screen name="DraftScreen" component={DraftStackScreen} />
-      <Tab.Screen name="AdditionalItemsScreen" component={AdditionalItemsStackScreen} />
+      {/* <Tab.Screen name="AdditionalItemsScreen" component={AdditionalItemsStackScreen} /> */}
       <Tab.Screen name="SettingsScreen" component={SettingStackScreen} />
     </Tab.Navigator>
   );

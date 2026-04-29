@@ -13,8 +13,11 @@ import {DefaultModal} from '@/component/Modal';
 import Filter from '@/component/Filter';
 import {t} from '@/locales';
 import Card from './_component/Card';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { ReturnProductParamList } from '@/navigation/types';
+type Props = NativeStackScreenProps<ReturnProductParamList, 'ReturnProduct'>;
 
-export default function ReturnProduct() {
+export default function ReturnProduct(route: Props) {
   const {
     loading,
     loadingMore,
@@ -28,7 +31,7 @@ export default function ReturnProduct() {
     onSubmitCreate,
     isConnected,
     onSubmitEdit,
-  } = useReturnProduct();
+  } = useReturnProduct(route);
   return (
     <View style={styles.container}>
       <Header title={t('common.returnProducts')} showBack={true} />
@@ -53,7 +56,7 @@ export default function ReturnProduct() {
                 loadingMore ? (
                   <Activity style={styles.footerLoading} />
                 ) : !hasNextPage && Data.length > 0 ? (
-                  <Text style={styles.footerText}>No more data</Text>
+                  <Text style={styles.footerText}>{t('common.noMoreData')}</Text>
                 ) : null
               }
               renderItem={({item: item}: {item: ReturnProductProps}) => (
@@ -86,8 +89,8 @@ export default function ReturnProduct() {
         isVisible={visible}
         onClose={onSubmitCancel}
         onConfirm={onSubmitConfirm}
-        title="Delete Company"
-        description="Are you sure you want to delete this company?"
+        title={t('common.deleteCompanyTitle')}
+        description={t('common.deleteCompanyDescription')}
       />
     </View>
   );

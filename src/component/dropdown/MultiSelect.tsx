@@ -1,5 +1,5 @@
 import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
 import {MultiSelect} from 'react-native-element-dropdown';
 import {Feather} from '@/component/icons/VectorIcon';
 import {t} from '@/locales';
@@ -9,7 +9,7 @@ import {Colors, FontFamily, FontSizes, Shadows} from '@/theme';
 type DropdownValue = string | number;
 
 type MultiSelectDropdownProps = {
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   data: DropdownOptions[];
   value?: DropdownValue[];
   onChange: (values: DropdownValue[]) => void;
@@ -181,8 +181,8 @@ const MultiSelectDropdown = ({
         maxHeight={300}
         labelField="label"
         valueField="value"
-        placeholder={isEmpty ? t('common.noData') : (placeholder ?? 'Select...')}
-        searchPlaceholder="Search..."
+        placeholder={isEmpty ? t('common.noData') : (placeholder ?? t('common.select'))}
+        searchPlaceholder={t('common.search')}
         value={normalizedValue}
         onChange={handleChange}
         dropdownPosition={dropdownPosition}

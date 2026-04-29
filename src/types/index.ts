@@ -24,9 +24,11 @@ export type GetProfileResponse = {
   positionId: null;
   positionName: null;
   permissions: GetAllPermissionsResponse[];
+  companyId: number;
+  defaultWarehouseId: number;
 };
 
-export type HomeListProps = {
+export type ListProps = {
   key: string;
   label: string;
   iconLibrary: string;
@@ -117,6 +119,11 @@ export type getHistoryProps = {
   createdAt: string;
   amountChanged: number;
   note: string | null;
+  timestamp: string;
+  action: {
+    id: number;
+    name: string;
+  };
 };
 
 export type GetAccountResponse = {
@@ -364,4 +371,9 @@ export type GetSaleSuccessResponse = {
     deliveryPayerName: string | null;
     warehouseId: number;
   
+};
+
+
+export type PhoneProps = {
+  phones: string[];
 };

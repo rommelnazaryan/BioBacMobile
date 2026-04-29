@@ -19,6 +19,7 @@ import { CreateReturn } from '@/services/Company/CreateReturn';
 import { UpdateReturn } from '@/services/Company/UpdateReturn';
 import { GetSaleLookup } from '@/services/Company/GetSaleLookup';
 import { GetSele } from '@/services/Sale/Seller';
+import useProfileStore from '@/zustland/profileStore';
 //create empty item //
 export type ReturnProductFormItem = {
   id: number;
@@ -42,8 +43,9 @@ export default function useReturnProductCreate(
   route: NativeStackScreenProps<ReturnProductParamList, 'ReturnProductCreate'>,
 ) {
   const navigation = useNavigation();
-  const { item, key } = route.route.params;
+  const { item, key, name } = route.route.params;
   const isConnected = useNetworkStore(s => s.isConnected);
+  const {profile} = useProfileStore();
   const [showDate, setShowDate] = useState(false);
   const [errorDate, setErrorDate] = useState<string>('');
   // const { Draft, setDraft } = useDraftStore();
@@ -61,11 +63,10 @@ export default function useReturnProductCreate(
   const [productId, setProductId] = useState<number | string>('');
   const [productLable, setProductLable] = useState<string>('');
   const validationSchema = Yup.object().shape({
-    Company: Yup.string().trim().required('Required'),
-    Warehouse: Yup.string().trim().required('Required'),
+    Company: Yup.string().trim(),
+    Warehouse: Yup.string().trim(),
     Comment: Yup.string().trim(),
   });
-
   const {
     control,
     handleSubmit,
@@ -81,6 +82,10 @@ export default function useReturnProductCreate(
     mode: 'onSubmit',
     resolver: yupResolver(validationSchema),
   });
+
+
+
+
   // get product
   const onSubmitGetProduct = useCallback((assortmentId: number | string) => {
     if (!isConnected) return;
@@ -128,9 +133,9 @@ export default function useReturnProductCreate(
               value: sale.id,
             }),
           );
-          setSaleList(() => [{ label: 'Без сделки', value: 0 }, ...saleOptions]);
+          setSaleList(() => [{ label: 'сделки', value: 0 }, ...saleOptions]);
         } else {
-          setSaleList([{ label: 'Без сделки', value: 0 }]);
+          setSaleList([{ label: 'сделки', value: 0 }]);
         }
 
       },
@@ -146,26 +151,25 @@ export default function useReturnProductCreate(
   }, [isConnected, show]);
 
 
-
-
   // get Buyer
-  const getBuyers = useCallback(async (companyId: number | string | undefined) => {
+  const getBuyers = useCallback(async (_companyId: number | string | undefined) => {
     if (!isConnected) return;
     await GetBuyers({
       onSuccess: res => {
-          console.log('===>',res);
-          if(companyId) {
-            const filterProduct = (res as any).data.filter((company: any) => company.id === companyId);
-            onSubmitGetProduct(filterProduct[0].assortmentId);
-          }
-
-        const { data } = res as { data: { id: number; name: string; assortmentId: number }[] };
-        const companyOptions: any[] = data.map(
+       const filterProduct = (res as any).data.filter((company: any) => company.name === name);
+        // if (companyId) {
+        //   const filterProduct = (res as any).data.filter((company: any) => company.id === companyId);
+        //   onSubmitGetProduct(filterProduct[0].assortmentId);
+        // }
+        onSubmitGetProduct(filterProduct[0].assortmentId);
+        // const { data } = res as { data: { id: number; name: string; assortmentId: number }[] };
+        const companyOptions: any[] = filterProduct.map(
           (company: { name: string; assortmentId: number }) => ({
             label: company.name,
             value: company.assortmentId == null ? Math.random() * 1000000 : company.assortmentId,
           }),
         );
+      //  const filterCompanyOptions = companyOptions.filter((company: any) => company.label === name);
         setCompanyList(companyOptions as []);
       },
       onUnauthorized: () => {
@@ -194,7 +198,7 @@ export default function useReturnProductCreate(
         show('Failed to get company group', { type: 'error' });
       },
     });
-  }, [isConnected, show, onSubmitGetProduct]);
+  }, [isConnected, show, onSubmitGetProduct, name]);
 
   // set default values//
   useEffect(() => {
@@ -266,7 +270,7 @@ export default function useReturnProductCreate(
         setItems(prev =>
           prev.map((currentItem, itemIndex) =>
             itemIndex === index
-              ? {...currentItem, productId: value, sale: '', returnPrice: 0}
+              ? { ...currentItem, productId: value, sale: '', returnPrice: 0 }
               : currentItem,
           ),
         );
@@ -283,7 +287,7 @@ export default function useReturnProductCreate(
         const number = match ? match[1] : null;
         GetSele(Number(number), {
           onSuccess: res => {
-            
+
             const unitPrice = (res as any).data.items.filter(
               (saleItem: any) => saleItem.product.name === productLable,
             );
@@ -347,13 +351,13 @@ export default function useReturnProductCreate(
     }
 
     const data: CreateReturnRequest = {
-      companyId: Number(getValues().Company),
-      warehouseId: Number(getValues().Warehouse),
+      companyId: Number(companyList[0].value),
+      warehouseId: Number(profile?.defaultWarehouseId),
       returnDate: `${date}:23:59:00`,
       comment: getValues().Comment ?? '',
       items: items,
     };
-
+    
 
     // if offline, save to draft
     if (!isConnected) {
@@ -387,7 +391,6 @@ export default function useReturnProductCreate(
           show((error as Error)?.message ?? 'Failed to create return', { type: 'error' });
         },
       });
-
     }
   };
 
@@ -396,7 +399,7 @@ export default function useReturnProductCreate(
 
   useFocusEffect(
     useCallback(() => {
-     !item && getBuyers(undefined);
+      !item && getBuyers(undefined);
     }, [getBuyers, item]),
   );
 

@@ -4,6 +4,7 @@ import {Colors, FontFamily, FontSizes, Shadows} from '@/theme';
 import Button from '@/component/button';
 import BaseModal from './BaseModal';
 import {AntDesign} from '../icons/VectorIcon';
+import {t} from '@/locales';
 interface ModalCardProps {
   isVisible: boolean;
   onClose: () => void;
@@ -36,12 +37,12 @@ export default function DefaultModal({
         </Text>
         <View style={styles.buttonContainer}>
           <Button
-            title="Cancel"
+            title={t('common.cancel')}
             onHandler={onClose}
             style={[styles.button, styles.cancelButton]}
             textStyle={[styles.cancelButtonText]}
           />
-          <Button title="Confirm" onHandler={onConfirm} style={styles.button} textStyle={styles.confirmButtonText}/>
+          <Button title={t('common.confirm')} onHandler={onConfirm} style={styles.button} textStyle={styles.confirmButtonText}/>
         </View>
       </View>
     </BaseModal>

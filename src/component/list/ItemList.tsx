@@ -27,6 +27,8 @@ export default function ItemList({
       ? SalesIcon
       : item.iconName === 'AccountListIcon'
       ? ApartmentIcon
+      : item.iconName === 'CompanyIcon'
+      ? ApartmentIcon
     : NotFound;
   // const SvgIcon =
   //   item.iconName === 'ApartmentIcon'
@@ -62,6 +64,8 @@ export default function ItemList({
           ? t('common.phone')
           : item.label === 'account list'
           ? t('company.companyAccountList')
+          : item.label === 'company'
+          ? t('common.company')
           : 'other'}
         {/* {item.label === 'buyers'
           ? t('company.companyBuyerList')

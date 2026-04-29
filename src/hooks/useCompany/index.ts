@@ -4,7 +4,7 @@ import {GetProfile} from '@/services/Profile';
 import useProfileStore from '@/zustland/profileStore';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {RootStackParamList} from '@/navigation/types';
+import {CompanyParamList} from '@/navigation/types';
 import {refreshTokenService} from '@/services/AuthService/RefreshToken';
 import useAuthStore from '@/zustland/authStore';
 import useNetworkStore from '@/zustland/networkStore';
@@ -13,17 +13,20 @@ import { DeleteCompany } from '@/services/Company/DeleteCompany';
 import { useToast } from '@/component/toast/ToastProvider';
 import { GetLine } from '@/services/Company/GetLine';
 import { GetByLines } from '@/services/Company/GetByLines';
+import useAllCompanyCashStore from '@/zustland/allCompanyCash';
 
-export default function useHome() {
+export default function useCompany() {
+  const LINE_SELECTION_DELAY_MS = 2000;
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
   const [id, setId] = useState<number>(0);
   const {show} = useToast();
   const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    useNavigation<NativeStackNavigationProp<CompanyParamList>>();
   const {setProfile} = useProfileStore();
   const isConnected = useNetworkStore(s => s.isConnected);
   const {refreshToken, setToken, setRefreshToken} = useAuthStore();
+  const {allCompanyCash, setAllCompanyCash} = useAllCompanyCashStore();
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState<number>(0);
   const [hasNextPage, setHasNextPage] = useState(true);
@@ -32,6 +35,21 @@ export default function useHome() {
   const [refreshing, setRefreshing] = useState(false);
   const [lineList, setLineList] = useState<any[]>([]);
   const [selectedLineValues, setSelectedLineValues] = useState<Array<number>>([]);
+  const selectedLineTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const mergeUniqueCompanies = useCallback((current: AllCompanyProps[], incoming: AllCompanyProps[]) => {
+    const byId = new Map<number, AllCompanyProps>();
+
+    current.forEach(company => {
+      byId.set(company.id, company);
+    });
+
+    incoming.forEach(company => {
+      byId.set(company.id, company);
+    });
+
+    return Array.from(byId.values());
+  }, []);
 
   // get profile //
   const getProfile = useCallback(() => {
@@ -71,12 +89,12 @@ export default function useHome() {
           refreshTokenService(refreshToken, {
             onSuccess: data => {
               const {
-                data: {accessToken, refreshToken},
+                data: {accessToken, refreshToken: nextRefreshToken},
               } = data as {
                 data: {accessToken: string; refreshToken: string};
               };
               setToken(accessToken);
-              setRefreshToken(refreshToken);
+              setRefreshToken(nextRefreshToken);
               // GetProfile({
               //   onSuccess: res => {
               //     const {data} = res as {data: GetProfileResponse};
@@ -132,30 +150,32 @@ export default function useHome() {
   ]);
 
   // get  company data //
-  const getAllCompanies = useCallback((search?: string) => {
+  const getAllCompanies = useCallback((search?: string, targetPage = page) => {
     if (!isConnected) {
       setLoading(false);
       return;
     }
-    if (page === 0) {
+    if (targetPage === 0) {
       setLoading(true);
     } else {
       setLoadingMore(true);
     }
-    return GetAllCompanies(page, 0, search, {
+    return GetAllCompanies(targetPage, 0, search, {
       onSuccess: payload => {
         const {data} = payload as {data: AllCompanyProps[]};
         const {metadata} = payload as unknown as {
           metadata: {page: number; last: boolean; totalPages: number};
         };
         // page=0 -> replace, page>0 -> append
-        setAllCompanies(prev => (page === 0 ? data : [...prev, ...data]));
-
+        setAllCompanies(prev => (targetPage === 0 ? data : [...prev, ...data]));
+        setAllCompanyCash(prev =>
+          targetPage === 0 ? mergeUniqueCompanies([], data) : mergeUniqueCompanies(prev, data),
+        );
         // update hasNextPage if backend provides it
         if (typeof metadata?.last === 'boolean') {
           setHasNextPage(!metadata.last);
         } else if (typeof metadata?.totalPages === 'number') {
-          setHasNextPage(page + 1 < metadata.totalPages);
+          setHasNextPage(targetPage + 1 < metadata.totalPages);
         }
         setRefreshing(false);
         setLoading(false);
@@ -168,7 +188,7 @@ export default function useHome() {
         setLoadingMore(false);
       },
     });
-  }, [page, isConnected]);
+  }, [page, isConnected, setAllCompanyCash, mergeUniqueCompanies]);
 
 
   // load more data //
@@ -220,8 +240,9 @@ export default function useHome() {
   // submit refresh //
   const onSubmitRefresh = () => {
     setRefreshing(true);
-    setLoading(true);
-    getAllCompanies();
+    setPage(0);
+    setHasNextPage(true);
+    getAllCompanies(undefined, 0);
   };
 
   // submit edit //
@@ -261,15 +282,13 @@ export default function useHome() {
 
   }, [isConnected, show])
 
-
-  // submit filter //
-  const onSubmitFilter = async() => {
+  const getCompaniesByLines = useCallback(async (lineValues: Array<number>) => {
     setLoading(true);
     if (!isConnected) {
       setLoading(false);
       return;
     }
-    await GetByLines(selectedLineValues,{
+    await GetByLines(lineValues, {
       onSuccess: res => {
         const { data } = res as { data: AllCompanyProps[] };
         setAllCompanies(data);
@@ -284,12 +303,29 @@ export default function useHome() {
         setLoading(true);
       },
     });
-  };
+  }, [isConnected, show]);
+
+  const onChangeSelectedLineValues = useCallback((values: Array<number>) => {
+    setSelectedLineValues(values);
+  }, []);
+
+
+  // submit filter //
+  const onSubmitFilter = useCallback(async() => {
+    await getCompaniesByLines(selectedLineValues);
+  }, [getCompaniesByLines, selectedLineValues]);
 
   // submit reset //
   const onSubmitReset = () => {
+    if (selectedLineTimeoutRef.current) {
+      clearTimeout(selectedLineTimeoutRef.current);
+      selectedLineTimeoutRef.current = null;
+    }
+
     setSelectedLineValues([]);
-    getAllCompanies();
+    setPage(0);
+    setHasNextPage(true);
+    getAllCompanies(undefined, 0);
   };
 
 
@@ -306,7 +342,8 @@ export default function useHome() {
   // submit search //
   const onSubmitSearch = (text: string) => {
     setPage(0);
-    getAllCompanies(text);
+    setHasNextPage(true);
+    getAllCompanies(text, 0);
   };
 
 
@@ -314,6 +351,37 @@ export default function useHome() {
   useEffect(() => {
     getAllCompaniesRef.current = getAllCompanies;
   }, [getAllCompanies]);
+
+  useEffect(() => {
+    if (selectedLineTimeoutRef.current) {
+      clearTimeout(selectedLineTimeoutRef.current);
+    }
+
+    if (selectedLineValues.length === 0) {
+      setPage(0);
+      setHasNextPage(true);
+      getAllCompanies(undefined, 0);
+      return;
+    }
+
+    selectedLineTimeoutRef.current = setTimeout(() => {
+      getCompaniesByLines(selectedLineValues);
+    }, LINE_SELECTION_DELAY_MS);
+
+    return () => {
+      if (selectedLineTimeoutRef.current) {
+        clearTimeout(selectedLineTimeoutRef.current);
+      }
+    };
+  }, [getAllCompanies, getCompaniesByLines, selectedLineValues]);
+
+  useEffect(() => {
+    return () => {
+      if (selectedLineTimeoutRef.current) {
+        clearTimeout(selectedLineTimeoutRef.current);
+      }
+    };
+  }, []);
   
   return {
     loading,
@@ -335,7 +403,8 @@ export default function useHome() {
     lineList,
     onSubmitFilter,
     selectedLineValues,
-    setSelectedLineValues,
+    onChangeSelectedLineValues,
     onSubmitReset,
+    allCompanyCash
   };
 }

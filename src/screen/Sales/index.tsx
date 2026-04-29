@@ -11,6 +11,7 @@ import CartList from './_component/CartList';
 import CustomHeader from '@/navigation/Header';
 import Filter from '@/component/Filter';
 import useSale from '@/hooks/useSale';
+import { t } from '@/locales';
 
 export default function Sales() {
   const {
@@ -26,7 +27,7 @@ export default function Sales() {
     useSale();
   return (
     <View style={styles.container}>
-      <CustomHeader title="Sales" />
+      <CustomHeader title={t('company.sales')} />
       <Filter onHandlerCreate={onSubmitCreate} />
       {loading ?
         <Activity style={styles.activityIndicator} />
@@ -44,7 +45,7 @@ export default function Sales() {
                   loadingMore ? (
                     <Activity style={styles.footerLoading} />
                   ) : !hasNextPage && saleSuccess.length > 0 ? (
-                    <Text style={styles.footerText}>No more data</Text>
+                    <Text style={styles.footerText}>{t('common.noMoreData')}</Text>
                   ) : null
                 }
                 renderItem={({ item: item }: { item: GetSaleSuccessResponse }) => (

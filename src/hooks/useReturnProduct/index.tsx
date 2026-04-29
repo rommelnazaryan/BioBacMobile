@@ -8,11 +8,13 @@ import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {useToast} from '@/component/toast/ToastProvider';
 import useRefetchOnReconnect from '../useRefetchOnReconnect';
 import useNetworkStore from '@/zustland/networkStore';
+// import { GetReturnProductAll } from '@/services/Company/GetReturnProductAll';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { ReturnProductParamList } from '@/navigation/types';
 import { GetReturnProductAll } from '@/services/Company/GetReturnProductAll';
-
-
-export default function useReturnProduct() {
-  // const {item} = route.route.params;
+type Props = NativeStackScreenProps<ReturnProductParamList, 'ReturnProduct'>;
+export default function useReturnProduct(route: Props) {
+  const {item} = route.route.params;
   const {show} = useToast();
   const [loading, setLoading] = useState(false);
   const isConnected = useNetworkStore(s => s.isConnected);
@@ -28,7 +30,7 @@ export default function useReturnProduct() {
 
 
 
-  // get seller data //
+  // get return product data //
   const getReturnProductAll = useCallback(() => {
     if (!isConnected) {
       setLoading(false);
@@ -66,7 +68,7 @@ export default function useReturnProduct() {
         setLoadingMore(false);
       },
     });
-  }, [page, isConnected, show]);
+  }, [page, isConnected, show,]);
 
   // load more data //
   const loadMore = useCallback(() => {
@@ -101,15 +103,15 @@ export default function useReturnProduct() {
   const onSubmitCreate = () => {
     navigation.navigate('ReturnProductStack', {
       screen: 'ReturnProductCreate',
-      params: {item: undefined, key: 'create'},
+      params: {item: undefined, key: 'create',name: item.name},
     });
   };
 
   // submit edit //
-  const onSubmitEdit = (item: ReturnProductProps) => {
+  const onSubmitEdit = (value: ReturnProductProps) => {
     navigation.navigate('ReturnProductStack', {
       screen: 'ReturnProductCreate',
-      params: {item: item, key: 'edit'},
+      params: {item: value, key: 'edit',name: item.name},
     });
   };
 
@@ -124,7 +126,7 @@ export default function useReturnProduct() {
     }, [getReturnProductAll])
   );
 
-  useRefetchOnReconnect(getReturnProductAll);
+  useRefetchOnReconnect(() => getReturnProductAll());
 
   return {
     loading,

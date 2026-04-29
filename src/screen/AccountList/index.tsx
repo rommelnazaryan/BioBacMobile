@@ -10,6 +10,7 @@ import { GetAccountListResponse } from '@/types';
 import NotFound from '@/component/icons/NotFound';
 import Card from './_component/Card';
 import useAccountList from '@/hooks/useAccountList';
+import { t } from '@/locales';
 
 
 export default function AccountList() {
@@ -24,7 +25,7 @@ export default function AccountList() {
   } = useAccountList();
   return (
     <View style={styles.container}>
-      <Header title="Account List" showBack={true} />
+      <Header title={t('company.companyAccountList')} showBack={true} />
       {loading ? (
         <Activity style={styles.activityIndicator} />
       ) : accountList.length === 0 ? (
@@ -45,7 +46,7 @@ export default function AccountList() {
                 loadingMore ? (
                   <Activity style={styles.footerLoading} />
                 ) : !hasNextPage && accountList.length > 0 ? (
-                  <Text style={styles.footerText}>No more data</Text>
+                  <Text style={styles.footerText}>{t('common.noMoreData')}</Text>
                 ) : null
               }
               renderItem={({ item: item }: { item: GetAccountListResponse }) => (

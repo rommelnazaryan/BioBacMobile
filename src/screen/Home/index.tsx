@@ -1,104 +1,32 @@
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import React from 'react';
 import { Colors } from '@/theme/Colors';
-import VerticalFlatList from '@/component/list/VerticalFlatList';
 import useHome from '@/hooks/useHome';
-import Activity from '@/component/ActivityIndicator';
-import { AllCompanyProps } from '@/types';
-import { deviceHeight } from '@/helper';
-import NotFound from '@/component/icons/NotFound';
-import DefaultTable from '@/component/Table/defaultTable';
-import CartList from '@/screen/Home/_component/CartList';
 import CustomHeader from '@/navigation/Header';
-import { DefaultModal } from '@/component/Modal';
-import Filter from '@/component/Filter';
-import Search from '@/component/Search';
-import HomeFilter from './_component/HomeFilter';
+import { t } from '@/locales';
+import { HOME_LIST } from '@/static';
+import ItemList from '@/component/list/ItemList';
+import { ListProps } from '@/types';
+
 
 export default function Home() {
   const {
-    loading,
-    allCompanies,
-    isConnected,
-    loadMore,
-    loadingMore,
-    hasNextPage,
-    onSubmitDetail,
-    visible,
-    onSubmitCancel,
-    onSubmitConfirm,
-    onSubmitCreate,
-    onSubmitRefresh,
-    refreshing,
-    onSubmitSearch,
-    lineList,
-    selectedLineValues,
-    setSelectedLineValues,
-    onSubmitFilter,
-    onSubmitReset,
-    onSubmitEdit,
-  } =
-    useHome();
+    onSubmitDetail
+  } = useHome();
   return (
     <View style={styles.container}>
-      <CustomHeader title="All Companies" />
-      <Filter onHandlerCreate={onSubmitCreate} filter={true} onSubmit={onSubmitFilter} onSubmitReset={onSubmitReset}>
-        <HomeFilter data={lineList} onClick={setSelectedLineValues} selectedLineValues={selectedLineValues} />
-      </Filter>
-      <Search onChangeText={onSubmitSearch} />
-
-      {loading ?
-        <Activity style={styles.activityIndicator} />
-        : allCompanies.length > 0 ?
-          <>
-            {isConnected ? (
-              <VerticalFlatList
-                data={isConnected ? allCompanies : []}
-                gap={10}
-                columns={1}
-                keyExtractor={company => String(company?.id ?? '')}
-                onEndReached={() => loadMore()}
-                onEndReachedThreshold={0.3}
-                onRefresh={() => onSubmitRefresh()}
-                refreshing={refreshing}
-                ListFooterComponent={
-                  loadingMore ? (
-                    <Activity style={styles.footerLoading} />
-                  ) : !hasNextPage && allCompanies.length > 0 ? (
-                    <Text style={styles.footerText}>No more data</Text>
-                  ) : null
-                }
-                renderItem={({ item: company }: { item: AllCompanyProps }) => (
-                  <DefaultTable
-                    containerStyle={styles.tableContainer}
-                    // onClickHistory={() =>
-                    //   onHandlerHistory(company.id, company.name)
-                    // }
-                    // onClickEdit={() => onSubmitEdit(company)}
-                    // onClickDelete={() => onSubmitDelete(company.id)}
-                  >
-                    <CartList key={company.id} element={company} onCallback={() => onSubmitDetail(company)} onSubmitEdit={() => onSubmitEdit(company)} />
-                  </DefaultTable>
-                )}
-              />
-            ) : (
-              <View style={styles.emptyContainer}>
-                <NotFound size={120} />
-              </View>
-            )}
-          </>
-          : (
-            <View style={styles.emptyContainer}>
-              <NotFound size={120} />
-            </View>
-          )}
-        <DefaultModal
-        isVisible={visible}
-        onClose={onSubmitCancel}
-        onConfirm={onSubmitConfirm}
-        title="Delete Company"
-        description="Are you sure you want to delete this company?"
-      />
+      <CustomHeader title={t('home.title')} />
+      <View style={styles.linstContainer}>
+        {HOME_LIST.map((item) => (
+          <View key={item.key} style={styles.itemContainer}>
+            <ItemList
+              item={item}
+              onCallback={selectedItem => onSubmitDetail(selectedItem as ListProps)}
+            />
+          </View>
+        ))}
+      </View>
+     
     </View>
   );
 }
@@ -109,32 +37,16 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     height: '100%',
   },
+  itemContainer: {
+    width: '48%',
+  },
   linstContainer: {
     width: '93%',
     alignSelf: 'center',
-    height: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: '5%'
   },
-  activityIndicator: {
-    marginTop: deviceHeight / 4,
-  },
-  tableContainer: {
-    marginBottom: 10,
-  },
-  footerLoading: {
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  footerText: {
-    textAlign: 'center',
-    color: Colors.gray_300,
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
 
 });

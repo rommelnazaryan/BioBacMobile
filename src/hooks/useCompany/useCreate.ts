@@ -10,8 +10,8 @@ import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import useCompanyGroupStore from '@/zustland/companyGroup';
 import {
   CompanyGroupParamList,
+  CompanyParamList,
   DropdownOptions,
-  RootStackParamList,
 } from '@/navigation/types';
 import useRefetchOnReconnect from '../useRefetchOnReconnect';
 import type {CreateCompanyRequest} from '@/types';
@@ -57,13 +57,13 @@ const findFirstStringValue = (
   return undefined;
 };
 
-export default function useHomeCreate(
-  route: NativeStackScreenProps<RootStackParamList, 'HomeCreate'>,
+export default function useCompanyCreate(
+  route: NativeStackScreenProps<CompanyParamList, 'HomeCreate'>,
 ) {
   const {item, key} = route.route.params;
   const isConnected = useNetworkStore(s => s.isConnected);
   const [showDate, setShowDate] = useState(false);
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NativeStackNavigationProp<CompanyParamList>>();
   const {companyGroup, setCompanyGroup} = useCompanyGroupStore();
   const {Draft, setDraft} = useDraftStore();
   const [companyGroupList, setCompanyGroupList] = useState<DropdownOptions[]>([]);

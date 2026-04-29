@@ -13,19 +13,19 @@ export default function Card({element}: {element: GetAccountListResponse}) {
         { backgroundColor: backgroundColor}
       ]}>
       <View style={styles.row}>
-        <Text style={styles.title}>Account:</Text>
+        <Text style={styles.title}>{t('common.account')}:</Text>
         <Text style={styles.value}>{element.bankAccount}</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.title}>Account Balance:</Text>
+        <Text style={styles.title}>{t('common.accountBalance')}:</Text>
         <Text style={styles.value}>{element.balance}</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.title}>Our Company:</Text>
+        <Text style={styles.title}>{t('common.ourCompany')}:</Text>
         <Text style={styles.value}>{element.ourCompanyName}</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.title}>Bank Name:</Text>
+        <Text style={styles.title}>{t('common.bankName')}:</Text>
         <Text style={styles.value}>{element.bankName}</Text>
       </View>
       <View style={styles.row}>

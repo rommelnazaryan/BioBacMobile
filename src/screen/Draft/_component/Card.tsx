@@ -17,7 +17,7 @@ export default function Card({ element }: { element: AllCompanyProps}) {
         <Text style={styles.value}>{element.name}</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.title}>{t('General Director')}:</Text>
+        <Text style={styles.title}>{t('common.generalDirector')}:</Text>
         <Text style={styles.value}>{element.ceo}</Text>
       </View>
       {element.creditorAmount > 0 && (
@@ -45,37 +45,37 @@ export default function Card({ element }: { element: AllCompanyProps}) {
       )}
       {element.actualAddress && (
         <View style={styles.row}>
-          <Text style={styles.title}>{t('Actual Address')}:</Text>
+          <Text style={styles.title}>{t('common.actualAddress')}:</Text>
           <Text style={styles.value}>{element.actualAddress}</Text>
         </View>
       )}
       {element.addressTT?.length > 0 && (
         <View style={styles.row}>
-          <Text style={styles.title}>{t('Point of Sale Address')}:</Text>
+          <Text style={styles.title}>{t('common.pointOfSaleAddress')}:</Text>
           <Text style={styles.value}>{element.addressTT}</Text>
         </View>
       )}
       {element.localAddress && (
         <View style={styles.row}>
-          <Text style={styles.title}>{t('Legal Address')}:</Text>
+          <Text style={styles.title}>{t('common.legalAddress')}:</Text>
           <Text style={styles.value}>{element.localAddress}</Text>
         </View>
       )}
       {element.warehouseAddress && (
         <View style={styles.row}>
-          <Text style={styles.title}>{t('Warehouse Address')}:</Text>
+          <Text style={styles.title}>{t('common.warehouseAddress')}:</Text>
           <Text style={styles.value}>{element.warehouseAddress}</Text>
         </View>
       )}
       {element.latitude && (
         <View style={styles.row}>
-          <Text style={styles.title}>Latitude:</Text>
+          <Text style={styles.title}>{t('common.latitude')}:</Text>
           <Text style={styles.value}>{element.latitude}</Text>
         </View>
       )}
       {element.longitude && (
         <View style={styles.row}>
-          <Text style={styles.title}>Longitude:</Text>
+          <Text style={styles.title}>{t('common.longitude')}:</Text>
           <Text style={styles.value}>{element.longitude}</Text>
         </View>
       )}

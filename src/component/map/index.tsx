@@ -7,6 +7,7 @@ import { ensureLocationPermission, getSafeCurrentLocation } from '@/component/ge
 import { FontAwesome } from '../icons/VectorIcon';
 import ActivityIndicator from '../ActivityIndicator';
 import { deviceHeight } from '@/helper/Dimensions';
+import { t } from '@/locales';
 type Coords = { latitude: number; longitude: number; accuracy?: number };
 
 const DEFAULT_REGION: Region = {
@@ -30,7 +31,7 @@ export default function MapScreen({ onSubmit, onCancel }: { onSubmit: (latitude:
     try {
       const granted = await ensureLocationPermission();
       if (!granted) {
-        Alert.alert('Permission required');
+        Alert.alert(t('common.permissionRequired'));
         setLoading(false);
         return;
       }
@@ -50,12 +51,12 @@ export default function MapScreen({ onSubmit, onCancel }: { onSubmit: (latitude:
           setLoading(false);
         },
         () => {
-          Alert.alert('Failed to get location');
+          Alert.alert(t('common.failedToGetLocation'));
           setLoading(false);
         },
       );
     } catch (e) {
-      Alert.alert((e as Error)?.message ?? 'Failed to get location');
+      Alert.alert((e as Error)?.message ?? t('common.failedToGetLocation'));
       setLoading(false);
     }
   }, [loading]);
@@ -63,7 +64,7 @@ export default function MapScreen({ onSubmit, onCancel }: { onSubmit: (latitude:
 
   const onSubmitHandler = useCallback(() => {
     if (coords === null) {
-        Alert.alert('Please get location', 'Please get location to submit');
+        Alert.alert(t('common.pleaseGetLocation'), t('common.pleaseGetLocationToSubmit'));
     }else{
       onSubmit(coords.latitude, coords.longitude);
     }
@@ -93,8 +94,8 @@ export default function MapScreen({ onSubmit, onCancel }: { onSubmit: (latitude:
       </View>
       )}
       <View style={styles.buttonContainer}>
-      <Botton title="Cancel" onHandler={onCancel}  disabled={loading} style={[styles.button, styles.cancelButton]} textStyle={styles.cancelButtonText}/>
-        <Botton title="Submit" onHandler={onSubmitHandler}  disabled={loading} style={styles.button} />
+      <Botton title={t('common.cancel')} onHandler={onCancel}  disabled={loading} style={[styles.button, styles.cancelButton]} textStyle={styles.cancelButtonText}/>
+        <Botton title={t('common.submit')} onHandler={onSubmitHandler}  disabled={loading} style={styles.button} />
       </View>
     </View>
   );

@@ -3,11 +3,12 @@ import React from 'react'
 import TextInput from '../input/TextInput'
 import { Ionicons } from '../icons/VectorIcon';
 import { Colors } from '@/theme';
+import { t } from '@/locales';
 export default function Search( {onChangeText}: {onChangeText: (text: string) => void} ) {
   return (
     <View style={styles.container}>
         <TextInput
-            placeholder="Search"
+            placeholder={t('common.search')}
             inputSize="medium"
             containerStyle={styles.inputContainer}
             inputStyle={styles.inputContainer}

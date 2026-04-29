@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {StyleSheet, View, Text, ViewStyle} from 'react-native';
+import {StyleProp, StyleSheet, View, Text, ViewStyle} from 'react-native';
 import {Dropdown} from 'react-native-element-dropdown';
 import {Feather} from '@/component/icons/VectorIcon';
 import {Colors, FontFamily, FontSizes, Shadows} from '@/theme';
@@ -9,13 +9,14 @@ import { DropdownOptions } from '@/navigation/types';
 export {default as DropdownMultiSelect} from './MultiSelect';
 
 type DropdownComponentProps = {
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   data: DropdownOptions[];
   onClick: (item: {label: string; value: string | number}) => void;
   errorMessage?: string;
   search?: boolean;
   value?: string | number | null;
   disable?: boolean;
+  dropdownPosition?: 'top' | 'bottom';
 };
 
 const normalizeValue = (value: string | number | null | undefined) => {
@@ -34,6 +35,7 @@ const DropdownComponent = ({
   search = false,
   value: valueProp,
   disable = false,
+  dropdownPosition = 'bottom',
 }: DropdownComponentProps) => {
   const isControlled = valueProp !== undefined;
   const isEmpty = data.length === 0;
@@ -104,7 +106,7 @@ const DropdownComponent = ({
         maxHeight={300}
         labelField="label"
         valueField="value"
-        dropdownPosition="top"
+        dropdownPosition={dropdownPosition}
         placeholder={isEmpty ? t('common.noData') : 'Select...'}
         searchPlaceholder="Search..."
         value={selectedValue ?? null}

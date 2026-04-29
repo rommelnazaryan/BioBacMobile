@@ -1,10 +1,10 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-export default function ScrollDataModal() {
+export default function PreOrder() {
   return (
     <View>
-      <Text>ScrollDataModal</Text>
+      <Text>index</Text>
     </View>
   )
 }
