@@ -6,7 +6,7 @@ import { MaterialIcons, AntDesign, Feather } from '@/component/icons/VectorIcon'
 import { Colors, FontFamily } from '@/theme';
 import useDraftStore from '@/zustland/draftStore';
 
-import type { RootStackParamList, TabParamList, SellerParamList, BuyerParamList, ReturnProductParamList, AccountListParamList, SalesParamList, CompanyParamList, PreOrderParamList } from './types';
+import type { RootStackParamList, TabParamList, SellerParamList, BuyerParamList, ReturnProductParamList, AccountListParamList, SalesParamList, CompanyParamList, PreOrderParamList, WarehouseParamList } from './types';
 //-------------Home----------------
 import Home from '@/screen/Home';
 import Detail from '@/screen/Company/Detail';
@@ -60,6 +60,9 @@ import Phone from '@/screen/Phone';
 //-------------Pre Order----------------
 import PreOrder from '@/screen/PreOrder';
 
+//-------------Warehouse----------------
+import Warehouse from '@/screen/Warehouse';
+
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const HomeStack = createNativeStackNavigator<RootStackParamList>();
@@ -73,7 +76,7 @@ const AccountListStack = createNativeStackNavigator<AccountListParamList>();
 const SalesStack = createNativeStackNavigator<SalesParamList>();
 const CompanyStack = createNativeStackNavigator<CompanyParamList>();
 const PreOrderStack = createNativeStackNavigator<PreOrderParamList>();
-
+const WarehouseStack = createNativeStackNavigator<WarehouseParamList>();
 
 const baseScreenOptions = {
   headerShown: false,
@@ -231,6 +234,15 @@ const PreOrderStackScreen = () => {
 };
 
 
+const WarehouseStackScreen = () => {
+  return (
+    <WarehouseStack.Navigator screenOptions={{ headerShown: false }}>
+      <WarehouseStack.Screen name="Warehouse" component={Warehouse} />
+    </WarehouseStack.Navigator>
+  );
+};
+
+
 const HomeStackScreen = () => {
   return (
     <HomeStack.Navigator screenOptions={{ headerShown: false }}>
@@ -241,6 +253,7 @@ const HomeStackScreen = () => {
       <CompanyStack.Screen name="SalesStack" component={SalesStackScreen} />
       <HomeStack.Screen name="AccountListStack" component={AccountListStackScreen} />
       <HomeStack.Screen name="PreOrderStack" component={PreOrderStackScreen} />
+      <HomeStack.Screen name="WarehouseStack" component={WarehouseStackScreen} />
     </HomeStack.Navigator>
   );
 };

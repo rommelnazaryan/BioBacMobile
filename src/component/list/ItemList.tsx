@@ -11,6 +11,7 @@ import {
 } from '@/component/icons';
 import FontAwesome  from 'react-native-vector-icons/FontAwesome';
 import {t} from '@/locales';
+import ShopIcon from '../icons/ShopIcon';
 export default function ItemList({
   item,
   onCallback,
@@ -29,6 +30,8 @@ export default function ItemList({
       ? ApartmentIcon
       : item.iconName === 'CompanyIcon'
       ? ApartmentIcon
+      : item.iconName === 'ShopIcon'
+      ? ShopIcon
     : NotFound;
   // const SvgIcon =
   //   item.iconName === 'ApartmentIcon'
@@ -66,6 +69,10 @@ export default function ItemList({
           ? t('company.companyAccountList')
           : item.label === 'company'
           ? t('common.company')
+          : item.label === 'warehouse'
+          ? t('common.warehouse')
+          : item.label === 'pre-order'
+          ? t('common.pre-order')
           : 'other'}
         {/* {item.label === 'buyers'
           ? t('company.companyBuyerList')

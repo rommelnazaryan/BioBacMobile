@@ -6,15 +6,21 @@ export const USER_PERMISSIONS = {
   export type UserPermissions = keyof typeof USER_PERMISSIONS;
 
   export const HOME_LIST = [
-    {
-      key: 'Sales',
-      label: 'sales',
-      iconName: 'SalesIcon',
-    },
+  
     {
       key: 'Company',
       label: 'company',
       iconName: 'CompanyIcon',
+    },
+    {
+      key: 'Warehouse',
+      label: 'warehouse',
+      iconName: 'ShopIcon',
+    },
+    {
+      key: 'Pre-order',
+      label: 'pre-order',
+      iconName: 'SalesIcon',
     },
     {
       key: 'AccountList',

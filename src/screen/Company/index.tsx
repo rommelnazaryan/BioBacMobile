@@ -7,7 +7,6 @@ import Activity from '@/component/ActivityIndicator';
 import { AllCompanyProps } from '@/types';
 import { deviceHeight } from '@/helper';
 import NotFound from '@/component/icons/NotFound';
-import DefaultTable from '@/component/Table/defaultTable';
 import CartList from '@/screen/Company/_component/CartList';
 import CustomHeader from '@/navigation/Header';
 import { DefaultModal } from '@/component/Modal';

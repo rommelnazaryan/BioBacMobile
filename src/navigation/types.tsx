@@ -43,6 +43,7 @@ export type RootStackParamList = {
   SalesStack: NavigatorScreenParams<SalesParamList> | undefined;
   PreOrderStack: NavigatorScreenParams<PreOrderParamList> | undefined;
   ReturnProductListStack: NavigatorScreenParams<ReturnProductParamList> | undefined;
+  WarehouseStack: NavigatorScreenParams<WarehouseParamList> | undefined;
 };
 
 export type CompanyParamList = {
@@ -88,4 +89,8 @@ export type SalesParamList = {
 
 export type PreOrderParamList = {
   PreOrder: undefined;
+};
+
+export type WarehouseParamList = {
+  Warehouse: undefined;
 };

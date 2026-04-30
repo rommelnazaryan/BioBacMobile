@@ -191,15 +191,22 @@ export default function useDetail(route: Props) {
         break;
       case 'ReturnProduct':
         navigation.navigate('ReturnProductStack', {
-          screen: 'ReturnProduct',
-          params: {item: item as AllCompanyProps},
+          screen: 'ReturnProductCreate',
+          params: {item: undefined, key: 'create',name: item.name},
         });
+        // navigation.navigate('ReturnProductStack', {
+        //   screen: 'ReturnProduct',
+        //   params: {item: item as AllCompanyProps},
+        // });
         break;
       case 'Phone':
         navigation.navigate('Phone',{item: item as {phones: string[]}});
         break;
       case 'Sales':
-        navigation.navigate('SalesStack');
+        navigation.navigate('SalesStack', {
+          screen: 'SalesCreate',
+          params: {item: undefined, key: 'create'},
+        });
         break;
       default:
         break;

@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.medium,
   },
   activityIndicator: {
-    marginTop: deviceHeight / 8,
+    marginTop: deviceHeight / 3,
 
   },
   tableContainer: {

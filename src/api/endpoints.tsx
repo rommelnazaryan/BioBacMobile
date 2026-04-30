@@ -32,6 +32,7 @@ type Endpoints = {
   GetSeller: string;
   GetByLines: string;
   GetCompanyFns: string;
+  GetWarehousesAll: string;
 }
 
 export const endpoints:Endpoints = {
@@ -74,6 +75,7 @@ export const endpoints:Endpoints = {
 
   //warehouses
   GetWarehouses: 'warehouse/warehouses',
+  GetWarehousesAll: 'warehouse/warehouses/all',
 
   //account list
   GetAccountListAll: 'company/account/all',

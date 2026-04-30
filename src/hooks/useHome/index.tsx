@@ -15,6 +15,9 @@ export default function useHome() {
       case 'Sales':
         navigation.navigate('SalesStack');
         break;
+      case 'Warehouse':
+        navigation.navigate('WarehouseStack');
+        break;
       default:
         break;
     }

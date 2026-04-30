@@ -93,7 +93,8 @@
     "pleaseGetLocationToSubmit": "получите местоположение перед отправкой",
     "select": "выберите",
     "delete": "удалить",
-    "edit": "Обновить"
+    "edit": "Обновить",
+    "pre-order": "предзаказ"
   },
   "settings": {
     "title": "настройки",
