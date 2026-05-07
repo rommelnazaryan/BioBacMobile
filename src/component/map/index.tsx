@@ -1,5 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, BackHandler, StyleSheet, TouchableOpacity, View } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, type Region } from 'react-native-maps';
 import { Colors } from '@/theme';
 import Botton from '@/component/button';
@@ -7,7 +7,15 @@ import { ensureLocationPermission, getSafeCurrentLocation } from '@/component/ge
 import { FontAwesome } from '../icons/VectorIcon';
 import ActivityIndicator from '../ActivityIndicator';
 import { deviceHeight } from '@/helper/Dimensions';
+import { t } from '@/locales';
 type Coords = { latitude: number; longitude: number; accuracy?: number };
+type MapScreenProps = {
+  onSubmit?: (latitude: number, longitude: number) => void;
+  onCancel: () => void;
+  visibleButton?: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
+};
 
 const DEFAULT_REGION: Region = {
   latitude: 37.78825,
@@ -16,12 +24,62 @@ const DEFAULT_REGION: Region = {
   longitudeDelta: 0.02,
 };
 
-export default function MapScreen({ onSubmit, onCancel }: { onSubmit: (latitude: number, longitude: number) => void, onCancel: () => void }) {
+const getRegion = (coordinate: Coords): Region => ({
+  latitude: coordinate.latitude,
+  longitude: coordinate.longitude,
+  latitudeDelta: 0.01,
+  longitudeDelta: 0.01,
+});
+
+const isValidCoordinate = (latitude?: number | null, longitude?: number | null) =>
+  typeof latitude === 'number' &&
+  typeof longitude === 'number' &&
+  Number.isFinite(latitude) &&
+  Number.isFinite(longitude) &&
+  latitude >= -90 &&
+  latitude <= 90 &&
+  longitude >= -180 &&
+  longitude <= 180;
+
+export default function MapScreen({
+  onSubmit,
+  onCancel,
+  visibleButton = true,
+  latitude,
+  longitude,
+}: MapScreenProps) {
   const mapRef = useRef<MapView>(null);
   const [loading, setLoading] = useState(false);
-  const [coords, setCoords] = useState<Coords | null>(null);
+  const [userCoords, setUserCoords] = useState<Coords | null>(null);
+  const destinationCoords = useMemo<Coords | null>(() => {
+    if (!isValidCoordinate(latitude, longitude)) {
+      return null;
+    }
+
+    return {
+      latitude: latitude as number,
+      longitude: longitude as number,
+    };
+  }, [latitude, longitude]);
 
 
+  useEffect(() => {
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+        onCancel();
+        return true;
+      });  
+      return () => {
+        subscription.remove();
+      };
+    }, [onCancel]);
+
+  useEffect(() => {
+    if (!destinationCoords) {
+      return;
+    }
+
+    mapRef.current?.animateToRegion(getRegion(destinationCoords), 500);
+  }, [destinationCoords]);
 
   const locateMe = useCallback(async () => {
     if (loading) return;
@@ -30,44 +88,36 @@ export default function MapScreen({ onSubmit, onCancel }: { onSubmit: (latitude:
     try {
       const granted = await ensureLocationPermission();
       if (!granted) {
-        Alert.alert('Permission required');
+        Alert.alert(t('common.permissionRequired'));
         setLoading(false);
         return;
       }
 
       getSafeCurrentLocation(
         c => {
-          setCoords(c);
-          mapRef.current?.animateToRegion(
-            {
-              latitude: c.latitude,
-              longitude: c.longitude,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            },
-            500,
-          );
+          setUserCoords(c);
+          mapRef.current?.animateToRegion(getRegion(c), 500);
           setLoading(false);
         },
         () => {
-          Alert.alert('Failed to get location');
+          Alert.alert(t('common.failedToGetLocation'));
           setLoading(false);
         },
       );
     } catch (e) {
-      Alert.alert((e as Error)?.message ?? 'Failed to get location');
+      Alert.alert((e as Error)?.message ?? t('common.failedToGetLocation'));
       setLoading(false);
     }
   }, [loading]);
 
 
   const onSubmitHandler = useCallback(() => {
-    if (coords === null) {
-        Alert.alert('Please get location', 'Please get location to submit');
-    }else{
-      onSubmit(coords.latitude, coords.longitude);
+    if (userCoords === null) {
+      Alert.alert(t('common.pleaseGetLocation'), t('common.pleaseGetLocationToSubmit'));
+    } else {
+      onSubmit?.(userCoords.latitude, userCoords.longitude);
     }
-  }, [coords, onSubmit]);
+  }, [userCoords, onSubmit]);
 
   return (
     <View style={styles.container}>
@@ -76,11 +126,24 @@ export default function MapScreen({ onSubmit, onCancel }: { onSubmit: (latitude:
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
         style={styles.map}
-        initialRegion={DEFAULT_REGION}
-        showsUserLocation={!!coords}
+        initialRegion={destinationCoords ? getRegion(destinationCoords) : DEFAULT_REGION}
+        showsUserLocation={false}
         showsMyLocationButton={true}
       >
-        {coords && <Marker coordinate={{ latitude: coords.latitude, longitude: coords.longitude }} />}
+        {destinationCoords && (
+          <Marker
+            coordinate={destinationCoords}
+            pinColor={Colors.red}
+            title="Selected location"
+          />
+        )}
+        {userCoords && (
+          <Marker
+            coordinate={userCoords}
+            pinColor={Colors.blue}
+            title="My location"
+          />
+        )}
       </MapView>
       <TouchableOpacity
         onPress={locateMe}
@@ -88,14 +151,15 @@ export default function MapScreen({ onSubmit, onCancel }: { onSubmit: (latitude:
         <FontAwesome name="location-arrow" size={24} color={Colors.black} />
       </TouchableOpacity>
       {loading && (
-      <View style={styles.loadingOverlay}>
-        <ActivityIndicator />
-      </View>
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator />
+        </View>
       )}
-      <View style={styles.buttonContainer}>
-      <Botton title="Cancel" onHandler={onCancel}  disabled={loading} style={[styles.button, styles.cancelButton]} textStyle={styles.cancelButtonText}/>
-        <Botton title="Submit" onHandler={onSubmitHandler}  disabled={loading} style={styles.button} />
-      </View>
+      {visibleButton &&
+        <View style={styles.buttonContainer}>
+          <Botton title={t('common.cancel')} onHandler={onCancel} disabled={loading} style={[styles.button, styles.cancelButton]} textStyle={styles.cancelButtonText} />
+          <Botton title={t('common.submit')} onHandler={onSubmitHandler} disabled={loading} style={styles.button} />
+        </View>}
     </View>
   );
 }

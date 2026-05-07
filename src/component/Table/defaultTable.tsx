@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import React from 'react';
 import { Colors, Shadows } from '@/theme';
 import DeleteIcon from 'react-native-vector-icons/Ionicons';
@@ -9,7 +9,7 @@ type Props = {
     onClickDelete?: () => void;
     onClickHistory?: () => void;
     children: React.ReactNode;
-    containerStyle?: ViewStyle;
+    containerStyle?: StyleProp<ViewStyle>;
 };
 
 
@@ -25,7 +25,7 @@ export default function DefaultTable({
 
     return (
         <View style={[styles.contentContainer, containerStyle]}>
-            <View style={styles.invoiceContainer}>
+            {/* <View style={styles.invoiceContainer}>
                 {onClickHistory && (
                     <TouchableOpacity activeOpacity={0.5} onPress={onClickHistory}>
                         <HistoryIcon />
@@ -42,7 +42,7 @@ export default function DefaultTable({
                     </TouchableOpacity>
                 )
                 }
-            </View>
+            </View> */}
             {children}
         </View>
     );

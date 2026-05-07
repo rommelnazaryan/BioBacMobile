@@ -1,13 +1,12 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {RootStackParamList, SellerParamList} from '@/navigation/types';
-import {AllCompanyProps, HomeListProps} from '@/types';
+import {AllCompanyProps} from '@/types';
 import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 import {GetAllCompanies} from '@/services/Company/AllCompanies';
-import {refreshTokenService} from '@/services/AuthService/RefreshToken';
-import useAuthStore from '@/zustland/authStore';
+import {refreshTokenOnce} from '@/services/AuthService/refreshTokenOnce';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {DeleteCompany} from '@/services/Company/DeleteCompany';
 import { useToast } from '@/component/toast/ToastProvider';
@@ -21,7 +20,6 @@ export default function useSeller(route: Props) {
   const [loading, setLoading] = useState(false);
   const isConnected = useNetworkStore(s => s.isConnected);
   const [loadingMore, setLoadingMore] = useState(false);
-  const {refreshToken} = useAuthStore();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [seller, setSeller] = useState<AllCompanyProps[]>([]);
@@ -33,15 +31,15 @@ export default function useSeller(route: Props) {
 
   // refresh token //
   const onSubmitRefreshToken = useCallback(() => {
-    refreshTokenService(refreshToken, {
-      onSuccess: () => {
+    refreshTokenOnce()
+      .then(() => {
         getAllCompaniesRef.current();
-      },
-      onError: () => {
+      })
+      .catch(() => {
         setLoading(false);
-      },
-    });
-  }, [refreshToken]);
+        setLoadingMore(false);
+      });
+  }, []);
 
   // get seller data //
   const getAllCompanies = useCallback(() => {
@@ -76,7 +74,7 @@ export default function useSeller(route: Props) {
       onUnauthorized: () => {
         onSubmitRefreshToken();
       },
-      onError: (error) => {
+      onError: () => {
         setLoading(false);
         setLoadingMore(false);
         show('Failed to get companies', {type: 'error'});
@@ -139,10 +137,10 @@ export default function useSeller(route: Props) {
   };
 
 // submit edit //
-const onSubmitEdit = (item: AllCompanyProps) => {
+const onSubmitEdit = (company: AllCompanyProps) => {
   navigation.navigate('SellerStack', {
     screen: 'SellerCreate',
-    params: {item: item as AllCompanyProps, key: 'edit'},
+    params: {item: company as AllCompanyProps, key: 'edit'},
   })
 };
 

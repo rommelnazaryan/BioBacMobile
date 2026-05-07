@@ -3,11 +3,12 @@ import React from 'react'
 import TextInput from '../input/TextInput'
 import { Ionicons } from '../icons/VectorIcon';
 import { Colors } from '@/theme';
+import { t } from '@/locales';
 export default function Search( {onChangeText}: {onChangeText: (text: string) => void} ) {
   return (
     <View style={styles.container}>
         <TextInput
-            placeholder="Search"
+            placeholder={t('common.search')}
             inputSize="medium"
             containerStyle={styles.inputContainer}
             inputStyle={styles.inputContainer}
@@ -20,10 +21,12 @@ export default function Search( {onChangeText}: {onChangeText: (text: string) =>
 
 const styles = StyleSheet.create({
   container: {
-    width: '70%',
+    marginTop:'2%',
+    width: '90%',
     flexDirection: 'row',
     alignItems: 'center',
     minWidth: 0,
+    alignSelf: 'center',
   },
   inputContainer: {
     width: '100%',

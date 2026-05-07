@@ -5,8 +5,8 @@ import useDraftStore from '@/zustland/draftStore';
 import useNetworkStore from '@/zustland/networkStore';
 import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import type {TabParamList} from '@/navigation/types';
-import type {BottomTabNavigationProp} from '@react-navigation/bottom-tabs';
+import type { TabParamList } from '@/navigation/types';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 export default function useDraft() {
   const { Draft, setDraft } = useDraftStore();
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
@@ -26,16 +26,16 @@ export default function useDraft() {
     setVisible(false);
   };
 
-  // submit delete
-  const onSubmitDelete = (draftIndex: number) => {
-    setVisible(true);
-    setId(draftIndex);
-  }
+  // // submit delete
+  // const onSubmitDelete = (draftIndex: number) => {
+  //   setVisible(true);
+  //   setId(draftIndex);
+  // };
 
   // submit confirm
-  const onSubmit = (data:unknown,indexData:number) => {
+  const onSubmit = (data: unknown, indexData: number) => {
     setLoading(true);
-    if(!isConnected) {
+    if (!isConnected) {
       show('Please check your internet connection', { type: 'error' });
       setLoading(false);
       return;
@@ -50,20 +50,18 @@ export default function useDraft() {
         show('Unauthorized', { type: 'error' });
         setLoading(false);
       },
-      onError: (error) => {
+      onError: error => {
         show((error as Error)?.message ?? 'Failed to create company', {
           type: 'error',
         });
         setLoading(false);
       },
-
-    });  
+    });
   };
-
 
   // submit edit
   const onSubmitEdit = (data: unknown) => {
-    const draft = data as AllCompanyProps & {key?: string};
+    const draft = data as AllCompanyProps & { key?: string };
 
     // SellerStack / BuyerStack are nested under HomeScreen tab
     if (draft.key === 'Buyer') {
@@ -71,7 +69,7 @@ export default function useDraft() {
         screen: 'BuyerStack',
         params: {
           screen: 'BuyerCreate',
-          params: {item: draft, key: 'create'},
+          params: { item: draft, key: 'create' },
         },
       } as any);
       return;
@@ -81,10 +79,25 @@ export default function useDraft() {
       screen: 'SellerStack',
       params: {
         screen: 'SellerCreate',
-        params: {item: draft, key: 'create'},
+        params: { item: draft, key: 'create' },
       },
     } as any);
-  }
+  };
 
-  return { Draft, onSubmitDelete, setVisible, visible, onSubmitCancel, onSubmitConfirm,onSubmit,loading ,onSubmitEdit}
+
+  // delete company
+  const onSubmitDelete = (company: AllCompanyProps, value: number) => {
+   setDraft(Draft.filter((item, index) => index !== value));
+  };
+  return {
+    Draft,
+    setVisible,
+    visible,
+    onSubmitCancel,
+    onSubmitConfirm,
+    onSubmit,
+    loading,
+    onSubmitEdit,
+    onSubmitDelete,
+  };
 }

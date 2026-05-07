@@ -22,7 +22,7 @@ export default function useSale() {
   const getAllCompaniesRef = useRef<() => void>(() => {});
   const [saleSuccess, setSaleSuccess] = useState<GetSaleSuccessResponse[]>([]);
 
-  // get seller data //
+  // get sale data //
   const getSaleSuccess = useCallback(() => {
     if (!isConnected) {
       setLoading(false);

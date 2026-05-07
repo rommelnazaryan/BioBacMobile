@@ -9,8 +9,9 @@ import {
   PaymentIcon,
   ApartmentIcon
 } from '@/component/icons';
-import FontAwesome  from 'react-native-vector-icons/FontAwesome';
+import { FontAwesome,Feather } from '../icons/VectorIcon';
 import {t} from '@/locales';
+import ShopIcon from '../icons/ShopIcon';
 export default function ItemList({
   item,
   onCallback,
@@ -27,6 +28,10 @@ export default function ItemList({
       ? SalesIcon
       : item.iconName === 'AccountListIcon'
       ? ApartmentIcon
+      : item.iconName === 'CompanyIcon'
+      ? ApartmentIcon
+      : item.iconName === 'ShopIcon'
+      ? ShopIcon
     : NotFound;
   // const SvgIcon =
   //   item.iconName === 'ApartmentIcon'
@@ -47,9 +52,13 @@ export default function ItemList({
       onPress={() => onCallback(item)}
       style={styles.groupRow}>
         {item.iconName === 'PhoneIcon' ? (
-          <FontAwesome name="phone" size={30} color="black" style={styles.phoneIcon}/>
-        ) : (
-          <SvgIcon size={item.iconSize ?? 40} color={Colors.black} />
+          <FontAwesome name="phone" size={25} color="black" style={styles.phoneIcon}/>
+        ) : 
+        item.iconName === 'MapIcon' ? (
+          <Feather name="map-pin" size={25} color="black" style={styles.phoneIcon}/>
+        ) :
+        (
+          <SvgIcon size={item.iconSize ?? 32} color={Colors.black} />
         )}
       <Text style={styles.groupTitle}>
       {    item.label === 'payment'
@@ -62,6 +71,14 @@ export default function ItemList({
           ? t('common.phone')
           : item.label === 'account list'
           ? t('company.companyAccountList')
+          : item.label === 'company'
+          ? t('common.company')
+          : item.label === 'warehouse'
+          ? t('common.warehouse')
+          : item.label === 'pre-order'
+          ? t('common.pre-order') 
+          : item.label === 'map'
+          ? t('common.map')
           : 'other'}
         {/* {item.label === 'buyers'
           ? t('company.companyBuyerList')
@@ -89,8 +106,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: Colors.white,
     borderRadius: 12,
-    gap: 10,
-    height: 100,
+    gap: 5,
+    height: 80,
     ...Shadows.md,
   },
   groupTitle: {

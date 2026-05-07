@@ -1,14 +1,20 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {Colors} from '@/theme/Colors';
 import Header from '@/navigation/Header';
 import {Switch} from 'react-native-switch';
 import useSetting from '@/hooks/useSetting.tsx';
 import { FontFamily, FontSizes } from '@/theme';
 import {t} from '@/locales';
-
+import { resetToSignIn } from '@/navigation/rootNavigation';
+import useAuthStore from '@/zustland/authStore';
 export default function Settings() {
   const {isEnabled, toggleSwitch} = useSetting();
+  const {clear} = useAuthStore();
+  const logout = () => {
+    clear();
+    resetToSignIn();
+  };
   return (
     <View style={styles.container}>
       <Header title={t('settings.title')} showBack={true} />
@@ -30,7 +36,14 @@ export default function Settings() {
           switchRightPx={5}
           switchWidthMultiplier={3.2}
         />
+
       </View>
+      <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={() => logout()}
+        >
+          <Text style={styles.logoutButtonText}>{t('common.logout')}</Text>
+        </TouchableOpacity>
     </View>
   );
 }
@@ -57,5 +70,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 16,
+  },
+  logoutButton: {
+    width: '90%',
+    alignSelf: 'center',
+    marginTop: '10%',
+  },
+  logoutButtonText: {
+    color: Colors.red_700,
+    fontFamily: FontFamily.medium,
+    fontSize: FontSizes.large,
   },
 });

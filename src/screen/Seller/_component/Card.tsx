@@ -17,7 +17,7 @@ export default function Card({element}: {element: AllCompanyProps}) {
         <Text style={styles.value}>{element.name}</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.title}>{t('General Director')}:</Text>
+        <Text style={styles.title}>{t('common.generalDirector')}:</Text>
         <Text style={styles.value}>{element.ceo}</Text>
       </View>
       <View style={styles.row}>
@@ -37,19 +37,19 @@ export default function Card({element}: {element: AllCompanyProps}) {
         <Text style={styles.value}>{element.emails[0]}</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.title}>{t('Actual Address')}:</Text>
+        <Text style={styles.title}>{t('common.actualAddress')}:</Text>
         <Text style={styles.value}>{element.actualAddress}</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.title}>{t('Point of Sale Address')}:</Text>
+        <Text style={styles.title}>{t('common.pointOfSaleAddress')}:</Text>
         <Text style={styles.value}>{element.addressTT}</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.title}>{t('Legal Address')}:</Text>
+        <Text style={styles.title}>{t('common.legalAddress')}:</Text>
         <Text style={[styles.value,{width:'60%'}]}>{element.localAddress}</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.title}>{t('Warehouse Address')}:</Text>
+        <Text style={styles.title}>{t('common.warehouseAddress')}:</Text>
         <Text style={styles.value}>{element.warehouseAddress}</Text>
       </View>
       <View style={styles.row}>

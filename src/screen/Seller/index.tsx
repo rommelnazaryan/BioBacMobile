@@ -14,6 +14,7 @@ import {AllCompanyProps} from '@/types';
 import NotFound from '@/component/icons/NotFound';
 import {DefaultModal} from '@/component/Modal';
 import Filter from '@/component/Filter';
+import {t} from '@/locales';
 
 type Props = NativeStackScreenProps<SellerParamList, 'Seller'>;
 
@@ -36,7 +37,7 @@ export default function Seller(route: Props) {
   } = useSeller(route);
   return (
     <View style={styles.container}>
-      <Header title={routeItem?.label} showBack={true} />
+      <Header title={t('company.companiesSellerList')} showBack={true} />
       <Filter onHandlerCreate={onSubmitCreate}/>
       {loading ? (
         <Activity style={styles.activityIndicator} />
@@ -58,7 +59,7 @@ export default function Seller(route: Props) {
               loadingMore ? (
                 <Activity style={styles.footerLoading} />
               ) : !hasNextPage && seller.length > 0 ? (
-                <Text style={styles.footerText}>No more data</Text>
+                <Text style={styles.footerText}>{t('common.noMoreData')}</Text>
               ) : null
             }
             renderItem={({item: company}: {item: AllCompanyProps}) => (
@@ -92,8 +93,8 @@ export default function Seller(route: Props) {
         isVisible={visible}
         onClose={onSubmitCancel}
         onConfirm={onSubmitConfirm}
-        title="Delete Company"
-        description="Are you sure you want to delete this company?"
+        title={t('common.deleteCompanyTitle')}
+        description={t('common.deleteCompanyDescription')}
       />
     </View>
   );
