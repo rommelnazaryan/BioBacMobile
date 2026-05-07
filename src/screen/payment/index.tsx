@@ -14,8 +14,10 @@ import DateIcon from '@/component/icons/DateIcon';
 import moment from 'moment';
 import {Controller} from 'react-hook-form';
 import {DefaultModal} from '@/component/Modal';
-
-export default function Payment() {
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/navigation/types';
+type Props = NativeStackScreenProps<RootStackParamList, 'Payment'>;
+export default function Payment(route: Props) {
   const {
     showDate,
     onOpenDate,
@@ -41,7 +43,7 @@ export default function Payment() {
     onSubmitConfirm,
     onclearDate,
     submitCount,
-  } = usePayment();
+  } = usePayment(route);
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.container}>
     <View style={styles.container}>
@@ -49,7 +51,7 @@ export default function Payment() {
         contentContainerStyle={styles.scrollViewContainer}
         showsVerticalScrollIndicator={false}>
         <Header title={t('payment')} showBack={true} />
-        <TextView title="Date" style={styles.marginTop} />
+        {/* <TextView title="Date" style={styles.marginTop} />
         <TouchableView
           title={date}
           style={styles.marginTop}
@@ -57,8 +59,8 @@ export default function Payment() {
           onClose={onclearDate}
           onBlur={showDate}
           icon={<DateIcon size={24} color={Colors.black} />}
-        />
-        <TextView title="Account" style={styles.marginTop} />
+        /> */}
+        {/* <TextView title="Account" style={styles.marginTop} />
         <Controller
           control={control}
           name="account"
@@ -71,8 +73,8 @@ export default function Payment() {
               errorMessage={errors.account?.message}
             />
           )}
-        />
-        <Calender
+        /> */}
+        {/* <Calender
           isVisible={showDate}
           onClose={() => onCloseDate()}
           onConfirm={onConfirmDate}
@@ -81,8 +83,8 @@ export default function Payment() {
               ? moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD')
               : undefined
           }
-        />
-        <TextView title="Type" style={styles.marginTop} />
+        /> */}
+        {/* <TextView title="Type" style={styles.marginTop} />
         <Controller
           control={control}
           name="type"
@@ -98,8 +100,8 @@ export default function Payment() {
               errorMessage={errors.type?.message}
             />
           )}
-        />
-        {listType.length > 0 && (
+        /> */}
+        {/* {listType.length > 0 && (
           <>
             <TextView title="List Of Type" style={styles.marginTop} />
             <Controller
@@ -123,8 +125,8 @@ export default function Payment() {
               )}
             />
           </>
-        )}
-        {categoryLevels.length > 0 &&
+        )}*/}
+        {/* {categoryLevels.length > 0 &&
           categoryLevels.map((levelOptions, idx) => (
             <React.Fragment key={`cat-level-${categoryResetKey}-${idx}`}>
               <TextView
@@ -166,7 +168,7 @@ export default function Payment() {
                 />
               )}
             </React.Fragment>
-          ))}
+          ))} */}
           <TextView title="Amount" style={styles.marginTop} />
          <Controller
           control={control}
@@ -182,7 +184,7 @@ export default function Payment() {
               errorMessage={errors.amount?.message}
             />
           )}
-        />
+        /> 
         <TextView title="Comment" style={styles.marginTop} />
         <Controller
           control={control}
@@ -202,19 +204,11 @@ export default function Payment() {
       </ScrollView>
       {/* Fixed footer buttons */}
       <View style={styles.footer}>
-        <View style={styles.buttonRow}>
-          <Button
-            title="Discard"
-            onHandler={onSubmitDiscard}
-            style={[styles.button, styles.discardButton]}
-            textStyle={{color: Colors.red}}
-          />
           <Button
             title="Create"
             onHandler={handleSubmit(onSubmit,onInvalidSubmit)}
             style={styles.button}
           />
-        </View>
       </View>
       <DefaultModal
         isVisible={visibleModal}
@@ -250,7 +244,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   button: {
-    width: '45%',
+    width: '90%',
   },
   discardButton: {
     backgroundColor: Colors.white,

@@ -2,10 +2,10 @@ import React from 'react'
 import BaseModal from './BaseModal'
 import MapScreen from '../map'
 
-export default function MapModal({ isVisible, onClose, onSubmit }: { isVisible: boolean, onClose: () => void, onSubmit: (latitude: number, longitude: number) => void }) {
+export default function MapModal({ isVisible, onClose, onSubmit, visibleButton = true, latitude, longitude }: { isVisible: boolean, onClose: () => void, onSubmit?: (latitude: number, longitude: number) => void, visibleButton?: boolean, latitude?: number | null, longitude?: number | null }) {
     return (
-        <BaseModal isVisible={isVisible}>
-            <MapScreen onSubmit={onSubmit} onCancel={onClose} />
+        <BaseModal isVisible={isVisible} onClose={onClose}>
+            <MapScreen onSubmit={onSubmit} onCancel={onClose} visibleButton={visibleButton} latitude={latitude} longitude={longitude} />
         </BaseModal>
     )
 }

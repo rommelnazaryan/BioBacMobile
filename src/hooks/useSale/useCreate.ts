@@ -205,6 +205,7 @@ export default function useSaleCreate(
       setErrorDate('Required');
       return;
     }
+    console.log(getValues());
     const data: CreateCompanyRequest = {
       // name: getValues().companyName,
       // clientRegisteredDate: `${moment(new Date()).format('DD/MM/YYYY')}:23:59:00`,

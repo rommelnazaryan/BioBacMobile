@@ -1,11 +1,11 @@
-import { View, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native'
+import { View, Text, StyleSheet, StyleProp, ViewStyle, TextStyle } from 'react-native'
 import React from 'react'
 import { Colors, FontFamily, FontSizes } from '@/theme';
 
 interface TextViewProps {
     title: string;
-  style?: ViewStyle
-  textStyle?: TextStyle
+  style?: StyleProp<ViewStyle>
+  textStyle?: StyleProp<TextStyle>
 }
 
 export default function TextView({title, style, textStyle}: TextViewProps) {

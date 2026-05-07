@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Eye from '@/assets/svg/Eye.svg';
 import EyeClose from '@/assets/svg/EyeClose.svg';
+import { Feather } from '@/component/icons/VectorIcon';
 import {Colors, FontFamily, Shadows} from '@/theme';
 export interface Props {
   defaultval?: string;
@@ -39,6 +40,8 @@ export interface Props {
   EndEditing?: (val: any) => void;
   KeyPress?: (val: any) => void;
   inputSize?: 'small' | 'medium' | 'large';
+  plusIcon?: boolean;
+  handlePlusClick?: () => void;
 }
 
 const TextInputComponent = (props: Props) => {
@@ -64,11 +67,13 @@ const TextInputComponent = (props: Props) => {
 
    const backgroundColor = useMemo(
     () => ({
-      backgroundColor: props.errorMessage
+      backgroundColor: props.edit === false
+        ? Colors.gray_200
+        : props.errorMessage
         ? Colors.red_100
         : Colors.white,
     }),
-    [props.errorMessage],
+    [props.edit, props.errorMessage],
   );
 
 
@@ -165,6 +170,13 @@ const TextInputComponent = (props: Props) => {
               onPress={props.handlePasswordIconClick}
               style={styles.rightIcon}>
               {props.showPass ?<EyeClose /> :  <Eye /> }
+            </TouchableOpacity>
+          )}
+          {props.plusIcon && (
+            <TouchableOpacity
+              onPress={props.handlePlusClick}
+              style={styles.rightIcon}>
+              <Feather name="plus-circle" size={24} color={Colors.blue} />
             </TouchableOpacity>
           )}
         </View>

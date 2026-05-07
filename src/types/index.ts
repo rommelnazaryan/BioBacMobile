@@ -24,9 +24,12 @@ export type GetProfileResponse = {
   positionId: null;
   positionName: null;
   permissions: GetAllPermissionsResponse[];
+  companyId: number;
+  defaultWarehouseId: number;
+  accountIds: number[];
 };
 
-export type HomeListProps = {
+export type ListProps = {
   key: string;
   label: string;
   iconLibrary: string;
@@ -63,11 +66,11 @@ export type AllCompanyProps = {
     contractFormName: string;
     bonus: number | null;
   };
-  contactPerson: { id: number; name: string }[];
+  contactPerson: { id: number; firstName: string; lastName: string }[];
   cooperation: { id: number; name: string };
   createdAt: string;
   deleted: boolean;
-  detail: { id: number; inn: string; kpp: string; ogrn: string; okpo: string };
+  detail: { id: number; inn: string; kpp: string; ogrn: string; okpo: string } | null;
   emails: string[];
   externalEmails: string[];
   externalPhones: string[];
@@ -117,6 +120,11 @@ export type getHistoryProps = {
   createdAt: string;
   amountChanged: number;
   note: string | null;
+  timestamp: string;
+  action: {
+    id: number;
+    name: string;
+  };
 };
 
 export type GetAccountResponse = {
@@ -152,11 +160,11 @@ export type GetPaymentTypeResponse = {
 };
 
 export type CreatePaymentRequest = {
-  accountId: number;
-  category: string;
+  accountId?: number;
+  category?: string;
   date: string;
   notes: string;
-  paymentCategoryId: number;
+  paymentCategoryId?: number;
   sum: number;
   targetId: number;
 };
@@ -215,6 +223,7 @@ export type CreateCompanyRequest = {
   addressTT?: string[];
   localAddress?: string;
   warehouseAddress?: string;
+  contactPersonIds?: number[];
 };
 
 export type ReturnProductItemProps = {
@@ -364,3 +373,10 @@ export type GetSaleSuccessResponse = {
     warehouseId: number;
   
 };
+
+
+export type PhoneProps = {
+  phones: string[];
+};
+
+

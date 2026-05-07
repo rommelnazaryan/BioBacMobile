@@ -9,6 +9,7 @@ import { FontSizes } from '@/theme';
 import { deviceHeight } from '@/helper';
 import useAdditionalItems from '@/hooks/useAditionalItems';
 import { NotFound } from '@/component/icons';
+import { t } from '@/locales';
 
 
 export default function AdditionalItems() {
@@ -19,7 +20,7 @@ export default function AdditionalItems() {
 
   return (
     <ScrollView style={styles.container}>
-      <CustomHeader title="Additional Items" />
+      <CustomHeader title={t('common.additionalItems')} />
       {isConnected ? (  
         <View style={styles.linstContainer}>
         {ADDITIONAL_ITEMS_LIST.map((item) => (

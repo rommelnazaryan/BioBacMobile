@@ -24,9 +24,12 @@ export default function useSplash() {
       },
       onError: () => {},
       onUnauthorized: () => {
-        refreshTokenOnce().then(() => {
-          getAllPermissions();
-        });
+        refreshTokenOnce()
+          .then(() => {
+            console.log('refreshTokenOnce');
+            // getAllPermissions();
+          })
+          .catch(() => {});
       }
     })
   }, [setPermissions, navigation]);
@@ -34,12 +37,12 @@ export default function useSplash() {
   useEffect(() => {
     setTimeout(() => {
       if (isLoggedIn) {
-        if (isConnected) {
-          getAllPermissions();
-          return;
-        } else {
-          navigation.reset({index: 0, routes: [{name: 'Tabs'}]});
-        }
+        navigation.reset({index: 0, routes: [{name: 'Tabs'}]});
+        // if (isConnected) {
+        //   getAllPermissions();
+        //   return;
+        // } else {
+        // }
       } else {
         navigation.reset({index: 0, routes: [{name: 'SignIn'}]});
       }

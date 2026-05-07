@@ -12,33 +12,37 @@ export default function HistoryCard({ element }: { element: GetAccountHistoryRes
                 <NotFound size={100} /> :
                 <>
                     <View style={styles.row}>
-                        <Text style={styles.title}>#</Text>
+                        {/* <Text style={styles.title}>#</Text> */}
                         <Text style={styles.value}>{element.dealId}</Text>
+                        <Text style={styles.value}>{element.amountChanged}</Text>
+                        <Text style={styles.value}>{element.balanceAfter}</Text>
+                        <Text style={[styles.value]}>{element.note}</Text>
+                        <Text style={styles.value}>{ActionDate}</Text>
                     </View>
-                    <View style={styles.row}>
+                    {/* <View style={styles.row}>
                         <Text style={styles.title}>{t('common.amountChanged')}:</Text>
                         <Text style={styles.value}>{element.amountChanged}</Text>
-                    </View>
-                    <View style={styles.row}>
+                    </View> */}
+                    {/* <View style={styles.row}>
                         <Text style={styles.title}>Balance After:</Text>
                         <Text style={styles.value}>{element.balanceAfter}</Text>
-                    </View>
-                    <View style={[styles.row, styles.stretch]}>
+                    </View> */}
+                    {/* <View style={[styles.row, styles.stretch]}>
                         <Text style={styles.title}>{t('common.note')}:</Text>
                         <Text style={[styles.value, styles.note]}>{element.note}</Text>
-                    </View>
-                    <View style={styles.row}>
+                    </View> */}
+                    {/* <View style={styles.row}>
                         <Text style={styles.title}>Aactions:</Text>
                         <Text style={styles.value}>{element.actionName}</Text>
-                    </View>
+                    </View> */}
                     {/* <View style={styles.row}>
                         <Text style={styles.title}>{t('common.actionTime')}:</Text>
                         <Text style={styles.value}>{createdAtDate}</Text>
                     </View> */}
-                    <View style={styles.row}>
+                    {/* <View style={styles.row}>
                         <Text style={styles.title}>Action time:</Text>
                         <Text style={styles.value}>{ActionDate}</Text>
-                    </View>
+                    </View> */}
                 </>
             }
         </View>
@@ -49,13 +53,14 @@ const styles = StyleSheet.create({
     container: {
         width: '93%',
         alignSelf: 'center',
-        paddingVertical: 10,
+        paddingVertical:2,
     },
     row: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        gap: 5,
         marginTop: '2%',
         alignItems: 'center',
+        flexWrap: 'wrap',
     },
     title: {
         fontFamily: FontFamily.semiBold,

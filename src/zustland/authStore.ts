@@ -24,7 +24,7 @@ const useAuthStore = create<AuthState>()(
         set({ refreshToken: value });
       },
       clear: () => {
-        set({ token: '', refreshToken: '' });
+        set({ token: '', refreshToken: '', isLoggedIn: false });
       },
       isLoggedIn: false,
       setIsLoggedIn: (value: boolean) => {

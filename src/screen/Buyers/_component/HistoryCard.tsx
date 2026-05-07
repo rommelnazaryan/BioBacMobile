@@ -4,34 +4,33 @@ import { getHistoryProps } from '@/types';
 import { FontFamily, FontSizes } from '@/theme';
 import NotFound from '@/component/icons/NotFound';
 import { t } from '@/locales';
+import { formatted } from '@/helper/Regx';
 export default function HistoryCard({ element }: { element: getHistoryProps }) {
-    const createdAtDate = element.createdAt.split(':')[0]
-    const createdAt = element.createdAt.split(':')[0]
+    const timestamp = element.timestamp.replace(':', '-')
     return (
-        <View style={styles.container}>
+        <View style={[styles.container]}>
             {!element ?
                 <NotFound size={100} /> :
                 <>
-                    <View style={styles.row}>
-                        <Text style={styles.title}>#</Text>
-                        <Text style={styles.value}>{element.dealId}</Text>
+                    <View style={[styles.row]}>
+                        <Text style={styles.value}>{element.action.name} </Text>
+                        {element.amountChanged && <Text style={styles.value}>{formatted(element.amountChanged)},00 руб</Text>}
                     </View>
-                    <View style={styles.row}>
+                    <Text style={styles.value}>{element.note}</Text>
+                    <Text style={styles.value}>{timestamp}</Text>
+
+                    {/* <View style={styles.row}>
                         <Text style={styles.title}>{t('common.amountChanged')}:</Text>
                         <Text style={styles.value}>{element.amountChanged}</Text>
-                    </View>
-                    <View style={[styles.row, styles.stretch]}>
+                    </View> */}
+                    {/* <View style={[styles.row, styles.stretch]}>
                         <Text style={styles.title}>{t('common.note')}:</Text>
                         <Text style={[styles.value, styles.note]}>{element.note}</Text>
-                    </View>
-                    <View style={styles.row}>
+                    </View> */}
+                    {/* <View style={styles.row}>
                         <Text style={styles.title}>{t('common.actionTime')}:</Text>
-                        <Text style={styles.value}>{createdAtDate}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.title}>{t('common.createdAt')}:</Text>
-                        <Text style={styles.value}>{createdAt}</Text>
-                    </View>
+                        <Text style={styles.value}>{timestamp}</Text>
+                    </View> */}
                 </>
             }
         </View>
@@ -46,9 +45,7 @@ const styles = StyleSheet.create({
     },
     row: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: '2%',
-        alignItems: 'center',
+        flexWrap: 'wrap',
     },
     title: {
         fontFamily: FontFamily.semiBold,
@@ -61,8 +58,5 @@ const styles = StyleSheet.create({
     stretch: {
         alignItems: 'stretch',
     },
-    note: {
-        width: '60%',
-        textAlign: 'right',
-    },
+ 
 });

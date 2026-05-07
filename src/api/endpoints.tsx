@@ -30,6 +30,10 @@ type Endpoints = {
   GetLine: string;
   GetContactPerson: string;
   GetSeller: string;
+  GetByLines: string;
+  GetCompanyFns: string;
+  GetWarehousesAll: string;
+  GetPreOrder: string;
 }
 
 export const endpoints:Endpoints = {
@@ -59,10 +63,12 @@ export const endpoints:Endpoints = {
   GetReturnProduct: 'company/return/',
   GetLine: 'company/line',
   GetContactPerson: 'company/contact-person',
+  GetByLines: 'company/all/by-lines',
+  GetCompanyFns: 'company/fns/',
 
   //payment
   GetPaymentCategory: 'company/payment-category',
-  CreatePayment: 'company/payment',
+  CreatePayment: 'company/payment/funds-entry',
   GetPayment: 'company/payment/all',
 
   //info-controller
@@ -70,6 +76,7 @@ export const endpoints:Endpoints = {
 
   //warehouses
   GetWarehouses: 'warehouse/warehouses',
+  GetWarehousesAll: 'warehouse/warehouses/all',
 
   //account list
   GetAccountListAll: 'company/account/all',
@@ -79,5 +86,6 @@ export const endpoints:Endpoints = {
   //sale
   GetSaleSuccess: 'company/sale/success/all',
   GetSale: 'company/sale/',
+  GetPreOrder: 'company/sale/pending/all',
 
 };

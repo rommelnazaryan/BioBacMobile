@@ -1,24 +1,25 @@
-import {AllCompanyProps, GetSaleSuccessResponse, historyProps, HomeListProps, ReturnProductProps} from '@/types';
+import {AllCompanyProps, GetSaleSuccessResponse, historyProps,ListProps, PhoneProps, ReturnProductProps} from '@/types';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import type {NavigatorScreenParams} from '@react-navigation/native';
 
 export const HomeStack = createNativeStackNavigator<RootStackParamList>();
 
 export type SellerParamList = {
-  Seller: {item: HomeListProps};
+  Seller: {item: ListProps};
   History: {item: historyProps};
   SellerCreate: {item: AllCompanyProps | undefined,key: 'create' | 'edit'};
+  PreOrder: undefined;
 };
 
 export type BuyerParamList = {
-  Buyers: {item: HomeListProps};
+  Buyers: {item: ListProps};
   HistoryBuyers: {item: historyProps};
   BuyerCreate: {item: AllCompanyProps | undefined,key: 'create' | 'edit'};
 };
 
 export type ReturnProductParamList = {
-  ReturnProduct: {item: HomeListProps};
-  ReturnProductCreate: {item: ReturnProductProps | undefined,key: 'create' | 'edit'};
+  ReturnProduct: {item: AllCompanyProps};
+  ReturnProductCreate: {item: ReturnProductProps | undefined,key: 'create' | 'edit',name: string};
 };
 
 export type AccountListParamList = {
@@ -37,11 +38,24 @@ export type RootStackParamList = {
   Draft: undefined;
   SellerStack: NavigatorScreenParams<SellerParamList> | undefined;
   BuyerStack: NavigatorScreenParams<BuyerParamList> | undefined;
-  ReturnProductStack: NavigatorScreenParams<ReturnProductParamList> | undefined;
-  Detail: {item: AllCompanyProps};
   HomeCreate: {item: AllCompanyProps | undefined,key: 'create' | 'edit'};
   AccountListStack: NavigatorScreenParams<AccountListParamList> | undefined;
+  CompanyStack: NavigatorScreenParams<CompanyParamList> | undefined;
   SalesStack: NavigatorScreenParams<SalesParamList> | undefined;
+  PreOrderStack: NavigatorScreenParams<PreOrderParamList> | undefined;
+  ReturnProductListStack: NavigatorScreenParams<ReturnProductParamList> | undefined;
+  WarehouseStack: NavigatorScreenParams<WarehouseParamList> | undefined;
+};
+
+export type CompanyParamList = {
+  Company: undefined;
+  Payment: {item: AllCompanyProps};
+  PaymentHistory: undefined;
+  HomeCreate: {item: AllCompanyProps | undefined,key: 'create' | 'edit'};
+  Detail: {item: AllCompanyProps};
+  SalesStack: NavigatorScreenParams<SalesParamList> | undefined;
+  Phone: {item: PhoneProps};
+  ReturnProductStack: NavigatorScreenParams<ReturnProductParamList> | undefined;
 };
 
 export type TabParamList = {
@@ -72,4 +86,12 @@ export type SalesParamList = {
   Sales: undefined;
   SalesCreate: {item: GetSaleSuccessResponse | undefined,key: 'create' | 'edit'};
   CreateContactPerson: undefined;
+};
+
+export type PreOrderParamList = {
+  PreOrder: undefined;
+};
+
+export type WarehouseParamList = {
+  Warehouse: undefined;
 };

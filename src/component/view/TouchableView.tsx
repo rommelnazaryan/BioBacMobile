@@ -20,6 +20,7 @@ export default function TouchableView({
   style,
   onClose,
   onPress,
+  disabled,
   focused,
   onBlur,
   icon,
@@ -40,10 +41,18 @@ export default function TouchableView({
     <View style={ styles.wrapper}>
       <TouchableOpacity
         activeOpacity={0.8}
+        disabled={disabled}
         style={[
           styles.container,
           style,
-          {borderColor: isFocused ? Colors.blue : Colors.gray_200,backgroundColor: hasError ? Colors.red_100 : Colors.white},
+          {
+            borderColor: isFocused ? Colors.blue : Colors.gray_200,
+            backgroundColor: disabled
+              ? Colors.gray_200
+              : hasError
+              ? Colors.red_100
+              : Colors.white,
+          },
         ]}
         onPress={onHandlerPress}
       >
@@ -52,7 +61,7 @@ export default function TouchableView({
         </Text>
 
         {title ? (
-          <TouchableOpacity activeOpacity={0.8} onPress={onClose}>
+          <TouchableOpacity activeOpacity={0.8} disabled={disabled} onPress={onClose}>
             <MaterialIcons name="close" size={22} color="black" />
           </TouchableOpacity>
         ) : icon ? (
