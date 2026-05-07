@@ -13,7 +13,7 @@ export const CreatePayment = async <T extends object>(
     config: {
       method: 'POST',
       url: endpoints.CreatePayment,
-      data: data,
+      data,
     },
     callbacks: result,
   });

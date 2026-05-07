@@ -1,11 +1,10 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useRef, useState} from 'react';
 import {RootStackParamList} from '@/navigation/types';
 import {GetAccountListResponse} from '@/types';
 import {
   NativeStackNavigationProp,
 } from '@react-navigation/native-stack';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import useRefetchOnReconnect from '../useRefetchOnReconnect';
 import useNetworkStore from '@/zustland/networkStore';
 import { GetAccountListAll } from '@/services/AccountList/AccountListAll';
 
@@ -18,22 +17,26 @@ export default function useAccountList() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [page, setPage] = useState<number>(0);
   const [hasNextPage, setHasNextPage] = useState(true);
-  const getAccountListRef = useRef<() => void>(() => {});
   const [accountList, setAccountList] = useState<GetAccountListResponse[]>([]);
+  const requestInFlightRef = useRef(false);
 
 
   // get seller data //
-  const getAccountList = useCallback(() => {
+  const getAccountList = useCallback((targetPage = 0) => {
     if (!isConnected) {
       setLoading(false);
       return;
     }
-    if (page === 0) {
+    if (requestInFlightRef.current) {
+      return;
+    }
+    requestInFlightRef.current = true;
+    if (targetPage === 0) {
       setLoading(true);
     } else {
       setLoadingMore(true);
     }
-    return GetAccountListAll(page,0, {
+    return GetAccountListAll(targetPage,0, {
       onSuccess: payload => {
         const {data} = payload as {data: GetAccountListResponse[]};
         const {metadata} = payload as unknown as {
@@ -41,34 +44,40 @@ export default function useAccountList() {
         };
 
         // page=0 -> replace, page>0 -> append
-        setAccountList(prev => (page === 0 ? data : [...prev, ...data]));
+        setAccountList(prev => (targetPage === 0 ? data : [...prev, ...data]));
+        setPage(targetPage);
 
         // update hasNextPage if backend provides it
         if (typeof metadata?.last === 'boolean') {
           setHasNextPage(!metadata.last);
         } else if (typeof metadata?.totalPages === 'number') {
-          setHasNextPage(page + 1 < metadata.totalPages);
+          setHasNextPage(targetPage + 1 < metadata.totalPages);
         }
 
         setLoading(false);
         setLoadingMore(false);
+        requestInFlightRef.current = false;
       },
       onUnauthorized: () => {
+        setLoading(false);
+        setLoadingMore(false);
+        requestInFlightRef.current = false;
       },
       onError: () => {
         setLoading(false);
         setLoadingMore(false);
+        requestInFlightRef.current = false;
       },
     });
-  }, [page, isConnected]);
+  }, [isConnected]);
 
   // load more data //
   const loadMore = useCallback(() => {
-    if (loading || loadingMore || !hasNextPage) {
+    if (loading || loadingMore || !hasNextPage || requestInFlightRef.current) {
       return;
     }
-    setPage(p => p + 1);
-  }, [hasNextPage, loading, loadingMore]);
+    getAccountList(page + 1);
+  }, [getAccountList, hasNextPage, loading, loadingMore, page]);
 
   // navigate to history //
   const onHandlerHistory = (id: number, name: string) => {
@@ -79,14 +88,6 @@ export default function useAccountList() {
   };
 
 
-  useEffect(() => {
-    getAccountListRef.current = getAccountList;
-  }, [getAccountList]);
-
-  useEffect(() => {
-    getAccountList();
-  }, [getAccountList]);
-
 
   useFocusEffect(
     useCallback(() => {
@@ -94,7 +95,6 @@ export default function useAccountList() {
     }, [getAccountList])
   );
 
-  useRefetchOnReconnect(getAccountList);
 
   return {
     loading,

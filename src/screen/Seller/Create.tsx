@@ -219,7 +219,13 @@ export default function SellerCreate(route: NativeStackScreenProps<SellerParamLi
 
         <Botton title="Show Map" onHandler={onPressGetLocation} style={styles.locationButton} textStyle={styles.locationButtonText} />
         <Botton title={keyValue === 'edit' ? 'Update' : 'Create'} onHandler={handleSubmit(onCreateCompany)} style={styles.button} />
-        <MapModal isVisible={showMap} onClose={() => onCloseMap()} onSubmit={(latitude, longitude) => onSubmitMap(latitude, longitude)} />
+        <MapModal
+          isVisible={showMap}
+          onClose={() => onCloseMap()}
+          onSubmit={(lat, lng) => onSubmitMap(lat, lng)}
+          latitude={latitude.trim() ? Number(latitude) : null}
+          longitude={longitude.trim() ? Number(longitude) : null}
+        />
       </ScrollView>
     </View>
   )

@@ -86,6 +86,7 @@ export default function Company() {
         title={t('common.deleteCompanyTitle')}
         description={t('common.deleteCompanyDescription')}
       />
+
     </View>
   );
 }

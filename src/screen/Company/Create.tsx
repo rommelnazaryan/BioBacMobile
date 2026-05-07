@@ -151,7 +151,7 @@ export default function HomeCreate(route: Props) {
           render={({field: {onChange, value: accountValue}}) => (
             <DropdownMultiSelect
               style={styles.marginTop}
-              data={isConnected ? contactPersonList : []}
+              data={contactPersonList}
               value={accountValue}
               onChange={onChange}
               errorMessage={errors.contactPerson?.message}
@@ -343,6 +343,8 @@ export default function HomeCreate(route: Props) {
           isVisible={showMap}
           onClose={() => onCloseMap()}
           onSubmit={(lat, lng) => onSubmitMap(lat, lng)}
+          latitude={latitude.trim() ? Number(latitude) : null}
+          longitude={longitude.trim() ? Number(longitude) : null}
         />
       </ScrollView>
     </KeyboardAvoidingView>

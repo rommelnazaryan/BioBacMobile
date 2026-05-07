@@ -24,10 +24,12 @@ export default function useSplash() {
       },
       onError: () => {},
       onUnauthorized: () => {
-        refreshTokenOnce().then(() => {
-          console.log('refreshTokenOnce');
-          // getAllPermissions();
-        });
+        refreshTokenOnce()
+          .then(() => {
+            console.log('refreshTokenOnce');
+            // getAllPermissions();
+          })
+          .catch(() => {});
       }
     })
   }, [setPermissions, navigation]);

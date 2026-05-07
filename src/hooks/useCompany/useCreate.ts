@@ -21,6 +21,7 @@ import {UpdateCompany} from '@/services/Company/UpdateCompany';
 import { CreateCompany } from '@/services/Company/CreateSeller';
 import { GetContactPerson } from '@/services/Company/GetcontactPerson';
 import { GetCompanyFns } from '@/services/Company/GetCompanyFns';
+import useContactPersonStore, {OfflineContactPerson} from '@/zustland/contactPersonStore';
 
 const findFirstStringValue = (
   source: unknown,
@@ -66,6 +67,8 @@ export default function useCompanyCreate(
   const navigation = useNavigation<NativeStackNavigationProp<CompanyParamList>>();
   const {companyGroup, setCompanyGroup} = useCompanyGroupStore();
   const {Draft, setDraft} = useDraftStore();
+  const offlineContactPersons = useContactPersonStore(s => s.contactPersons);
+  const setContactPersons = useContactPersonStore(s => s.setContactPersons);
   const [companyGroupList, setCompanyGroupList] = useState<DropdownOptions[]>([]);
   const {show} = useToast();
   const [date, setDate] = useState<string>(moment(new Date()).format('DD/MM/YYYY'));
@@ -76,6 +79,10 @@ export default function useCompanyCreate(
   const [keyValue, setKeyValue] = useState<string>('');
   const [contactPersonList, setContactPersonList] = useState<DropdownOptions[]>([]);
   const [phoneList, setPhoneList] = useState<string[]>([]);
+  const offlineContactPersonList: DropdownOptions[] = offlineContactPersons.map(contactPerson => ({
+    label: `${contactPerson.firstName} ${contactPerson.lastName}`,
+    value: contactPerson.id,
+  }));
   const validationSchema = Yup.object().shape({
     TIN: Yup.string().trim(),
     companyName: Yup.string().trim().required('Required'),
@@ -286,14 +293,37 @@ export default function useCompanyCreate(
     if (!isConnected) return;
     await GetContactPerson({
       onSuccess: res => {
-        const { data } = res as { data: { id: number; firstName: string; lastName: string }[] };
-        const companyOptions: any[] = data.map(
-          (contactItem: { firstName: string; lastName: string; id: number }) => ({
+        const { data } = res as {
+          data: Array<
+            Partial<OfflineContactPerson> & {
+              id: number;
+              firstName: string;
+              lastName: string;
+            }
+          >;
+        };
+        const cachedContactPersons: OfflineContactPerson[] = data.map(contactItem => ({
+          id: contactItem.id,
+          firstName: contactItem.firstName,
+          lastName: contactItem.lastName,
+          phones: contactItem.phones ?? [],
+          emails: contactItem.emails ?? [],
+          position: contactItem.position ?? '',
+          notes: contactItem.notes ?? '',
+          dob: contactItem.dob ?? '',
+          createdAt: contactItem.createdAt ?? '',
+          updatedAt: contactItem.updatedAt ?? '',
+          companyId: contactItem.companyId ?? '',
+          categoryType: contactItem.categoryType ?? 'BUYER',
+        }));
+        const companyOptions: DropdownOptions[] = cachedContactPersons.map(
+          contactItem => ({
             label: `${contactItem.firstName} ${contactItem.lastName}`,
             value: contactItem.id,
           }),
         );
-        setContactPersonList(companyOptions as []);
+        setContactPersons(cachedContactPersons);
+        setContactPersonList(companyOptions);
       },
       onUnauthorized: () => {
         show('Unauthorized', { type: 'error' });
@@ -303,7 +333,7 @@ export default function useCompanyCreate(
       },
     });
 
-  }, [isConnected, show])
+  }, [isConnected, setContactPersons, show])
 
 
 
@@ -491,7 +521,7 @@ export default function useCompanyCreate(
     errorDate,
     keyValue,
     onSubmitCreateContactPerson,
-    contactPersonList,
+    contactPersonList: isConnected ? contactPersonList : offlineContactPersonList,
     handlePlusClick,
     phoneList,
     onRemovePhone,

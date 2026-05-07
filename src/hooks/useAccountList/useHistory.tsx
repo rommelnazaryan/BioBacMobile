@@ -2,8 +2,7 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {AccountListParamList} from '@/navigation/types';
 import {GetAccountHistoryResponse} from '@/types';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import { refreshTokenService } from '@/services/AuthService/RefreshToken';
-import useAuthStore from '@/zustland/authStore';
+import {refreshTokenOnce} from '@/services/AuthService/refreshTokenOnce';
 import { useFocusEffect } from '@react-navigation/native';
 import useRefetchOnReconnect from '../useRefetchOnReconnect';
 import useNetworkStore from '@/zustland/networkStore';
@@ -16,7 +15,6 @@ export default function useHistory(route: Props) {
   const {id, name} = item;
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const {refreshToken} = useAuthStore();
   const [history, setHistory] = useState<GetAccountHistoryResponse[]>([]);
   const [page, setPage] = useState<number>(0);
   const [hasNextPage, setHasNextPage] = useState(true);
@@ -26,15 +24,15 @@ export default function useHistory(route: Props) {
 
   // refresh token //
   const onSubmitRefreshToken = useCallback(() => {
-    refreshTokenService(refreshToken, {
-      onSuccess: () => {
+    refreshTokenOnce()
+      .then(() => {
         getHistoryRef.current();
-      },
-      onError: () => {
+      })
+      .catch(() => {
         setLoading(false);
-      },
-    });
-  }, [refreshToken]);
+        setLoadingMore(false);
+      });
+  }, []);
 
   // get buyer history //
   const getHistory = useCallback(() => {

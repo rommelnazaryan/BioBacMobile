@@ -2,9 +2,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { AllCompanyProps } from '@/types';
 import { Colors, FontFamily, FontSizes } from '@/theme';
-import Botton from '@/component/button';
-import { t } from '@/locales';
 import { formatted } from '@/helper/Regx';
+import { EditIcon } from '@/component/icons';
 // import { EditIcon } from '@/component/icons';
 
 export default function CartList({ element, onCallback, onSubmitEdit }: { element: AllCompanyProps, onCallback: (element: AllCompanyProps) => void, onSubmitEdit: () => void }) {
@@ -20,7 +19,7 @@ export default function CartList({ element, onCallback, onSubmitEdit }: { elemen
       ]}>
       <View style={styles.row}>
         {/* <Text style={styles.title}>{t('common.line')}:</Text> */}
-        <Text style={styles.value}>{element.lines.map((item: any) => item.name).join(', ')}12312312312, </Text>
+        <Text style={styles.value}>{element.lines.map((item: any) => item.name).join(', ')}</Text>
         <Text style={styles.value}>{element.detail?.inn ?? '-'}</Text>
         <Text style={[styles.value, {position: 'absolute', right: 0}]}>{`${formatted(element.balance)},00 руб`}</Text>
       </View>
@@ -39,9 +38,6 @@ export default function CartList({ element, onCallback, onSubmitEdit }: { elemen
         <View style={styles.iconContainer}>
           <Text style={[styles.value]}>{contactPerson ? `${contactPerson.firstName} ${contactPerson.lastName}` : '-'}, </Text>
           <Text style={[styles.value]}>{element.balance}</Text>
-          <TouchableOpacity activeOpacity={0.5} onPress={() => onSubmitEdit()}>
-        <EditIcon size={22} />
-        </TouchableOpacity>
         </View>
       </View> */}
       {/* <View style={styles.row}>
@@ -60,19 +56,19 @@ export default function CartList({ element, onCallback, onSubmitEdit }: { elemen
         <Text style={styles.title}>{t('common.phoneNumber')}:</Text>
         <Text style={styles.value}>{element.phones[0] ?? '-'}</Text>
         <View style={styles.iconContainer}>
-          <TouchableOpacity activeOpacity={0.5} onPress={() => onSubmitEdit()}>
-        <EditIcon size={22} />
-        </TouchableOpacity>
+    
         </View>
       </View> */}
       {/* <View style={styles.row}>
         <Text style={styles.title}>{t('common.email')}:</Text>
         <Text style={styles.value}>{element.emails[0] ?? '-'}</Text>
       </View> */}
+      {element.actualAddress &&
       <View style={[styles.row]}>
         {/* <Text style={styles.title}>{t('common.actualAddress')}:</Text> */}
         <Text style={[styles.value, styles.textSize]}>{element.actualAddress}</Text>
       </View>
+      }
       {/* <View style={styles.row}>
         <Text style={styles.title}>{t('common.pointOfSaleAddress')}:</Text>
         <Text style={[styles.value,styles.textSize]}>{element.addressTT}</Text>
@@ -90,16 +86,21 @@ export default function CartList({ element, onCallback, onSubmitEdit }: { elemen
         <Text style={styles.value}>{createdAtDate}</Text>
       </View> */}
       <View style={styles.rowContainer}>
-        <View>
-        <Text style={[styles.value]}>{contactPerson ? `${contactPerson.firstName} ${contactPerson.lastName}` : '-'}, </Text>
-        <Text style={styles.value}>{element.phones[0] ?? '-'}</Text>
-        </View>
-      <Botton
+        {element.contactPerson.length > 0 &&
+          <View>
+            <Text style={[styles.value]}>{contactPerson ? `${contactPerson.firstName} ${contactPerson.lastName}` : '-'}, </Text>
+            <Text style={styles.value}>{element.phones[0] ?? '-'}</Text>
+          </View>
+        }
+          {/* <TouchableOpacity activeOpacity={0.5} onPress={() => onSubmitEdit()}>
+        <EditIcon size={22} />
+        </TouchableOpacity> */}
+      {/* <Botton
           title={t('common.edit')}
           onHandler={onSubmitEdit}
           style={styles.button}
           textStyle={styles.buttonText}
-        />
+        /> */}
       </View>
       
     </TouchableOpacity>
@@ -140,20 +141,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: '2%',
     flexWrap: 'wrap',
   },
-  button: {
-    width: '25%',
-    height: 40,
-    padding: 5,
-    borderWidth: 2,
-    borderColor: Colors.gray_200,
-    backgroundColor: Colors.white,
-  },
-  buttonText: {
-    color: Colors.gray_400,
-    fontFamily: FontFamily.medium,
-    fontSize: FontSizes.small,
-  }
+
 });

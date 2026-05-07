@@ -8,6 +8,7 @@ export type SellerParamList = {
   Seller: {item: ListProps};
   History: {item: historyProps};
   SellerCreate: {item: AllCompanyProps | undefined,key: 'create' | 'edit'};
+  PreOrder: undefined;
 };
 
 export type BuyerParamList = {
@@ -48,7 +49,7 @@ export type RootStackParamList = {
 
 export type CompanyParamList = {
   Company: undefined;
-  Payment: undefined;
+  Payment: {item: AllCompanyProps};
   PaymentHistory: undefined;
   HomeCreate: {item: AllCompanyProps | undefined,key: 'create' | 'edit'};
   Detail: {item: AllCompanyProps};

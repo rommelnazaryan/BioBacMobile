@@ -58,13 +58,14 @@ export default function VerticalFlatList<T>(props: VerticalFlatListProps<T>) {
   const includeSafeAreaTop = (props as any).includeSafeAreaTop ?? false;
   const includeSafeAreaBottom = (props as any).includeSafeAreaBottom ?? false;
   const equalizeTopBottomPadding = (props as any).equalizeTopBottomPadding ?? true;
+  const endSpacing = Number((props as any).endSpacing ?? 0) || 0;
 
   const edgePx = (windowHeight * edgePaddingPercent) / 100;
   const safeTop = includeSafeAreaTop ? insets.top : 0;
   const safeBottom = includeSafeAreaBottom ? insets.bottom : 0;
   const safe = equalizeTopBottomPadding ? Math.max(safeTop, safeBottom) : 0;
   const paddingTop = edgePx + (equalizeTopBottomPadding ? safe : safeTop);
-  const paddingBottom = edgePx + (equalizeTopBottomPadding ? safe : safeBottom);
+  const paddingBottom = edgePx + (equalizeTopBottomPadding ? safe : safeBottom) + endSpacing;
 
   const data = useMemo(() => {
     if (!fillEmptySpace || columns <= 1) {
@@ -157,7 +158,7 @@ export default function VerticalFlatList<T>(props: VerticalFlatListProps<T>) {
       renderItem={renderItemWithSpacing as any}
       keyExtractor={keyExtractor as any}
       onEndReached={props.onEndReached}
-      onEndReachedThreshold={0.5}
+      onEndReachedThreshold={props.onEndReachedThreshold ?? 0.5}
       contentContainerStyle={[
         {paddingTop, paddingBottom},
         props.contentContainerStyle,

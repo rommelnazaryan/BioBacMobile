@@ -10,11 +10,13 @@ import { DropdownOptions } from '@/navigation/types';
 import { GetSeller } from '@/services/Company/GetSeller';
 import { CreateContactPerson } from '@/services/Company/CreateContactPersion';
 import { useNavigation } from '@react-navigation/native';
+import useContactPersonStore from '@/zustland/contactPersonStore';
 
 export default function useSaleCreateContactPerson() {
   const emailValidator = Yup.string().trim().email('Invalid email');
   const navigation = useNavigation();
   const isConnected = useNetworkStore(s => s.isConnected);
+  const addContactPerson = useContactPersonStore(s => s.addContactPerson);
   const [showDate, setShowDate] = useState(false);
   const { show } = useToast();
   const [date, setDate] = useState<string>(
@@ -174,15 +176,23 @@ export default function useSaleCreateContactPerson() {
       phones: phones,
       emails: emails,
       position: getValues().position,
-      notes: getValues().notes,
+      notes: getValues().notes ?? '',
       dob: `${date}:23:59:00`,
       createdAt: moment(new Date()).format('DD/MM/YYYY:HH:mm:ss'),
       updatedAt: moment(new Date()).format('DD/MM/YYYY:HH:mm:ss'),
-      companyId: getValues().company,
-      categoryType: selectedBuyerSeller.buyer ? 'BUYER' : 'SELLER',
+      companyId: getValues().company ?? '',
+      categoryType: selectedBuyerSeller.buyer ? 'BUYER' as const : 'SELLER' as const,
+    };
+
+    if (!isConnected) {
+      addContactPerson(data);
+      show('Contact person saved offline', {type: 'success'});
+      navigation.goBack();
+      return;
     }
-    console.log(data);
-     CreateContactPerson(data, {
+
+    setIsLoading(true);
+    CreateContactPerson(data, {
       onSuccess: () => {
         show('Contact person created successfully', {type: 'success'});
         setIsLoading(false);
@@ -198,7 +208,7 @@ export default function useSaleCreateContactPerson() {
       },
     });
 
-  }, [date, emailList, emailValidator, getValues, phoneList, selectedBuyerSeller, show, navigation]);
+  }, [addContactPerson, date, emailList, emailValidator, getValues, isConnected, navigation, phoneList, selectedBuyerSeller, show]);
 
   // select buyer or seller
   const onSelectBuyerSeller = (key: 'buyer' | 'seller') => {

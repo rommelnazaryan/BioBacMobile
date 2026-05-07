@@ -30,6 +30,7 @@ export default function useDetail(route: Props) {
   const [history, setHistory] = useState<getHistoryProps[]>([]);
   const [returnProductData, setReturnProductData] = useState<ReturnProductProps[]>([]);
   const [saleSuccess, setSaleSuccess] = useState<GetSaleSuccessResponse[]>([]);
+  const [showMap, setShowMap] = useState(false);
 
   // get history //
   const getHistory = useCallback(
@@ -78,6 +79,16 @@ export default function useDetail(route: Props) {
     setPage(p => p + 1);
   }, [hasNextPage, loading, loadingMore]);
 
+  // get location
+  const onPressGetLocation = async () => {
+    if (!isConnected) {
+      show('Please check your internet connection', {type: 'error'});
+      return;
+    }
+    setShowMap(true);
+  };
+
+  
   // get return product data //
   const getReturnProductAll = useCallback((targetPage = page) => {
     if (!isConnected) {
@@ -187,7 +198,7 @@ export default function useDetail(route: Props) {
   const onSubmitDetail = (value: ListProps) => {
     switch (value.key) {
       case 'Payment':
-        navigation.navigate('Payment');
+        navigation.navigate('Payment',{item: item as AllCompanyProps,});
         break;
       case 'ReturnProduct':
         navigation.navigate('ReturnProductStack', {
@@ -208,10 +219,21 @@ export default function useDetail(route: Props) {
           params: {item: undefined, key: 'create'},
         });
         break;
+      case 'Map':
+        onPressGetLocation();
+        break;
       default:
         break;
     }
   };
+  // submit edit //
+  const onSubmitEdit = () => {
+    navigation.navigate('HomeCreate', {
+      item: item as AllCompanyProps,
+      key: 'edit',
+    });
+  };
+  // submit delete //
   const onChangeFilter = (value: number) => {
     const nextFilter = value as DetailFilterValue;
     setPage(0);
@@ -251,6 +273,9 @@ export default function useDetail(route: Props) {
     saleSuccess,
     selectedFilter,
     onSubmitDetail,
-    onChangeFilter
+    onChangeFilter,
+    showMap,
+    setShowMap,
+    onSubmitEdit
   };
 }

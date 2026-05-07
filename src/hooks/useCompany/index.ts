@@ -1,12 +1,9 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {AllCompanyProps, GetProfileResponse} from '@/types';
-import {GetProfile} from '@/services/Profile';
-import useProfileStore from '@/zustland/profileStore';
+import {AllCompanyProps} from '@/types';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {CompanyParamList} from '@/navigation/types';
-import {refreshTokenService} from '@/services/AuthService/RefreshToken';
-import useAuthStore from '@/zustland/authStore';
+import {refreshTokenOnce} from '@/services/AuthService/refreshTokenOnce';
 import useNetworkStore from '@/zustland/networkStore';
 import {GetAllCompanies} from '@/services/Company/AllCompanies';
 import { DeleteCompany } from '@/services/Company/DeleteCompany';
@@ -23,9 +20,7 @@ export default function useCompany() {
   const {show} = useToast();
   const navigation =
     useNavigation<NativeStackNavigationProp<CompanyParamList>>();
-  const {setProfile} = useProfileStore();
   const isConnected = useNetworkStore(s => s.isConnected);
-  const {refreshToken, setToken, setRefreshToken} = useAuthStore();
   const {allCompanyCash, setAllCompanyCash} = useAllCompanyCashStore();
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState<number>(0);
@@ -36,6 +31,8 @@ export default function useCompany() {
   const [lineList, setLineList] = useState<any[]>([]);
   const [selectedLineValues, setSelectedLineValues] = useState<Array<number>>([]);
   const selectedLineTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestInFlightRef = useRef(false);
+  const hadSelectedLinesRef = useRef(false);
 
   const mergeUniqueCompanies = useCallback((current: AllCompanyProps[], incoming: AllCompanyProps[]) => {
     const byId = new Map<number, AllCompanyProps>();
@@ -51,110 +48,19 @@ export default function useCompany() {
     return Array.from(byId.values());
   }, []);
 
-  // get profile //
-  const getProfile = useCallback(() => {
-    if (isConnected) {
-      GetProfile({
-        onSuccess: res => {
-          const {data} = res as {data: GetProfileResponse};
-          // const result = comparePermissions({
-          //   fullPermissions: permissions,
-          //   userPermissions: data.permissions,
-          // });
-          // const groupsData = orderGrouped(
-          //   result.grouped,
-          //   ['BUYER', 'SELLER', 'PAYMENT', 'PAYMENT_HISTORY', 'RETURN_PRODUCT'],
-          //   {
-          //     includeEmpty: true,
-          //   },
-          // ).map(g => {
-          //   const enabled = g.items.filter(x => x.has).length;
-          //   const meta = getGroupMeta(g.key);
-          //   return {
-          //     key: g.key,
-          //     label: meta.label,
-          //     iconLibrary: meta.icon.library,
-          //     iconName: meta.icon.name,
-          //     enabled,
-          //     total: g.items.length,
-          //     iconSize: meta.icon.size,
-          //     items: g.items, // <-- permissions
-          //   };
-          // });
-          // setGroupsStore(groupsData as unknown as HomeListProps[]);
-          // setGroups(groupsData as unknown as HomeListProps[]);
-          setProfile(data);
-        },
-        onUnauthorized: () => {
-          refreshTokenService(refreshToken, {
-            onSuccess: data => {
-              const {
-                data: {accessToken, refreshToken: nextRefreshToken},
-              } = data as {
-                data: {accessToken: string; refreshToken: string};
-              };
-              setToken(accessToken);
-              setRefreshToken(nextRefreshToken);
-              // GetProfile({
-              //   onSuccess: res => {
-              //     const {data} = res as {data: GetProfileResponse};
-              //     const result = comparePermissions({
-              //       fullPermissions: permissions,
-              //       userPermissions: data.permissions,
-              //     });
-              //     const groupsData = orderGrouped(
-              //       result.grouped,
-              //       ['BUYER', 'SELLER'],
-              //       {
-              //         includeEmpty: true,
-              //       },
-              //     ).map(g => {
-              //       const enabled = g.items.filter(x => x.has).length;
-              //       const meta = getGroupMeta(g.key);
-              //       return {
-              //         key: g.key,
-              //         label: meta.label,
-              //         iconLibrary: meta.icon.library,
-              //         iconName: meta.icon.name,
-              //         enabled,
-              //         total: g.items.length,
-              //         iconSize: meta.icon.size,
-              //         items: g.items, // <-- permissions
-              //       };
-              //     });
-              //     setGroups(groupsData as unknown as HomeListProps[]);
-              //     setProfile(data);
-              //     setLoading(false);
-              //   },
-              //   onError: () => {
-              //     setLoading(false);
-              //   },
-              // });
-            },
-            onError: () => {
-              getProfile();
-            },
-          });
-        },
-        onError: () => {
-          setLoading(false);
-        },
-      });
-    } 
-  }, [
-    setProfile,
-    setToken,
-    setRefreshToken,
-    refreshToken,
-    isConnected,
-  ]);
+
 
   // get  company data //
-  const getAllCompanies = useCallback((search?: string, targetPage = page) => {
+  const getAllCompanies = useCallback((search?: string, targetPage = 0) => {
     if (!isConnected) {
       setLoading(false);
+      setRefreshing(false);
       return;
     }
+    if (requestInFlightRef.current) {
+      return;
+    }
+    requestInFlightRef.current = true;
     if (targetPage === 0) {
       setLoading(true);
     } else {
@@ -171,6 +77,7 @@ export default function useCompany() {
         setAllCompanyCash(prev =>
           targetPage === 0 ? mergeUniqueCompanies([], data) : mergeUniqueCompanies(prev, data),
         );
+        setPage(targetPage);
         // update hasNextPage if backend provides it
         if (typeof metadata?.last === 'boolean') {
           setHasNextPage(!metadata.last);
@@ -180,24 +87,36 @@ export default function useCompany() {
         setRefreshing(false);
         setLoading(false);
         setLoadingMore(false);
+        requestInFlightRef.current = false;
       },
       onUnauthorized: () => {
-      },
-      onError: () => {
+        setRefreshing(false);
         setLoading(false);
         setLoadingMore(false);
+        requestInFlightRef.current = false;
+        refreshTokenOnce()
+          .then(() => {
+            getAllCompanies(search, targetPage);
+          })
+          .catch(() => {});
+      },
+      onError: () => {
+        setRefreshing(false);
+        setLoading(false);
+        setLoadingMore(false);
+        requestInFlightRef.current = false;
       },
     });
-  }, [page, isConnected, setAllCompanyCash, mergeUniqueCompanies]);
+  }, [isConnected, setAllCompanyCash, mergeUniqueCompanies]);
 
 
   // load more data //
   const loadMore = useCallback(() => {
-    if (loading || loadingMore || !hasNextPage) {
+    if (loading || loadingMore || !hasNextPage || requestInFlightRef.current) {
       return;
     }
-    setPage(p => p + 1);
-  }, [hasNextPage, loading, loadingMore]);
+    getAllCompanies(undefined, page + 1);
+  }, [getAllCompanies, hasNextPage, loading, loadingMore, page]);
 
 
   // submit delete //
@@ -212,9 +131,17 @@ export default function useCompany() {
     DeleteCompany(id, {
       onSuccess: () => {
         setVisible(() => false);
-        getAllCompanies();
+        getAllCompanies(undefined, 0);
       },
       onUnauthorized: () => {
+        refreshTokenOnce()
+          .then(() => {
+            getAllCompanies(undefined, 0);
+          })
+          .catch(() => {
+            setVisible(() => false);
+            setLoading(false);
+          });
       },
       onError: () => {
         show('Failed to delete company', {type: 'error'});
@@ -239,6 +166,9 @@ export default function useCompany() {
 
   // submit refresh //
   const onSubmitRefresh = () => {
+    if (requestInFlightRef.current) {
+      return;
+    }
     setRefreshing(true);
     setPage(0);
     setHasNextPage(true);
@@ -273,7 +203,13 @@ export default function useCompany() {
         setLineList(companyOptions as []);
       },
       onUnauthorized: () => {
-        show('Unauthorized', { type: 'error' });
+        refreshTokenOnce()
+          .then(() => {
+            getLine();
+          })
+          .catch(() => {
+            show('Unauthorized', { type: 'error' });
+          });
       },
       onError: () => {
         show('Failed to get company group', { type: 'error' });
@@ -295,8 +231,14 @@ export default function useCompany() {
         setLoading(false);
       },
       onUnauthorized: () => {
-        show('Unauthorized', { type: 'error' });
-        setLoading(true);
+        refreshTokenOnce()
+          .then(() => {
+            getCompaniesByLines(lineValues);
+          })
+          .catch(() => {
+            show('Unauthorized', { type: 'error' });
+            setLoading(false);
+          });
       },
       onError: (error) => {
         show((error as Error).message, { type: 'error' });
@@ -332,10 +274,9 @@ export default function useCompany() {
 
   useFocusEffect(
     useCallback(() => {
-      getProfile();
       getAllCompanies();
       getLine();
-    }, [getProfile, getAllCompanies, getLine]),
+    }, [getAllCompanies, getLine]),
   );
 
 
@@ -358,12 +299,17 @@ export default function useCompany() {
     }
 
     if (selectedLineValues.length === 0) {
+      if (!hadSelectedLinesRef.current) {
+        return;
+      }
+      hadSelectedLinesRef.current = false;
       setPage(0);
       setHasNextPage(true);
       getAllCompanies(undefined, 0);
       return;
     }
 
+    hadSelectedLinesRef.current = true;
     selectedLineTimeoutRef.current = setTimeout(() => {
       getCompaniesByLines(selectedLineValues);
     }, LINE_SELECTION_DELAY_MS);

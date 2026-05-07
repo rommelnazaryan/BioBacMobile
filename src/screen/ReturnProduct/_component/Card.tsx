@@ -14,29 +14,32 @@ export default function Card({element}: {element: ReturnProductProps}) {
         styles.container,
       ]}>
       <View style={styles.row}>
-        <Text style={styles.title}>{t('common.username')}:</Text>
+        {/* <Text style={styles.title}>{t('common.username')}:</Text> */}
         <Text style={styles.value}>{element.createdByName}</Text>
-      </View>
-      <View style={styles.row}>
-        <Text style={[styles.title,styles.width]}>{t('common.buyer')}:</Text>
         <Text style={styles.value}>{element.companyName}</Text>
-      </View>
-      <View style={styles.row}>
-        <Text style={styles.title}>{t('common.totalReturnAmount')}:</Text>
         <Text style={styles.value}>{`${formatted(element.totalAmount)},00 руб.` }</Text>
-      </View>
-      <View style={styles.row}>
-        <Text style={styles.title}>{t('common.comment')}:</Text>
         <Text style={styles.value}>{element.comment}</Text>
       </View>
-      <View style={styles.row}>
+      {/* <View style={styles.row}>
+        <Text style={[styles.title,styles.width]}>{t('common.buyer')}:</Text>
+        <Text style={styles.value}>{element.companyName}</Text>
+      </View> */}
+      {/* <View style={styles.row}>
+        <Text style={styles.title}>{t('common.totalReturnAmount')}:</Text>
+        <Text style={styles.value}>{`${formatted(element.totalAmount)},00 руб.` }</Text>
+      </View> */}
+      {/* <View style={styles.row}>
+        <Text style={styles.title}>{t('common.comment')}:</Text>
+        <Text style={styles.value}>{element.comment}</Text>
+      </View> */}
+      {/* <View style={styles.row}>
         <Text style={styles.title}>{t('common.createdAt')}:</Text>
         <Text style={styles.value}>{createdAtDate}</Text>
-      </View>
-      <View style={styles.row}>
+      </View> */}
+      {/* <View style={styles.row}>
         <Text style={styles.title}>{t('common.updatedAt')}:</Text>
         <Text style={styles.value}>{updatedAtDate}</Text>
-      </View>
+      </View> */}
 
     </View>
   );
@@ -53,8 +56,9 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     marginTop: '2%',
+    gap: 10,
+    flexWrap: 'wrap',
   },
   title: {
     fontFamily: FontFamily.semiBold,

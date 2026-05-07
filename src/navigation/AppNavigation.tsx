@@ -8,6 +8,7 @@ import { SafeAreaProvider,SafeAreaView } from 'react-native-safe-area-context';
 import type {RootStackParamList} from './types';
 import { OfflineBanner } from '@/component/OffliceBanner';
 import Splash from '@/screen/Splash';
+import {navigationRef} from './rootNavigation';
 //-------------Auth----------------
 import SignIn from '@/screen/Auth/SignIn';
 
@@ -30,7 +31,7 @@ export default function AppNavigation() {
         >
           {isConnected === false && <OfflineBanner /> }
         <StatusBar barStyle="dark-content"/>
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
           <Stack.Navigator screenOptions={{headerShown: false ,gestureEnabled: false}}>
             <Stack.Screen name="Splash" component={Splash}/>
             <Stack.Screen name="SignIn" component={SignIn}/>

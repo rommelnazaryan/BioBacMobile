@@ -33,6 +33,7 @@ type Endpoints = {
   GetByLines: string;
   GetCompanyFns: string;
   GetWarehousesAll: string;
+  GetPreOrder: string;
 }
 
 export const endpoints:Endpoints = {
@@ -67,7 +68,7 @@ export const endpoints:Endpoints = {
 
   //payment
   GetPaymentCategory: 'company/payment-category',
-  CreatePayment: 'company/payment',
+  CreatePayment: 'company/payment/funds-entry',
   GetPayment: 'company/payment/all',
 
   //info-controller
@@ -85,5 +86,6 @@ export const endpoints:Endpoints = {
   //sale
   GetSaleSuccess: 'company/sale/success/all',
   GetSale: 'company/sale/',
+  GetPreOrder: 'company/sale/pending/all',
 
 };

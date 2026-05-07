@@ -1,5 +1,12 @@
-import {View, StyleSheet, Text} from 'react-native';
-import React from 'react';
+import {
+  View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Colors } from '@/theme/Colors';
 import CustomHeader from '@/navigation/Header';
 import { COMPANY_FILTER_LIST, Company_LIST } from '@/static';
@@ -24,10 +31,13 @@ import { formatted } from '@/helper/Regx';
 import DropdownComponent from '@/component/dropdown';
 import VerticalFlatList from '@/component/list/VerticalFlatList';
 import NotFound from '@/component/icons/NotFound';
+import MapModal from '@/component/Modal/MapModal';
+import { EditIcon } from '@/component/icons';
 
 type Props = NativeStackScreenProps<CompanyParamList, 'Detail'>;
 
 export default function Detail(route: Props) {
+  const loadMoreTriggeredRef = useRef(false);
   const { item,
     loading,
     loadingMore,
@@ -38,6 +48,9 @@ export default function Detail(route: Props) {
     saleSuccess,
     selectedFilter,
     onSubmitDetail,
+    showMap,
+    setShowMap,
+    onSubmitEdit,
     onChangeFilter } = useDetail(route);
 
   const data =
@@ -47,7 +60,35 @@ export default function Detail(route: Props) {
         ? returnProductData
         : saleSuccess;
 
-  const renderHistoryItem = ({item: historyItem}: {item: getHistoryProps}) => (
+  useEffect(() => {
+    if (!loadingMore) {
+      loadMoreTriggeredRef.current = false;
+    }
+  }, [loadingMore, data.length, selectedFilter]);
+
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+      const distanceFromBottom =
+        contentSize.height - (layoutMeasurement.height + contentOffset.y);
+      const isAtBottom = distanceFromBottom <= 4;
+
+      if (
+        !isAtBottom ||
+        !hasNextPage ||
+        loadingMore ||
+        loadMoreTriggeredRef.current
+      ) {
+        return;
+      }
+
+      loadMoreTriggeredRef.current = true;
+      loadMore();
+    },
+    [hasNextPage, loadMore, loadingMore],
+  );
+
+  const renderHistoryItem = ({ item: historyItem }: { item: getHistoryProps }) => (
     <DefaultTable
       containerStyle={[
         styles.tableContainer,
@@ -70,22 +111,22 @@ export default function Detail(route: Props) {
     </DefaultTable>
   );
 
-  const renderSaleItem = ({item: saleItem}: {item: GetSaleSuccessResponse}) => (
+  const renderSaleItem = ({ item: saleItem }: { item: GetSaleSuccessResponse }) => (
     <DefaultTable containerStyle={styles.tableContainer}>
       <SaleCard element={saleItem} />
     </DefaultTable>
   );
 
-  const renderItem = (info: {item: getHistoryProps | ReturnProductProps | GetSaleSuccessResponse}) => {
+  const renderItem = (info: { item: getHistoryProps | ReturnProductProps | GetSaleSuccessResponse }) => {
     if (selectedFilter === 1) {
-      return renderHistoryItem(info as {item: getHistoryProps});
+      return renderHistoryItem(info as { item: getHistoryProps });
     }
 
     if (selectedFilter === 2) {
-      return renderReturnProductItem(info as {item: ReturnProductProps});
+      return renderReturnProductItem(info as { item: ReturnProductProps });
     }
 
-    return renderSaleItem(info as {item: GetSaleSuccessResponse});
+    return renderSaleItem(info as { item: GetSaleSuccessResponse });
   };
 
   const keyExtractor = (
@@ -109,24 +150,26 @@ export default function Detail(route: Props) {
           data={data}
           gap={10}
           columns={1}
-          onEndReached={() => {
-            if (hasNextPage) {
-              loadMore();
-            }
-          }}
-          onEndReachedThreshold={0.3}
+          endSpacing={80}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
           keyExtractor={keyExtractor}
           contentContainerStyle={data.length === 0 ? styles.emptyGrow : undefined}
           ListHeaderComponent={
             <>
               <View style={styles.balanceContainer}>
                 <Text style={styles.balance}>{`${formatted(item.balance)},00 руб`}</Text>
+                <View style={styles.dropdownContainer}>
                 <DropdownComponent
                   data={COMPANY_FILTER_LIST}
                   value={selectedFilter}
                   onClick={dropdownItem => onChangeFilter(dropdownItem.value as number)}
                   style={styles.dropdown}
                 />
+                <TouchableOpacity activeOpacity={0.5} onPress={() => onSubmitEdit()}>
+                  <EditIcon size={22} />
+                </TouchableOpacity>
+                </View>
               </View>
               <View style={styles.linstContainer}>
                 {Company_LIST.map(listItem => (
@@ -151,6 +194,13 @@ export default function Detail(route: Props) {
           renderItem={renderItem}
         />
       )}
+      <MapModal
+        isVisible={showMap}
+        onClose={() => setShowMap(false)}
+        visibleButton={false}
+        latitude={37.78825}
+        longitude={-122.4324}
+      />
     </View>
   );
 }
@@ -169,7 +219,7 @@ const styles = StyleSheet.create({
     marginTop: '5%'
   },
   itemContainer: {
-    width: '48%',
+    width: '30%',
   },
   balance: {
     fontSize: FontSizes.medium,
@@ -180,10 +230,9 @@ const styles = StyleSheet.create({
   },
   tableContainer: {
     marginTop: 10,
-    marginBottom: 10,
   },
   dropdown: {
-    width: '60%',
+    width: '85%',
     height: 40,
     alignSelf: 'center',
     backgroundColor: 'white',
@@ -211,5 +260,11 @@ const styles = StyleSheet.create({
     minHeight: deviceHeight / 3,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  dropdownContainer: {
+    width: '50%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
 });

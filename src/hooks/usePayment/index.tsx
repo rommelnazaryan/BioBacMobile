@@ -1,4 +1,4 @@
-import {useCallback, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import moment from 'moment';
 import {GetPaymentCategory} from '@/services/Payment/PaymentCategory';
@@ -15,9 +15,11 @@ import {type FieldErrors, useForm} from 'react-hook-form';
 import { CreatePayment } from '@/services/Payment/CreatePayment';
 import useNetworkStore from '@/zustland/networkStore';
 import useRefetchOnReconnect from '../useRefetchOnReconnect';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/navigation/types';
+import useProfileStore from '@/zustland/profileStore';
 
+type Props = NativeStackScreenProps<RootStackParamList, 'Payment'>;
 type Option = {label: string; value: string};
 type PaymentFormValues = {
   account: string;
@@ -28,9 +30,11 @@ type PaymentFormValues = {
   category0: string;
 };
 
-export default function usePayment() {
+export default function usePayment(route: Props) {
   const isConnected = useNetworkStore(s => s.isConnected);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const {profile} = useProfileStore();
+  const {item} = route.route.params;
   const [showDate, setShowDate] = useState(false);
   const {show} = useToast();
   const [date, setDate] = useState<string>(
@@ -84,12 +88,8 @@ export default function usePayment() {
   }, [type, typeFilterName]);
   // validation schema//
   const validationSchema = Yup.object().shape({
-    account: Yup.string().trim().required('Required'),
     amount: Yup.string().trim().required('Required'),
     comment: Yup.string().trim().required('Required'),
-    type: Yup.string().trim().required('Required'),
-    listType: Yup.string().trim().required('Required'),
-    category0: Yup.string().trim().required('Required'),
   });
 
   
@@ -102,12 +102,8 @@ export default function usePayment() {
     setValue,
   } = useForm({
     defaultValues: {
-      account: '',
       amount: '',
       comment: '',
-      type: '',
-      listType: '',
-      category0: '',
     },
     mode: 'onSubmit',
     resolver: yupResolver(validationSchema),
@@ -283,16 +279,13 @@ export default function usePayment() {
     //   show('Please select a category', {type: 'error'});
     //   return;
     // }
-
     CreatePayment(
       {
-        accountId: Number(getValues().account),
-        category: categoryName,
-        date: `${date}:23:59:00`,
+        accountId:profile?.accountIds[0] ?? 0,
+        date: '04/05/2026:23:59:00',
         notes: getValues().comment,
-        paymentCategoryId: Number(selectedLeafCategory?.value),
         sum: Number(getValues().amount),
-        targetId: Number(listTypeId),
+        targetId: item.id,
       },
       {
         onSuccess: () => {
@@ -307,20 +300,17 @@ export default function usePayment() {
           setCategoryName('');
           setListTypeId('');
           reset({
-            account: '',
             amount: '',
-            comment: '',
-            type: '',
-            listType: '',
-            category0: '',
+            comment: ''
           });
+          navigation.goBack();
           show('Payment created successfully', {type: 'success'});
           // navigation.navigate('PaymentHistory');
         },
         onError: error => {
           show((error as Error)?.message ?? 'Error', {type: 'error'});
         },
-        onUnauthorized: error => {
+        onUnauthorized: () => {
           show('Unauthorized', {type: 'error'});
         },
       },
@@ -341,14 +331,16 @@ export default function usePayment() {
     show('Please complete required fields', {type: 'error'});
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      getPaymentCategory();
-      getCompanyAccount();
-    }, [getPaymentCategory, getCompanyAccount]),
-  );
 
-  useRefetchOnReconnect(getCompanyAccount);
+
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     getPaymentCategory();
+  //     getCompanyAccount();
+  //   }, [getPaymentCategory, getCompanyAccount]),
+  // );
+
+  // useRefetchOnReconnect(getCompanyAccount);
 
   return {
     date,

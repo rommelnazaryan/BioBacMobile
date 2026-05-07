@@ -1,7 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {GetPaymentAllResponse} from '@/types';
-import { refreshTokenService } from '@/services/AuthService/RefreshToken';
-import useAuthStore from '@/zustland/authStore';
+import {refreshTokenOnce} from '@/services/AuthService/refreshTokenOnce';
 import { useFocusEffect } from '@react-navigation/native';
 import { GetHistoryPayment } from '@/services/Payment/HistoryPayment';
 import useRefetchOnReconnect from '../useRefetchOnReconnect';
@@ -12,7 +11,6 @@ export default function usePaymentHistory() {
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const isConnected = useNetworkStore(s => s.isConnected);
-  const {refreshToken} = useAuthStore();
   const [history, setHistory] = useState<GetPaymentAllResponse[]>([]);
   const [page, setPage] = useState<number>(0);
   const [hasNextPage, setHasNextPage] = useState(true);
@@ -21,15 +19,15 @@ export default function usePaymentHistory() {
 
   // refresh token //
   const onSubmitRefreshToken = useCallback(() => {
-    refreshTokenService(refreshToken, {
-      onSuccess: () => {
+    refreshTokenOnce()
+      .then(() => {
         getHistoryRef.current();
-      },
-      onError: () => {
+      })
+      .catch(() => {
         setLoading(false);
-      },
-    });
-  }, [refreshToken]);
+        setLoadingMore(false);
+      });
+  }, []);
 
   // get seller data //
   const getHistory = useCallback(() => {

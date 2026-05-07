@@ -26,6 +26,7 @@ export type GetProfileResponse = {
   permissions: GetAllPermissionsResponse[];
   companyId: number;
   defaultWarehouseId: number;
+  accountIds: number[];
 };
 
 export type ListProps = {
@@ -159,11 +160,11 @@ export type GetPaymentTypeResponse = {
 };
 
 export type CreatePaymentRequest = {
-  accountId: number;
-  category: string;
+  accountId?: number;
+  category?: string;
   date: string;
   notes: string;
-  paymentCategoryId: number;
+  paymentCategoryId?: number;
   sum: number;
   targetId: number;
 };
@@ -377,3 +378,5 @@ export type GetSaleSuccessResponse = {
 export type PhoneProps = {
   phones: string[];
 };
+
+

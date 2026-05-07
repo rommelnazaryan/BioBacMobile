@@ -74,7 +74,7 @@
     "latitude": "Latitude",
     "longitude": "Longitude",
     "totalReturnAmount": "Total Return Amount",
-    "returnProducts": "Return Products",
+    "returnProducts": "Return",
     "phone": "Phone",
     "phoneWithIndex": "Phone {{index}}",
     "allCompanies": "All Companies",
@@ -94,8 +94,9 @@
     "select": "Select",
     "delete": "Delete",
     "edit": "Edit",
-    "pre-order": "Pre-order"
-      
+    "pre-order": "Pre-order",
+    "map": "Map",
+    "logout": "Logout"
   },
   "settings": {
     "title": "Settings",
