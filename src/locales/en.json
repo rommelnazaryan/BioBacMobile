@@ -96,7 +96,8 @@
     "edit": "Edit",
     "pre-order": "Pre-order",
     "map": "Map",
-    "logout": "Logout"
+    "logout": "Logout",
+    "productTransfer": "Product Transfer"
   },
   "settings": {
     "title": "Settings",

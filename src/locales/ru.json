@@ -96,7 +96,8 @@
     "edit": "Обновить",
     "pre-order": "предзаказ",
     "map": "карта",
-    "logout": "выйти"
+    "logout": "выйти",
+    "productTransfer": "передача товара"
   },
   "settings": {
     "title": "настройки",

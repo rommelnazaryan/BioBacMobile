@@ -1,4 +1,4 @@
-import {AllCompanyProps, GetSaleSuccessResponse, historyProps,ListProps, PhoneProps, ReturnProductProps} from '@/types';
+import {AllCompanyProps, GetSaleSuccessResponse, GetWarehousesResponse, historyProps,ListProps, PhoneProps, ReturnProductProps} from '@/types';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import type {NavigatorScreenParams} from '@react-navigation/native';
 
@@ -45,6 +45,8 @@ export type RootStackParamList = {
   PreOrderStack: NavigatorScreenParams<PreOrderParamList> | undefined;
   ReturnProductListStack: NavigatorScreenParams<ReturnProductParamList> | undefined;
   WarehouseStack: NavigatorScreenParams<WarehouseParamList> | undefined;
+  Printer: undefined
+  TransferStack: NavigatorScreenParams<TransferParamList> | undefined;
 };
 
 export type CompanyParamList = {
@@ -94,4 +96,10 @@ export type PreOrderParamList = {
 
 export type WarehouseParamList = {
   Warehouse: undefined;
+  Detail: {item: GetWarehousesResponse};
+};
+
+export type TransferParamList = {
+  Transfer: undefined;
+  TransferCreate: undefined;
 };

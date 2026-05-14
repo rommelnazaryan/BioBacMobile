@@ -1,29 +1,28 @@
-import { GetWarehousesResponse } from '@/types';
+import { GetWarehousesDetailResponse, GetWarehousesResponse } from '@/types';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useCallback, useRef, useState } from 'react';
 import { useToast } from '@/component/toast/ToastProvider';
 import useRefetchOnReconnect from '../useRefetchOnReconnect';
 import useNetworkStore from '@/zustland/networkStore';
-import { GetWarehousesAll } from '@/services/Warehouses/GetWarehousesAll';
-import { WarehouseParamList } from '@/navigation/types';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
+import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList, WarehouseParamList } from '@/navigation/types';
+import { GetWarehousesDetail } from '@/services/Warehouses/GetWarehpusesDetail';
 const PAGE_SIZE = 20;
 
-export default function useWarehouse() {
+export default function useWarehouseDetail(props: NativeStackScreenProps<WarehouseParamList, 'Detail'>) {
+  const { item } = props.route.params as { item: GetWarehousesResponse,index: number };
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isConnected = useNetworkStore(s => s.isConnected);
-  const navigation = useNavigation<NativeStackNavigationProp<WarehouseParamList>>();
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState<number>(0);
   const [hasNextPage, setHasNextPage] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [warehousesList, setWarehousesList] = useState<GetWarehousesResponse[]>(
+  const [warehousesList, setWarehousesList] = useState< GetWarehousesDetailResponse[]>(
     [],
   );
   const { show } = useToast();
   const requestInFlightRef = useRef(false);
-
   // get warehouses all data //
   const getWarehousesAll = useCallback((targetPage = 0) => {
     if (!isConnected) {
@@ -40,13 +39,16 @@ export default function useWarehouse() {
     } else {
       setLoadingMore(true);
     }
-    return GetWarehousesAll(targetPage, {}, {
+    const data = {
+      warehouseId: {operator: "contains", value: [item.id]}
+    }
+    return GetWarehousesDetail(targetPage, data, {
       onSuccess: payload => {
-        const { data } = payload as { data: GetWarehousesResponse[] };
+        const { data } = payload as { data:  GetWarehousesDetailResponse[] };
         const { metadata } = payload as unknown as {
           metadata: { page: number; last: boolean; totalPages: number };
         };
-
+        console.log(data);
         // page=0 -> replace, page>0 -> append
         setWarehousesList(prev => (targetPage === 0 ? data : [...prev, ...data]));
         setPage(targetPage);
@@ -80,7 +82,7 @@ export default function useWarehouse() {
         requestInFlightRef.current = false;
       },
     });
-  }, [isConnected, show]);
+  }, [isConnected, show, item.id]);
 
   // load more data //
   const loadMore = useCallback(() => {
@@ -104,11 +106,11 @@ export default function useWarehouse() {
     getWarehousesAll(0);
   }, [getWarehousesAll]);
 
-  // submit detail //
-  const onSubmitDetail = (element: GetWarehousesResponse) => {
-    navigation.navigate('Detail', {item: element});
+  const onSubmitTransfer = () => {
+    navigation.navigate('TransferStack', {
+      screen: 'Transfer',
+    });
   };
-
 
 
   useFocusEffect(
@@ -120,6 +122,7 @@ export default function useWarehouse() {
   useRefetchOnReconnect(refetchFirstPage);
 
   return {
+    item,
     warehousesList,
     isConnected,
     loading,
@@ -128,6 +131,6 @@ export default function useWarehouse() {
     hasNextPage,
     refreshing,
     onSubmitRefresh,
-    onSubmitDetail,
+    onSubmitTransfer
   };
 }

@@ -107,10 +107,17 @@ android {
     }
 }
 
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
     implementation project(':react-native-vector-icons')
+    implementation(name: 'printer-lib-3.2.0', ext: 'aar')
     // Needed by react-native-geolocation-service (prevents crashes on some devices when requesting location)
     implementation("com.google.android.gms:play-services-location:21.3.0")
     if (hermesEnabled.toBoolean()) {

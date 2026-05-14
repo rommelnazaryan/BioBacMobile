@@ -33,7 +33,12 @@ type Endpoints = {
   GetByLines: string;
   GetCompanyFns: string;
   GetWarehousesAll: string;
+  GetWarehousesDetail: string;
   GetPreOrder: string;
+  GetTransferProductAll: string;
+  GetWarehouseRelatedProducts: string;
+  GetWarehouseProductBalance: string;
+  CreateTransferProduct: string;
 }
 
 export const endpoints:Endpoints = {
@@ -77,7 +82,9 @@ export const endpoints:Endpoints = {
   //warehouses
   GetWarehouses: 'warehouse/warehouses',
   GetWarehousesAll: 'warehouse/warehouses/all',
-
+  GetWarehousesDetail: 'warehouse/component-balance/product/all',
+  GetWarehouseRelatedProducts: 'warehouse/component-balance/related-products',
+  GetWarehouseProductBalance: 'warehouse/component-balance/product-balance',
   //account list
   GetAccountListAll: 'company/account/all',
   GetAccountList: 'company/account/',
@@ -88,4 +95,7 @@ export const endpoints:Endpoints = {
   GetSale: 'company/sale/',
   GetPreOrder: 'company/sale/pending/all',
 
+  //transfer
+  GetTransferProductAll: 'warehouse/transfer/product/all',
+  CreateTransferProduct: 'warehouse/transfer/product',
 };

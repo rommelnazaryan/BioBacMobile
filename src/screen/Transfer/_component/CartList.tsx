@@ -1,25 +1,25 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import React from 'react';
-import { GetWarehousesResponse } from '@/types';
+import { GetTransferProductResponse } from '@/types';
 import { Colors, FontFamily, FontSizes } from '@/theme';
 
-export default function CartList({ element, onCallback }: { element: GetWarehousesResponse, onCallback: () => void}) {
-
+export default function CartList({ element }: { element: GetTransferProductResponse}) {
+  const date = element.date.split(':')[0];
   return (
-    <TouchableOpacity
-      activeOpacity={0.5}
-      onPress={() => onCallback()}
+    <View
       style={[
         styles.container,
       ]}>
       <View style={styles.row}>
-        <Text style={styles.title}>{element.name}</Text>
-        <Text style={styles.value}>{element.warehouseGroupName}</Text>
-        <Text style={styles.value}>{element.location}</Text>
-        <Text style={styles.value}>{element.warehouseTypeName}</Text>
+        <Text style={styles.title}>{element.componentName}</Text>
+        <Text style={styles.value}>{element.notes}</Text>
+        <Text style={styles.value}>{element.fromWarehouseName}</Text>
+        <Text style={styles.value}>{element.toWarehouseName}</Text>
+        <Text style={styles.value}>{element.quantity}</Text>
+        <Text style={styles.value}>{date}</Text>
       </View>
       
-    </TouchableOpacity>
+    </View>
   );
 }
 
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     padding: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-evenly',
+    gap: 5,
     flexWrap: 'wrap',
   },
   title: {
