@@ -3,13 +3,17 @@ import React from 'react';
 import { Colors } from '@/theme';
 import CustomHeader from '@/navigation/Header';
 import { t } from '@/locales';
-import useWarehouse from '@/hooks/useWarehouse';
 import { NotFound } from '@/component/icons';
 import VerticalFlatList from '@/component/list/VerticalFlatList';
-import CartList from './_component/CartList';
-import { GetWarehousesResponse } from '@/types';
+import { GetWarehousesDetailResponse } from '@/types';
 import Activity from '@/component/ActivityIndicator';
 import { deviceHeight } from '@/helper';
+import useWarehouseDetail from '@/hooks/useWarehouse/useWarehouseDetail';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { WarehouseParamList } from '@/navigation/types';
+import DetailCartList from './_component/DetailCartList';
+import Button from '@/component/button';
+type Props = NativeStackScreenProps<WarehouseParamList, 'Detail'>;
 
 function CompanyEmptyState() {
   return (
@@ -18,8 +22,10 @@ function CompanyEmptyState() {
     </View>
   );
 }
-export default function Warehouse() {
+
+export default function WarehouseDetail(props: Props) {
   const {
+    item,
     warehousesList,
     isConnected,
     loading,
@@ -28,11 +34,16 @@ export default function Warehouse() {
     hasNextPage,
     refreshing,
     onSubmitRefresh,
-    onSubmitDetail,
-  } = useWarehouse();
+    onSubmitTransfer
+  } = useWarehouseDetail(props);
   return (
     <View style={styles.container}>
-      <CustomHeader title={t('common.warehouse')} showBack={true} />
+      <CustomHeader title={item.name} showBack={true} />
+      <Button
+        title={t('common.transfer')}
+        onHandler={() => onSubmitTransfer()}
+        style={styles.button}
+      />
       {loading ? (
         <Activity style={styles.activityIndicator} />
       ) : isConnected || warehousesList.length > 0 ? (
@@ -53,11 +64,10 @@ export default function Warehouse() {
               <Text style={styles.footerText}>{t('common.noMoreData')}</Text>
             ) : null
           }
-          renderItem={({ item: company }: { item: GetWarehousesResponse}) => (
-            <CartList
+          renderItem={({ item: company }: { item: GetWarehousesDetailResponse }) => (
+            <DetailCartList
               key={company.id}
               element={company}
-              onCallback={() => onSubmitDetail(company)}
             />
           )}
         />
@@ -92,5 +102,11 @@ const styles = StyleSheet.create({
   },
   activityIndicator: {
     marginTop: deviceHeight / 5,
+  },
+  button: {
+    width: '30%',
+    alignSelf: 'flex-end',
+    marginTop: 10,
+    marginRight: '2%',
   },
 });

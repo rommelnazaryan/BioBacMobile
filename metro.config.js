@@ -1,6 +1,5 @@
 const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
 const path = require('path');
-const {resolve} = require('metro-resolver');
 
 const defaultConfig = getDefaultConfig(__dirname);
 const {assetExts, sourceExts} = defaultConfig.resolver;
@@ -26,9 +25,9 @@ const config = {
     resolveRequest: (context, moduleName, platform) => {
       if (moduleName.startsWith('@/')) {
         const mapped = path.resolve(__dirname, 'src', moduleName.slice(2));
-        return resolve(context, mapped, platform);
+        return context.resolveRequest(context, mapped, platform);
       }
-      return resolve(context, moduleName, platform);
+      return context.resolveRequest(context, moduleName, platform);
     },
   },
   watchFolders: [path.resolve(__dirname, 'src')],

@@ -1,31 +1,29 @@
-import { GetWarehousesResponse } from '@/types';
+import { GetTransferProductResponse } from '@/types';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useCallback, useRef, useState } from 'react';
 import { useToast } from '@/component/toast/ToastProvider';
 import useRefetchOnReconnect from '../useRefetchOnReconnect';
 import useNetworkStore from '@/zustland/networkStore';
-import { GetWarehousesAll } from '@/services/Warehouses/GetWarehousesAll';
-import { WarehouseParamList } from '@/navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
+import { TransferParamList } from '@/navigation/types';
+import { GetTransferProductAll } from '@/services/Transfer/GetTransferProductAll';
 const PAGE_SIZE = 20;
 
-export default function useWarehouse() {
+export default function useTransfer() {
+  const navigation = useNavigation<NativeStackNavigationProp<TransferParamList>>();
   const isConnected = useNetworkStore(s => s.isConnected);
-  const navigation = useNavigation<NativeStackNavigationProp<WarehouseParamList>>();
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState<number>(0);
   const [hasNextPage, setHasNextPage] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [warehousesList, setWarehousesList] = useState<GetWarehousesResponse[]>(
+  const [transferProductList, setTransferProductList] = useState< GetTransferProductResponse[]>(
     [],
   );
   const { show } = useToast();
   const requestInFlightRef = useRef(false);
-
   // get warehouses all data //
-  const getWarehousesAll = useCallback((targetPage = 0) => {
+  const getTransferProductAll = useCallback((targetPage = 0) => {
     if (!isConnected) {
       setLoading(false);
       setRefreshing(false);
@@ -40,15 +38,15 @@ export default function useWarehouse() {
     } else {
       setLoadingMore(true);
     }
-    return GetWarehousesAll(targetPage, {}, {
+
+    return GetTransferProductAll(targetPage,{}, {
       onSuccess: payload => {
-        const { data } = payload as { data: GetWarehousesResponse[] };
+        const { data } = payload as { data:  GetTransferProductResponse[] };
         const { metadata } = payload as unknown as {
           metadata: { page: number; last: boolean; totalPages: number };
         };
-
         // page=0 -> replace, page>0 -> append
-        setWarehousesList(prev => (targetPage === 0 ? data : [...prev, ...data]));
+        setTransferProductList(prev => (targetPage === 0 ? data : [...prev, ...data]));
         setPage(targetPage);
 
         // update hasNextPage if backend provides it
@@ -87,29 +85,27 @@ export default function useWarehouse() {
     if (loading || loadingMore || !hasNextPage || requestInFlightRef.current) {
       return;
     }
-    getWarehousesAll(page + 1);
-  }, [getWarehousesAll, hasNextPage, loading, loadingMore, page]);
+    getTransferProductAll(page + 1);
+  }, [getTransferProductAll, hasNextPage, loading, loadingMore, page]);
   
   // submit refresh //
-  const onSubmitRefresh = useCallback(() => {
+  const onSubmitRefresh = useCallback(() => { 
     if (requestInFlightRef.current) {
       return;
     }
     setRefreshing(true);
     setHasNextPage(true);
-    getWarehousesAll(0);
-  }, [getWarehousesAll]);
+    getTransferProductAll(0);
+  }, [getTransferProductAll]);
 
   const refetchFirstPage = useCallback(() => {
-    getWarehousesAll(0);
-  }, [getWarehousesAll]);
+    getTransferProductAll(0);
+  }, [getTransferProductAll]);
 
-  // submit detail //
-  const onSubmitDetail = (element: GetWarehousesResponse) => {
-    navigation.navigate('Detail', {item: element});
+// submit create //
+  const onSubmitCreate = () => {
+  navigation.navigate('TransferCreate');
   };
-
-
 
   useFocusEffect(
     useCallback(() => {
@@ -120,7 +116,7 @@ export default function useWarehouse() {
   useRefetchOnReconnect(refetchFirstPage);
 
   return {
-    warehousesList,
+    transferProductList,
     isConnected,
     loading,
     loadMore,
@@ -128,6 +124,6 @@ export default function useWarehouse() {
     hasNextPage,
     refreshing,
     onSubmitRefresh,
-    onSubmitDetail,
+    onSubmitCreate
   };
 }

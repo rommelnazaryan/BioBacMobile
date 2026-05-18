@@ -11,6 +11,7 @@ import { useToast } from '@/component/toast/ToastProvider';
 import { GetLine } from '@/services/Company/GetLine';
 import { GetByLines } from '@/services/Company/GetByLines';
 import useAllCompanyCashStore from '@/zustland/allCompanyCash';
+import useProfileStore from '@/zustland/profileStore';
 
 export default function useCompany() {
   const LINE_SELECTION_DELAY_MS = 2000;
@@ -21,6 +22,7 @@ export default function useCompany() {
   const navigation =
     useNavigation<NativeStackNavigationProp<CompanyParamList>>();
   const isConnected = useNetworkStore(s => s.isConnected);
+  const {profile} = useProfileStore();
   const {allCompanyCash, setAllCompanyCash} = useAllCompanyCashStore();
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState<number>(0);
@@ -33,7 +35,6 @@ export default function useCompany() {
   const selectedLineTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const requestInFlightRef = useRef(false);
   const hadSelectedLinesRef = useRef(false);
-
   const mergeUniqueCompanies = useCallback((current: AllCompanyProps[], incoming: AllCompanyProps[]) => {
     const byId = new Map<number, AllCompanyProps>();
 

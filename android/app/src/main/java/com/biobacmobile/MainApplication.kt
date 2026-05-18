@@ -2,6 +2,7 @@ package com.biobacmobile
 
 import android.app.Application
 import com.biobacmobile.location.GpsEnablerPackage
+import com.biobacmobile.printer.PrinterSdkPackage
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
@@ -20,6 +21,7 @@ class MainApplication : Application(), ReactApplication {
               // Packages that cannot be autolinked yet can be added manually here, for example:
               // add(MyReactNativePackage())
               add(GpsEnablerPackage())
+              add(PrinterSdkPackage())
             }
 
         override fun getJSMainModuleName(): String = "index"
@@ -35,6 +37,7 @@ class MainApplication : Application(), ReactApplication {
 
   override fun onCreate() {
     super.onCreate()
+    net.posprinter.POSConnect.init(this)
     loadReactNative(this)
   }
 }

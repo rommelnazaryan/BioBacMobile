@@ -3,13 +3,14 @@ import React from 'react';
 import { Colors } from '@/theme';
 import CustomHeader from '@/navigation/Header';
 import { t } from '@/locales';
-import useWarehouse from '@/hooks/useWarehouse';
 import { NotFound } from '@/component/icons';
 import VerticalFlatList from '@/component/list/VerticalFlatList';
-import CartList from './_component/CartList';
-import { GetWarehousesResponse } from '@/types';
+import { GetTransferProductResponse} from '@/types';
 import Activity from '@/component/ActivityIndicator';
 import { deviceHeight } from '@/helper';
+import CartList from './_component/CartList';
+import useTransfer from '@/hooks/useTransfer';
+import Filter from '@/component/Filter';
 
 function CompanyEmptyState() {
   return (
@@ -18,9 +19,10 @@ function CompanyEmptyState() {
     </View>
   );
 }
-export default function Warehouse() {
+
+export default function Transfer() {
   const {
-    warehousesList,
+    transferProductList,
     isConnected,
     loading,
     loadMore,
@@ -28,19 +30,20 @@ export default function Warehouse() {
     hasNextPage,
     refreshing,
     onSubmitRefresh,
-    onSubmitDetail,
-  } = useWarehouse();
+    onSubmitCreate,
+  } = useTransfer();
   return (
     <View style={styles.container}>
-      <CustomHeader title={t('common.warehouse')} showBack={true} />
+      <CustomHeader title={t('common.productTransfer')} showBack={true} />
+      <Filter onHandlerCreate={onSubmitCreate} />
       {loading ? (
         <Activity style={styles.activityIndicator} />
-      ) : isConnected || warehousesList.length > 0 ? (
+      ) : isConnected || transferProductList.length > 0 ? (
         <VerticalFlatList
-          data={warehousesList}
+          data={transferProductList}
           gap={10}
           columns={1}
-          keyExtractor={company => String(company?.id ?? '')}
+          keyExtractor={(_,index) => String(index)}
           onEndReached={() => loadMore()}
           onEndReachedThreshold={0.3}
           onRefresh={() => onSubmitRefresh()}
@@ -49,16 +52,12 @@ export default function Warehouse() {
           ListFooterComponent={
             loadingMore ? (
               <Activity style={styles.footerLoading} />
-            ) : !hasNextPage && warehousesList.length > 0 ? (
+            ) : !hasNextPage && transferProductList.length > 0 ? (
               <Text style={styles.footerText}>{t('common.noMoreData')}</Text>
             ) : null
           }
-          renderItem={({ item: company }: { item: GetWarehousesResponse}) => (
-            <CartList
-              key={company.id}
-              element={company}
-              onCallback={() => onSubmitDetail(company)}
-            />
+          renderItem={({ item: element }: { item: GetTransferProductResponse }) => (
+            <CartList element={element} />
           )}
         />
       ) : (
@@ -92,5 +91,11 @@ const styles = StyleSheet.create({
   },
   activityIndicator: {
     marginTop: deviceHeight / 5,
+  },
+  button: {
+    width: '30%',
+    alignSelf: 'flex-end',
+    marginTop: 10,
+    marginRight: '2%',
   },
 });

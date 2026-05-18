@@ -96,7 +96,20 @@
     "edit": "Edit",
     "pre-order": "Pre-order",
     "map": "Map",
-    "logout": "Logout"
+    "logout": "Logout",
+    "productTransfer": "Product Transfer",
+    "transfer": "Transfer",
+    "transferBetweenWarehousesTitle": "Product Transfer Between Warehouses",
+    "warehouseOutput": "Warehouse output",
+    "warehouseInput": "Warehouse input",
+    "notes": "Notes",
+    "products": "Products",
+    "transferQtyOutput": "Output",
+    "transferQtyInput": "Input",
+    "notAvailableInWarehouse": "Not available in this warehouse",
+    "transferCreatedSuccess": "Transfer created successfully",
+    "fieldRequired": "Required",
+    "printer": "Printer"
   },
   "settings": {
     "title": "Settings",

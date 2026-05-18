@@ -96,7 +96,20 @@
     "edit": "Обновить",
     "pre-order": "предзаказ",
     "map": "карта",
-    "logout": "выйти"
+    "logout": "выйти",
+    "productTransfer": "перемещение товара",
+    "transfer": "перемещение",
+    "transferBetweenWarehousesTitle": "перемещение товаров между складами",
+    "warehouseOutput": "склад-отправитель",
+    "warehouseInput": "склад-получатель",
+    "notes": "примечания",
+    "products": "товары",
+    "transferQtyOutput": "отправка",
+    "transferQtyInput": "приём",
+    "notAvailableInWarehouse": "нет на этом складе",
+    "transferCreatedSuccess": "перемещение успешно создано",
+    "fieldRequired": "обязательное поле",
+    "printer": "принтер"
   },
   "settings": {
     "title": "настройки",

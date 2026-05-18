@@ -6,7 +6,7 @@ import { MaterialIcons, AntDesign, Feather } from '@/component/icons/VectorIcon'
 import { Colors, FontFamily } from '@/theme';
 import useDraftStore from '@/zustland/draftStore';
 
-import type { RootStackParamList, TabParamList, SellerParamList, BuyerParamList, ReturnProductParamList, AccountListParamList, SalesParamList, CompanyParamList, PreOrderParamList, WarehouseParamList } from './types';
+import type { RootStackParamList, TabParamList, SellerParamList, BuyerParamList, ReturnProductParamList, AccountListParamList, SalesParamList, CompanyParamList, PreOrderParamList, WarehouseParamList, TransferParamList } from './types';
 //-------------Home----------------
 import Home from '@/screen/Home';
 import Detail from '@/screen/Company/Detail';
@@ -62,7 +62,13 @@ import PreOrder from '@/screen/PreOrder';
 
 //-------------Warehouse----------------
 import Warehouse from '@/screen/Warehouse';
+import WarehouseDetail from '@/screen/Warehouse/Detail';
+//-------------Printer----------------
+import Printer from '@/screen/Printer';
 
+//-------------Transfer----------------
+import Transfer from '@/screen/Transfer';
+import TransferCreate from '@/screen/Transfer/Create';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const HomeStack = createNativeStackNavigator<RootStackParamList>();
@@ -77,6 +83,7 @@ const SalesStack = createNativeStackNavigator<SalesParamList>();
 const CompanyStack = createNativeStackNavigator<CompanyParamList>();
 const PreOrderStack = createNativeStackNavigator<PreOrderParamList>();
 const WarehouseStack = createNativeStackNavigator<WarehouseParamList>();
+const TransferStack = createNativeStackNavigator<TransferParamList>();
 
 const baseScreenOptions = {
   headerShown: false,
@@ -238,10 +245,19 @@ const WarehouseStackScreen = () => {
   return (
     <WarehouseStack.Navigator screenOptions={{ headerShown: false }}>
       <WarehouseStack.Screen name="Warehouse" component={Warehouse} />
+      <WarehouseStack.Screen name="Detail" component={WarehouseDetail} />
     </WarehouseStack.Navigator>
   );
 };
 
+const TransferStackScreen = () => { 
+  return (
+    <TransferStack.Navigator screenOptions={{ headerShown: false }}>
+      <TransferStack.Screen name="Transfer" component={Transfer} />
+      <TransferStack.Screen name="TransferCreate" component={TransferCreate} />
+    </TransferStack.Navigator>
+  );
+};
 
 const HomeStackScreen = () => {
   return (
@@ -254,6 +270,8 @@ const HomeStackScreen = () => {
       <HomeStack.Screen name="AccountListStack" component={AccountListStackScreen} />
       <HomeStack.Screen name="PreOrderStack" component={PreOrderStackScreen} />
       <HomeStack.Screen name="WarehouseStack" component={WarehouseStackScreen} />
+      <HomeStack.Screen name="Printer" component={Printer} />
+      <HomeStack.Screen name="TransferStack" component={TransferStackScreen} />
     </HomeStack.Navigator>
   );
 };
@@ -279,6 +297,7 @@ const SettingStackScreen = () => {
   return (
     <SettingsStack.Navigator screenOptions={{ headerShown: false }}>
       <SettingsStack.Screen name="Settings" component={Settings} />
+      <SettingsStack.Screen name="Printer" component={Printer} />
     </SettingsStack.Navigator>
   );
 };

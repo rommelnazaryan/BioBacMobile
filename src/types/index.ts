@@ -268,6 +268,20 @@ export type GetWarehousesResponse = {
   deleted: boolean;
 };
 
+export type GetWarehousesDetailResponse = {
+  id: number;
+  selfWorthPrice: number;
+  totalPrice: number;
+  initialPrice: number;
+  productName: string;
+  productId: number;
+  productGroupName: string;
+  warehouseName: string;
+  productMinimalBalance: number;
+  balance: number;
+  productExpirationDate: string;
+  productUnitName: string;
+};
 export type WarehousesParamList = {
   name: string;
   id: string | number;
@@ -380,3 +394,12 @@ export type PhoneProps = {
 };
 
 
+export type GetTransferProductResponse = {
+  date: string;
+  fromWarehouseName: string;
+  toWarehouseName: string;
+  quantity: number;
+  componentName: string;
+  notes: string;
+  status: string;
+}

@@ -79,6 +79,9 @@ export default function useHome() {
       case 'Pre-order':
         navigation.navigate('PreOrderStack');
         break;
+      case 'Printer':
+        navigation.navigate('Printer');
+        break;
 
       default:
         break;
