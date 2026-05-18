@@ -29,11 +29,17 @@ type PrinterSdkNative = {
   isConnected: () => Promise<PrinterConnection>;
   printSample: (language: PrinterLanguage) => Promise<boolean>;
   printBill: (language: PrinterLanguage) => Promise<boolean>;
+  printReceiptLines?: (lines: string[]) => Promise<boolean>;
+  /** Prefer this on Android — survives bridge quirks vs raw array arguments. */
+  printReceiptLinesJson?: (linesJson: string) => Promise<boolean>;
 };
 
-const Native: PrinterSdkNative | undefined = (NativeModules as any)?.PrinterSdk;
+function getPrinterSdkNative(): PrinterSdkNative | undefined {
+  return NativeModules.PrinterSdk as PrinterSdkNative | undefined;
+}
 
 function requireNative(): PrinterSdkNative {
+  const Native = getPrinterSdkNative();
   if (Platform.OS !== 'android' || !Native) {
     throw new Error('Printer SDK is only available on Android after rebuild.');
   }
@@ -78,4 +84,20 @@ export function printPrinterSdkSample(language: PrinterLanguage) {
 
 export function printPrinterSdkBill(language: PrinterLanguage) {
   return requireNative().printBill(language);
+}
+
+export function printPrinterSdkReceiptLines(lines: string[]): Promise<boolean> {
+  const n = requireNative();
+  const jsonPayload = JSON.stringify(lines);
+  if (typeof n.printReceiptLinesJson === 'function') {
+    return n.printReceiptLinesJson.call(n, jsonPayload);
+  }
+  if (typeof n.printReceiptLines === 'function') {
+    return n.printReceiptLines.call(n, lines);
+  }
+  return Promise.reject(
+    new Error(
+      'PrinterSdk has no receipt print API. Rebuild and reinstall the Android app.',
+    ),
+  );
 }

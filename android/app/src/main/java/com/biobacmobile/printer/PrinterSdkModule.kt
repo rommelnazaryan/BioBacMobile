@@ -5,9 +5,16 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Typeface
 import android.os.Build
+import android.text.TextPaint
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
@@ -18,6 +25,8 @@ import net.posprinter.TSPLConst
 import net.posprinter.TSPLPrinter
 import net.posprinter.ZPLConst
 import net.posprinter.ZPLPrinter
+import java.io.ByteArrayOutputStream
+import java.util.Locale
 
 class PrinterSdkModule(private val reactContext: ReactApplicationContext) :
   ReactContextBaseJavaModule(reactContext) {
@@ -28,6 +37,18 @@ class PrinterSdkModule(private val reactContext: ReactApplicationContext) :
   private var selectedType: String? = null
 
   override fun getName(): String = "PrinterSdk"
+
+  /**
+   * XP-P328B and similar BLE printers — slightly lower TSPL speed.
+   */
+  private fun isXpP328Family(): Boolean {
+    val n = (selectedName ?: "").uppercase(Locale.ROOT)
+    return n.contains("P328") || n.contains("328B") || (n.contains("XP") && n.contains("328"))
+  }
+
+  private fun tsplReceiptSpeed(): Double {
+    return if (isXpP328Family()) 4.0 else 5.0
+  }
 
   private fun bluetoothAdapter(): BluetoothAdapter? {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
@@ -214,6 +235,186 @@ class PrinterSdkModule(private val reactContext: ReactApplicationContext) :
     }
   }
 
+  /**
+   * Same as printReceiptLines but takes JSON array string — reliable across RN bridges
+   * (e.g. when ReadableArray-from-JS fails or legacy APK lacks multi-arg method).
+   */
+  @ReactMethod
+  fun printReceiptLinesJson(linesJson: String, promise: Promise) {
+    val conn = connection
+    if (conn?.isConnect != true) {
+      promise.reject("NOT_CONNECTED", "Printer is not connected")
+      return
+    }
+    try {
+      val ja = org.json.JSONArray(linesJson)
+      if (ja.length() <= 0) {
+        promise.reject("EMPTY_RECEIPT", "No lines to print")
+        return
+      }
+      val arr = Arguments.createArray()
+      for (i in 0 until ja.length()) {
+        arr.pushString(ja.optString(i, ""))
+      }
+      printTsplReceiptLines(conn, arr)
+      promise.resolve(true)
+    } catch (error: Exception) {
+      promise.reject("PRINT_RECEIPT_FAILED", error.message, error)
+    }
+  }
+
+  /**
+   * Multi-line TSPL receipt (UTF-8 / Cyrillic support depends on printer firmware).
+   * Label height scales with line count (~5 mm per row, capped).
+   */
+  @ReactMethod
+  fun printReceiptLines(lines: ReadableArray, promise: Promise) {
+    val conn = connection
+    if (conn?.isConnect != true) {
+      promise.reject("NOT_CONNECTED", "Printer is not connected")
+      return
+    }
+    val n = lines.size()
+    if (n <= 0) {
+      promise.reject("EMPTY_RECEIPT", "No lines to print")
+      return
+    }
+    try {
+      printTsplReceiptLines(conn, lines)
+      promise.resolve(true)
+    } catch (error: Exception) {
+      promise.reject("PRINT_RECEIPT_FAILED", error.message, error)
+    }
+  }
+
+  private fun truncateReceiptLineForWidth(text: String, paint: Paint, maxWidthPx: Float): String {
+    if (paint.measureText(text) <= maxWidthPx) return text
+    var t = text
+    val ellipsis = "..."
+    while (t.isNotEmpty() && paint.measureText(t + ellipsis) > maxWidthPx) {
+      t = t.dropLast(1)
+    }
+    return if (t.isEmpty()) ellipsis else t + ellipsis
+  }
+
+  /**
+   * Renders Cyrillic reliably: Android fonts + monochrome bitmap bypass TSPL FONT/CODEPAGE limits
+   * (fixes garbled Russian on XP‑P328B and similar printers).
+   */
+  private fun rasterizeReceiptLinesToBitmap(lines: ReadableArray): Bitmap {
+    val dpi = 203.0
+    val maxPrintDots = ((72 * dpi) / 25.4).toInt()
+    val bitmapWidthDots = kotlin.math.max((((maxPrintDots + 7) shr 3) shl 3), 288)
+    val padding = 16
+    val textSizePx = 24f
+
+    val lineCount = lines.size().coerceAtLeast(1)
+    val texts = List(lineCount) { idx -> lines.getString(idx) ?: "" }
+
+    val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+      color = Color.BLACK
+      textSize = textSizePx
+      typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
+      isSubpixelText = true
+    }
+
+    val fm = paint.fontMetrics
+    val lineStep =
+      kotlin.math.ceil((fm.descent - fm.ascent).toDouble() + 10.0).toInt().coerceAtLeast(8)
+
+    val maxTextWidthPx = (bitmapWidthDots - padding * 2).toFloat()
+
+    val maxScratchHeightDots = kotlin.math.min(lineCount * lineStep + padding * 2, 6144)
+    val scratch = Bitmap.createBitmap(
+      bitmapWidthDots,
+      maxScratchHeightDots.coerceAtLeast(lineStep + padding * 2),
+      Bitmap.Config.ARGB_8888,
+    )
+    scratch.eraseColor(Color.WHITE)
+    val canvas = Canvas(scratch)
+
+    var baselineY = padding - fm.ascent
+    var maxBottom = baselineY + fm.descent
+
+    for (entry in texts) {
+      if (baselineY >= scratch.height - padding) break
+      val drawMe = truncateReceiptLineForWidth(entry, paint, maxTextWidthPx)
+      canvas.drawText(drawMe, padding.toFloat(), baselineY, paint)
+      maxBottom = kotlin.math.max(maxBottom, baselineY + fm.descent)
+      baselineY += lineStep
+    }
+
+    val contentHeightDots =
+      kotlin.math.ceil((maxBottom + padding).toDouble()).toInt()
+        .coerceAtMost(scratch.height)
+        .coerceAtLeast(48)
+
+    return if (contentHeightDots < scratch.height) {
+      val cropped =
+        Bitmap.createBitmap(scratch, 0, 0, scratch.width, contentHeightDots)
+      if (!scratch.isRecycled && cropped !== scratch) {
+        scratch.recycle()
+      }
+      cropped
+    } else {
+      scratch
+    }
+  }
+
+  private fun buildTsplBitmapCommand(x: Int, y: Int, bitmap: Bitmap): ByteArray {
+    val widthBytes = (bitmap.width + 7) / 8
+    val out = ByteArrayOutputStream()
+    out.write("BITMAP $x,$y,$widthBytes,${bitmap.height},0,".toByteArray(Charsets.US_ASCII))
+
+    for (row in 0 until bitmap.height) {
+      for (byteColumn in 0 until widthBytes) {
+        // XP-P328B treats 0-bits as burned dots. Start white, clear only text pixels.
+        var value = 0xFF
+        for (bit in 0 until 8) {
+          val px = byteColumn * 8 + bit
+          if (px < bitmap.width) {
+            val color = bitmap.getPixel(px, row)
+            val alpha = Color.alpha(color)
+            val red = Color.red(color)
+            val green = Color.green(color)
+            val blue = Color.blue(color)
+            val luminance = (red * 299 + green * 587 + blue * 114) / 1000
+            if (alpha > 0 && luminance < 180) {
+              value = value and (0x80 shr bit).inv()
+            }
+          }
+        }
+        out.write(value and 0xFF)
+      }
+    }
+
+    out.write("\r\n".toByteArray(Charsets.US_ASCII))
+    return out.toByteArray()
+  }
+
+  private fun printTsplReceiptLines(conn: IDeviceConnection, lines: ReadableArray) {
+    val bmp = rasterizeReceiptLinesToBitmap(lines)
+    try {
+      val dpi = 203.0
+      val widthMm = (bmp.width * 25.4 / dpi).coerceAtMost(72.0)
+      val heightMm = (bmp.height * 25.4 / dpi).coerceIn(24.0, 220.0)
+      TSPLPrinter(conn)
+        .sizeMm(widthMm, heightMm)
+        .gapMm(2.0, 0.0)
+        .speed(tsplReceiptSpeed())
+        .density(10)
+        .direction(TSPLConst.DIRECTION_FORWARD)
+        .reference(0, 0)
+        .cls()
+        .sendData(buildTsplBitmapCommand(0, 0, bmp))
+        .print(1)
+    } finally {
+      if (!bmp.isRecycled) {
+        bmp.recycle()
+      }
+    }
+  }
+
   private fun printTsplSample(conn: IDeviceConnection) {
     TSPLPrinter(conn)
       .sizeMm(60.0, 30.0)
@@ -223,7 +424,7 @@ class PrinterSdkModule(private val reactContext: ReactApplicationContext) :
       .direction(TSPLConst.DIRECTION_FORWARD)
       .reference(0, 0)
       .cls()
-      .text(30, 25, TSPLConst.FNT_16_24, TSPLConst.ROTATION_0, 1, 1, "BIOBAC MOBILE")
+      .text(30, 25, TSPLConst.FNT_16_24, TSPLConst.ROTATION_0, 1, 1, "BIOBAC")
       .text(30, 65, TSPLConst.FNT_12_20, TSPLConst.ROTATION_0, 1, 1, "TSPL2 sample")
       .qrcode(360, 25, TSPLConst.EC_LEVEL_H, 4, TSPLConst.QRCODE_MODE_MANUAL, TSPLConst.ROTATION_0, "BIOBAC")
       .print(1)
@@ -259,7 +460,7 @@ class PrinterSdkModule(private val reactContext: ReactApplicationContext) :
       .addStart()
       .setPrinterWidth(480)
       .setLabelLength(240)
-      .addText(30, 25, ZPLConst.FNT_D, ZPLConst.ROTATION_0, 24, 14, "BIOBAC MOBILE")
+      .addText(30, 25, ZPLConst.FNT_D, ZPLConst.ROTATION_0, 24, 14, "BIOBAC")
       .addText(30, 75, ZPLConst.FNT_D, ZPLConst.ROTATION_0, 18, 10, "ZPL2 sample")
       .addQRCode(330, 25, "BIOBAC")
       .addPrintCount(1)

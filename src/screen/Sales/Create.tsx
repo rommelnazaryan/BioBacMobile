@@ -1,7 +1,7 @@
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { StyleSheet, ScrollView, KeyboardAvoidingView } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Colors } from '@/theme';
-import { Controller } from 'react-hook-form';
+import { Controller, useWatch } from 'react-hook-form';
 import TextView from '@/component/view/TextView';
 import TextInput from '@/component/input/TextInput';
 import Botton from '@/component/button';
@@ -13,39 +13,60 @@ import moment from 'moment';
 import DropdownComponent, { DropdownMultiSelect } from '@/component/dropdown';
 import type { SalesParamList } from '@/navigation/types';
 import useSaleCreate from '@/hooks/useSale/useCreate';
+import SaleProductLineRow from '@/screen/Sales/_component/SaleProductLineRow';
 
 type Props = NativeStackScreenProps<SalesParamList, 'SalesCreate'>;
 
-export default function SalesCreate(route: Props) {
+const isDropdownValue = (value: unknown): value is string | number =>
+  typeof value === 'string' || typeof value === 'number';
 
+export default function SalesCreate(route: Props) {
   const {
     control,
     handleSubmit,
     errors,
-    onOpenDate,
-    onclearDate,
+    onOpenOrderDate,
+    onOpenSaleDate,
+    onClearOrderDate,
+    onClearSaleDate,
     onCloseDate,
-    date,
+    orderDate,
+    saleDate,
+    calendarValueDate,
     showDate,
     onConfirmDate,
     companyList,
     lineList,
     isConnected,
     onCreateCompany,
-    errorDate,
+    errorOrderDate,
+    errorSaleDate,
     keyValue,
-    selectedLineValues, 
-    setSelectedLineValues, 
+    selectedLineValues,
+    setSelectedLineValues,
     contactPersonList,
-    onSubmitCreateContactPerson
+    onSubmitCreateContactPerson,
+    getContactPerson,
+    onSubmitGetProduct,
+    productList,
+    syncSaleLinesForSelection,
+    removeSaleProduct,
   } = useSaleCreate(route);
 
+  const selectedProducts =
+    useWatch({ control, name: 'products' }) ?? [];
+    const keyboardVerticalOffset = 30;
+
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+    behavior="padding"
+    keyboardVerticalOffset={keyboardVerticalOffset}
+    style={styles.container}>
       <CustomHeader title={'Create Sale'} showBack={true} />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollView}>
+        contentContainerStyle={styles.scrollView}
+      >
         <TextView title="Deal name" style={styles.marginTop} />
         <Controller
           control={control}
@@ -78,7 +99,11 @@ export default function SalesCreate(route: Props) {
               style={styles.marginTop}
               data={isConnected ? companyList : []}
               value={value}
-              onClick={({ value }) => onChange(value)}
+              onClick={({value: buyerCompanyId, label: labelValue}) => {
+                onChange(buyerCompanyId);
+                getContactPerson(labelValue);
+                onSubmitGetProduct(String(buyerCompanyId));
+              }}
               errorMessage={errors.company?.message}
             />
           )}
@@ -106,44 +131,68 @@ export default function SalesCreate(route: Props) {
           textStyle={styles.contactPersonButtonText}
         />
 
-
         <TextView title="Order date" />
         <TouchableView
-          title={date}
+          title={orderDate}
           style={styles.marginTop}
-          onPress={onOpenDate}
-          onClose={onclearDate}
+          onPress={onOpenOrderDate}
+          onClose={onClearOrderDate}
           onBlur={showDate}
           icon={<DateIcon size={24} color={Colors.black} />}
-          errorMessage={errorDate}
+          errorMessage={errorOrderDate}
         />
 
         <TextView title="Sale date" style={styles.marginTop} />
         <TouchableView
-          title={date}
+          title={saleDate}
           style={styles.marginTop}
-          onPress={onOpenDate}
-          onClose={onclearDate}
+          onPress={onOpenSaleDate}
+          onClose={onClearSaleDate}
           onBlur={showDate}
           icon={<DateIcon size={24} color={Colors.black} />}
-          errorMessage={errorDate}
+          errorMessage={errorSaleDate}
         />
-        
+
         <TextView title="Products" style={styles.marginTop} />
         <Controller
           control={control}
           name="products"
-          render={({ field: { onChange, value: value } }) => (
-            <DropdownComponent
+          render={({ field: { onChange, value } }) => (
+            <DropdownMultiSelect
               style={styles.marginTop}
-              data={isConnected ? companyList : []}
-              value={value}
-              onClick={({ value }) => onChange(value)}
+              data={isConnected ? productList : []}
+              value={Array.isArray(value) ? value.filter(isDropdownValue) : []}
+              onChange={ids => {
+                onChange(ids);
+                syncSaleLinesForSelection(ids);
+              }}
               errorMessage={errors.products?.message}
             />
           )}
         />
-        <TextView title="Creditor amount" style={styles.marginTop} />
+
+        {(Array.isArray(selectedProducts)
+          ? selectedProducts.filter(isDropdownValue)
+          : []
+        ).map(productId => {
+          const meta = productList.find(
+            p => String(p.value) === String(productId),
+          );
+          const productName =
+            meta?.label != null ? String(meta.label) : `#${productId}`;
+          return (
+            <SaleProductLineRow
+              key={String(productId)}
+              productId={productId}
+              productName={productName}
+              control={control}
+              errors={errors}
+              onRemove={() => removeSaleProduct(productId)}
+            />
+          );
+        })}
+
+        <TextView title="Received amount" style={styles.marginTop} />
         <Controller
           control={control}
           name="creditorAmount"
@@ -158,14 +207,13 @@ export default function SalesCreate(route: Props) {
           )}
         />
 
-
         <Calender
           isVisible={showDate}
           onClose={() => onCloseDate()}
           onConfirm={onConfirmDate}
           value={
-            moment(date, 'DD/MM/YYYY', true).isValid()
-              ? moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD')
+            moment(calendarValueDate, 'DD/MM/YYYY', true).isValid()
+              ? moment(calendarValueDate, 'DD/MM/YYYY').format('YYYY-MM-DD')
               : undefined
           }
         />
@@ -175,9 +223,8 @@ export default function SalesCreate(route: Props) {
           onHandler={handleSubmit(onCreateCompany)}
           style={styles.button}
         />
-
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -207,7 +254,5 @@ const styles = StyleSheet.create({
   },
   contactPersonButtonText: {
     color: Colors.gray_400,
-  }
-
+  },
 });
-

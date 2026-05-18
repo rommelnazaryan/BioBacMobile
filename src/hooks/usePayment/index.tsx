@@ -288,7 +288,7 @@ export default function usePayment(route: Props) {
         targetId: item.id,
       },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           // clear selections but keep date + loaded dropdown data
           setAccount([]);
           setTypeName([]);
@@ -303,7 +303,8 @@ export default function usePayment(route: Props) {
             amount: '',
             comment: ''
           });
-          navigation.goBack();
+          console.log(data);
+          // navigation.goBack();
           show('Payment created successfully', {type: 'success'});
           // navigation.navigate('PaymentHistory');
         },

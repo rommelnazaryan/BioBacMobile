@@ -297,6 +297,7 @@ const SettingStackScreen = () => {
   return (
     <SettingsStack.Navigator screenOptions={{ headerShown: false }}>
       <SettingsStack.Screen name="Settings" component={Settings} />
+      <SettingsStack.Screen name="Printer" component={Printer} />
     </SettingsStack.Navigator>
   );
 };

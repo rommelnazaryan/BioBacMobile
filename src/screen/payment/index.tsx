@@ -201,15 +201,14 @@ export default function Payment(route: Props) {
             />
           )}
         />
-      </ScrollView>
-      {/* Fixed footer buttons */}
-      <View style={styles.footer}>
-          <Button
+                  <Button
             title="Create"
             onHandler={handleSubmit(onSubmit,onInvalidSubmit)}
             style={styles.button}
           />
-      </View>
+      </ScrollView>
+      {/* Fixed footer buttons */}
+
       <DefaultModal
         isVisible={visibleModal}
         onClose={onSubmitCancel}
@@ -245,6 +244,7 @@ const styles = StyleSheet.create({
   },
   button: {
     width: '90%',
+    marginTop: '15%',
   },
   discardButton: {
     backgroundColor: Colors.white,

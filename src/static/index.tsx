@@ -27,11 +27,11 @@ export const HOME_LIST = [
     label: 'account list',
     iconName: 'AccountListIcon',
   },
-  {
-    key: 'Printer',
-    label: 'printer',
-    iconName: 'PrinterIcon',
-  },
+  // {
+  //   key: 'Printer',
+  //   label: 'printer',
+  //   iconName: 'PrinterIcon',
+  // },
 ];
 
 export const Company_LIST = [

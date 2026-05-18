@@ -51,14 +51,14 @@ export default function HomeCreate() {
       style={styles.container}
     >
       <CustomHeader
-        title={'Product Transfer Between Warehouses'}
+        title={t('common.transferBetweenWarehousesTitle')}
         showBack={true}
       />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollView}
       >
-        <TextView title={'Warehouse Output'} style={styles.marginTop} />
+        <TextView title={t('common.warehouseOutput')} style={styles.marginTop} />
         <Controller
           control={control}
           name="warehouseOutput"
@@ -78,7 +78,7 @@ export default function HomeCreate() {
             />
           )}
         />
-        <TextView title={'Warehouse Input'} style={styles.marginTop} />
+        <TextView title={t('common.warehouseInput')} style={styles.marginTop} />
         <Controller
           control={control}
           name="warehouseInput"
@@ -117,7 +117,7 @@ export default function HomeCreate() {
           }
         />
 
-        <TextView title={'Notes'} style={styles.marginTop} />
+        <TextView title={t('common.notes')} style={styles.marginTop} />
         <Controller
           control={control}
           name="notes"
@@ -131,7 +131,7 @@ export default function HomeCreate() {
             />
           )}
         />
-        <TextView title={'Products'} style={styles.marginTop} />
+        <TextView title={t('common.products')} style={styles.marginTop} />
         <Controller
           control={control}
           name="products"
@@ -152,7 +152,7 @@ export default function HomeCreate() {
               {/* <TextView title={row.label} /> */}
               <View style={styles.qtyRow}>
                 <View style={styles.qtyCol}>
-                  <TextView title={'Output'} />
+                  <TextView title={t('common.transferQtyOutput')} />
                   <TextInput
                     edit={false}
                     containerStyle={styles.marginTop}
@@ -161,13 +161,13 @@ export default function HomeCreate() {
                     keyboard="numeric"
                     errorMessage={
                       row.outputQty <= 0
-                        ? 'Not available in this warehouse'
+                        ? t('common.notAvailableInWarehouse')
                         : ''
                     }
                   />
                 </View>
                 <View style={styles.qtyCol}>
-                  <TextView title={'Input'} />
+                  <TextView title={t('common.transferQtyInput')} />
                   <TextInput
                     edit={false}
                     containerStyle={styles.marginTop}
@@ -177,7 +177,7 @@ export default function HomeCreate() {
                   />
                 </View>
                 <View style={styles.qtyCol}>
-                  <TextView title={'Transfer'} />
+                  <TextView title={t('common.transfer')} />
                   <TextInput
                     containerStyle={styles.marginTop}
                     inputSize="small"
@@ -197,7 +197,11 @@ export default function HomeCreate() {
           );
         })}
 
-        <Button title="Create" onHandler={handleSubmit(onSubmit)} style={styles.button} />
+        <Button
+          title={t('common.create')}
+          onHandler={handleSubmit(onSubmit)}
+          style={styles.button}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );

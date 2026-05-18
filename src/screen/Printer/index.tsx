@@ -40,6 +40,7 @@ import {
   printPrinterSdkBill,
   printPrinterSdkSample,
 } from '@/native/printerSdk';
+import {persistLastSdkPrinterCredential} from '@/services/print/sdkPrinterStorage';
 
 type PrinterKind = 'BLE' | 'NET' | 'USB';
 
@@ -82,9 +83,9 @@ type NetDevice = {host: string; port: number};
 type PickerRow = NetDevice | BleDevice | UsbDevice;
 
 const KIND_OPTIONS: {key: PrinterKind; label: string}[] = [
-  {key: 'BLE', label: 'BLE'},
-  {key: 'NET', label: 'NET'},
-  {key: 'USB', label: 'USB'},
+  {key: 'BLE', label: 'Bluetooth'},
+  // {key: 'NET', label: 'NET'},
+  // {key: 'USB', label: 'USB'},
 ];
 
 const LANGUAGE_OPTIONS: {key: PrinterLanguage; label: string}[] = [
@@ -93,7 +94,7 @@ const LANGUAGE_OPTIONS: {key: PrinterLanguage; label: string}[] = [
 ];
 
 export default function PrinterScreen() {
-  const [kind, setKind] = useState<PrinterKind>('NET');
+  const [kind, setKind] = useState<PrinterKind>('BLE');
   const [language, setLanguage] = useState<PrinterLanguage>('TSPL');
   const [ip, setIp] = useState('');
   const [busy, setBusy] = useState(false);
@@ -357,6 +358,23 @@ export default function PrinterScreen() {
       if (!didConnect) {
         return;
       }
+      if (kind === 'BLE' && selectedBle?.inner_mac_address) {
+        await persistLastSdkPrinterCredential({
+          kind: 'BLE',
+          mac: selectedBle.inner_mac_address,
+          name: selectedBle.device_name,
+        });
+      } else if (kind === 'USB' && selectedUsb?.path) {
+        await persistLastSdkPrinterCredential({
+          kind: 'USB',
+          path: selectedUsb.path,
+        });
+      } else if (kind === 'NET') {
+        const host = ip.trim();
+        if (host) {
+          await persistLastSdkPrinterCredential({kind: 'NET', host});
+        }
+      }
       setConnected(true);
       Alert.alert('Printer', 'Connected');
     } catch (e) {
@@ -466,7 +484,7 @@ export default function PrinterScreen() {
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>Printer Demo</Text>
+        <Text style={styles.title}>Printer</Text>
 
         <Text style={styles.label}>Select printer type:</Text>
         {KIND_OPTIONS.map(opt => {
@@ -501,7 +519,7 @@ export default function PrinterScreen() {
           );
         })}
 
-        {kind === 'NET' ? (
+        {/* {kind === 'NET' ? (
           <>
             <Text style={styles.label}>Your printer ip....</Text>
             <TextInput
@@ -514,7 +532,7 @@ export default function PrinterScreen() {
               style={styles.input}
             />
           </>
-        ) : null}
+        ) : null} */}
 
         {kind === 'BLE' && selectedBle ? (
           <Text style={styles.hint}>
@@ -522,12 +540,12 @@ export default function PrinterScreen() {
             <Text style={styles.mono}>({selectedBle.inner_mac_address})</Text>
           </Text>
         ) : null}
-
+{/* 
         {kind === 'USB' && selectedUsb ? (
           <Text style={styles.hint}>
             USB: {selectedUsb.path}
           </Text>
-        ) : null}
+        ) : null} */}
 
         <Pressable
           onPress={findPrinters}
@@ -554,25 +572,25 @@ export default function PrinterScreen() {
             {printing ? ' Printing...' : ' Print sample'}
           </Text>
         </Pressable>
-
+{/* 
         <Pressable
           onPress={printBillColumns}
           disabled={busy || printing}
           style={[styles.btnBlue, (busy || printing) && styles.btnDisabled]}>
           <MaterialIcons name="receipt-long" size={22} color={Colors.white} />
           <Text style={styles.btnPrimaryText}> Print bill</Text>
-        </Pressable>
+        </Pressable> */}
 
-        <Pressable
+        {/* <Pressable
           onPress={printBillWithImage}
           disabled={busy || printing}
           style={[styles.btnBlue, (busy || printing) && styles.btnDisabled]}>
           <MaterialIcons name="qr-code-2" size={22} color={Colors.white} />
           <Text style={styles.btnPrimaryText}> Print bill With Image</Text>
-        </Pressable>
+        </Pressable> */}
 
-        <Text style={styles.previewLabel}>QR preview</Text>
-        <Image source={{uri: DEMO_QR_IMAGE}} style={styles.qr} />
+        {/* <Text style={styles.previewLabel}>QR preview</Text>
+        <Image source={{uri: DEMO_QR_IMAGE}} style={styles.qr} /> */}
 
         {busy ? (
           <ActivityIndicator style={styles.spinner} color={Colors.blue} />

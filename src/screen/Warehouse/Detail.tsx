@@ -39,7 +39,11 @@ export default function WarehouseDetail(props: Props) {
   return (
     <View style={styles.container}>
       <CustomHeader title={item.name} showBack={true} />
-      <Button title="Transfer" onHandler={() => onSubmitTransfer()} style={styles.button}/>
+      <Button
+        title={t('common.transfer')}
+        onHandler={() => onSubmitTransfer()}
+        style={styles.button}
+      />
       {loading ? (
         <Activity style={styles.activityIndicator} />
       ) : isConnected || warehousesList.length > 0 ? (

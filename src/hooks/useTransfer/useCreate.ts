@@ -16,6 +16,8 @@ import { GetWarehousesResponse } from '@/types';
 import { GetWarehouseRelatedProducts } from '@/services/Warehouses/GetWarehouseRelatedProducts';
 import { GetWarehouseProductBalance } from '@/services/Warehouses/GetWarehpuseProductBalance';
 import { CreateTransferProduct } from '@/services/Transfer/CreateTransferProduct';
+import { t } from '@/locales';
+import useLocalStore from '@/zustland/localStore';
 
 const normalizeProductId = (id: string | number): number => {
   const n = Number(id);
@@ -124,13 +126,19 @@ export default function useTransferCreate() {
   const inputBalancesFetchSeq = useRef(0);
   const balanceFetchSeq = useRef(0);
 
-  const validationSchema = Yup.object().shape({
-    warehouseOutput: Yup.string().trim().required('Required'),
-    warehouseInput: Yup.string().trim().required('Required'),
-    notes: Yup.string().trim().default(''),
-    products: Yup.array().default([]),
-    productTransferQty: Yup.object().default({}),
-  });
+  const language = useLocalStore(s => s.language);
+
+  const validationSchema = useMemo(
+    () =>
+      Yup.object().shape({
+        warehouseOutput: Yup.string().trim().required(t('common.fieldRequired')),
+        warehouseInput: Yup.string().trim().required(t('common.fieldRequired')),
+        notes: Yup.string().trim().default(''),
+        products: Yup.array().default([]),
+        productTransferQty: Yup.object().default({}),
+      }),
+    [language],
+  );
 
   const {
     control,
@@ -335,10 +343,10 @@ export default function useTransferCreate() {
   const outputWarehouseQuantityError = useMemo(() => {
     if (selectedProductIdNumbers.length === 0) return '';
     if (quantityOutputTotal <= 0) {
-      return 'Not available in this warehouse';
+      return t('common.notAvailableInWarehouse');
     }
     return '';
-  }, [quantityOutputTotal, selectedProductIdNumbers.length]);
+  }, [quantityOutputTotal, selectedProductIdNumbers.length, language]);
 
   useEffect(() => {
     const idStrs = selectedProductIdNumbers.map(String);
@@ -367,7 +375,7 @@ export default function useTransferCreate() {
   // clear date
   const onclearDate = () => {
     setDate('');
-    setErrorDate('Required');
+    setErrorDate(t('common.fieldRequired'));
   };
 
   // close date picker
@@ -515,7 +523,7 @@ export default function useTransferCreate() {
 
     await CreateTransferProduct(payload, {
       onSuccess: () => {
-        show('Transfer product created successfully', {type: 'success'});
+        show(t('common.transferCreatedSuccess'), {type: 'success'});
         navigation.goBack();
       },
       onUnauthorized: () => {

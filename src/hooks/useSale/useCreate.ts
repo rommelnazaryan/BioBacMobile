@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
 import {yupResolver} from '@hookform/resolvers/yup';
-import {useForm} from 'react-hook-form';
+import {type Resolver, useForm} from 'react-hook-form';
 import {useCallback, useEffect, useState} from 'react';
 import useNetworkStore from '@/zustland/networkStore';
 import {useToast} from '@/component/toast/ToastProvider';
@@ -11,39 +11,88 @@ import {
   RootStackParamList,
   SalesParamList,
 } from '@/navigation/types';
-import type {CreateCompanyRequest} from '@/types';
+import type {GetSaleSuccessResponse} from '@/types';
 import useDraftStore from '@/zustland/draftStore';
 import type {NativeStackNavigationProp, NativeStackScreenProps} from '@react-navigation/native-stack';
-import {UpdateCompany} from '@/services/Company/UpdateCompany';
-import { CreateCompany } from '@/services/Company/CreateSeller';
-import { GetBuyers } from '@/services/Company/Buyers';
-import { GetLine } from '@/services/Company/GetLine';
-import { GetContactPerson } from '@/services/Company/GetcontactPerson';
+import {GetBuyers} from '@/services/Company/Buyers';
+import {GetLine} from '@/services/Company/GetLine';
+import {GetAssortment} from '@/services/Company/GetAssortment';
+import {
+  CreateSale,
+  type CreateSaleRequest,
+  type SaleItemRequest,
+} from '@/services/Sale/CreateSale';
+import {UpdateSale} from '@/services/Sale/UpdateSale';
+import {buildSaleReceiptLines} from '@/services/print/buildSaleReceiptLines';
+import {ensureSalePrinterGate} from '@/services/print/ensureSalePrinterGate';
+import {tryPrintSaleReceipt} from '@/services/print/tryPrintSaleReceipt';
+import useProfileStore from '@/zustland/profileStore';
+
+const parseEffectiveSaleQuantity = (raw: unknown): number | null => {
+  const qStr = String(raw ?? '').trim();
+  if (!qStr) {
+    return null;
+  }
+  const q = Number(qStr.replace(',', '.').replace(/\s/g, ''));
+  if (!Number.isFinite(q) || q < 0) {
+    return null;
+  }
+  return q <= 0 ? 1 : q;
+};
+
+export type SaleLineFields = {
+  quantity: string;
+  unitPrice: string;
+};
+
+export type SaleCreateFormValues = {
+  dealName: string;
+  company: string;
+  contactPerson: string;
+  products: Array<string | number>;
+  saleLines: Record<string, SaleLineFields>;
+  creditorAmount: string;
+};
 
 export default function useSaleCreate(
   route: NativeStackScreenProps<SalesParamList, 'SalesCreate'>,
 ) {
   const {item, key} = route.route.params;
   const isConnected = useNetworkStore(s => s.isConnected);
+  const todayDdMmYyyy = moment(new Date()).format('DD/MM/YYYY');
   const [showDate, setShowDate] = useState(false);
+  const [activeDateField, setActiveDateField] = useState<'order' | 'sale' | null>(
+    null,
+  );
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const {Draft, setDraft} = useDraftStore();
   const {show} = useToast();
-  const [date, setDate] = useState<string>(moment(new Date()).format('DD/MM/YYYY'));
-  const [errorDate, setErrorDate] = useState<string>('');
+  const {profile} = useProfileStore();
+  const [orderDate, setOrderDate] = useState<string>(todayDdMmYyyy);
+  const [saleDate, setSaleDate] = useState<string>(todayDdMmYyyy);
+  const [errorOrderDate, setErrorOrderDate] = useState<string>('');
+  const [errorSaleDate, setErrorSaleDate] = useState<string>('');
   const [companyList, setCompanyList] = useState<DropdownOptions[]>([]);
   const [lineList, setLineList] = useState<DropdownOptions[]>([]);
   const [keyValue, setKeyValue] = useState<string>('');
   const [selectedLineValues, setSelectedLineValues] = useState<Array<string | number>>([]);
   const [contactPersonList, setContactPersonList] = useState<DropdownOptions[]>([]);
-
-
+  const [data, setData] = useState<any[]>([]);
+  const [productUnitPriceById, setProductUnitPriceById] = useState<
+    Map<number, number>
+  >(() => new Map());
+  const [productList, setProductList] = useState<DropdownOptions[]>([]);
   const validationSchema = Yup.object().shape({
-    dealName: Yup.string().trim().required('Required'),
+    dealName: Yup.string().trim().default(''),
     company: Yup.string().trim().required('Required'),
-    contactPerson: Yup.string().trim().required('Required'),
-    products: Yup.string().trim().required('Required'),
-    creditorAmount: Yup.string().trim(),
+    contactPerson: Yup.string().trim(),
+    products: Yup.array()
+      .of(Yup.mixed<string | number>())
+      .min(1, 'Required')
+      .required('Required')
+      .default([]),
+    saleLines: Yup.object().default({}),
+    creditorAmount: Yup.string().trim().default('0'),
   });
 
   const {
@@ -52,17 +101,54 @@ export default function useSaleCreate(
     formState: {errors},
     getValues,
     setValue,
-  } = useForm({
+    setError,
+    clearErrors,
+  } = useForm<SaleCreateFormValues>({
     defaultValues: {
       dealName: '',
       company: '',
       contactPerson: '',
-      products: '',
+      products: [] as Array<string | number>,
+      saleLines: {},
       creditorAmount: '0',
     },
     mode: 'onSubmit',
-    resolver: yupResolver(validationSchema),
+    resolver: yupResolver(validationSchema) as Resolver<SaleCreateFormValues>,
   });
+
+  const syncSaleLinesForSelection = useCallback(
+    (ids: Array<string | number>) => {
+      const prev = getValues('saleLines') ?? {};
+      const next: Record<string, SaleLineFields> = {};
+      for (const raw of ids) {
+        const lineKey = String(raw);
+        const pid = Number(raw);
+        const defaultUnit = Number.isFinite(pid)
+          ? productUnitPriceById.get(pid)
+          : undefined;
+        const existing = prev[lineKey];
+        next[lineKey] = {
+          quantity: existing?.quantity ?? '',
+          unitPrice:
+            existing?.unitPrice !== undefined && existing.unitPrice !== ''
+              ? existing.unitPrice
+              : String(defaultUnit != null ? defaultUnit : ''),
+        };
+      }
+      setValue('saleLines', next);
+    },
+    [getValues, productUnitPriceById, setValue],
+  );
+
+  const removeSaleProduct = useCallback(
+    (productId: string | number) => {
+      const current = getValues('products') ?? [];
+      const next = current.filter(x => String(x) !== String(productId));
+      setValue('products', next);
+      syncSaleLinesForSelection(next);
+    },
+    [getValues, setValue, syncSaleLinesForSelection],
+  );
 
   useEffect(() => {
     if (item) {
@@ -86,24 +172,33 @@ export default function useSaleCreate(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item, setValue, key]);
 
-  // open date picker
-  const onOpenDate = () => {
+  const onOpenOrderDate = () => {
+    setActiveDateField('order');
     setShowDate(true);
   };
 
-  // clear date
-  const onclearDate = () => {
-    setDate('');
-    setErrorDate('Required');
+  const onOpenSaleDate = () => {
+    setActiveDateField('sale');
+    setShowDate(true);
   };
 
-  // close date picker
+  const onClearOrderDate = () => {
+    setOrderDate('');
+    setErrorOrderDate('Required');
+  };
+
+  const onClearSaleDate = () => {
+    setSaleDate('');
+    setErrorSaleDate('Required');
+  };
+
   const onCloseDate = () => {
     setShowDate(false);
-    setErrorDate('');
+    setActiveDateField(null);
+    setErrorOrderDate('');
+    setErrorSaleDate('');
   };
 
-  // confirm selected date
   const onConfirmDate = (payload: {
     day: number;
     month: number;
@@ -113,8 +208,16 @@ export default function useSaleCreate(
   }) => {
     const dd = String(payload.day).padStart(2, '0');
     const mm = String(payload.month).padStart(2, '0');
-    setDate(`${dd}/${mm}/${payload.year}`);
+    const formatted = `${dd}/${mm}/${payload.year}`;
+    if (activeDateField === 'sale') {
+      setSaleDate(formatted);
+      setErrorSaleDate('');
+    } else {
+      setOrderDate(formatted);
+      setErrorOrderDate('');
+    }
     setShowDate(false);
+    setActiveDateField(null);
   };
 
 
@@ -124,13 +227,14 @@ export default function useSaleCreate(
     await GetBuyers({
       onSuccess: res => {
 
-        const { data } = res as { data: { id: number; name: string; assortmentId: number }[] };
-        const companyOptions: any[] = data.map(
-          (company: { name: string; assortmentId: number }) => ({
-            label: company.name,
-            value: company.assortmentId == null ? Math.random() * 1000000 : company.assortmentId,
-          }),
-        );
+        const {data} = res as {
+          data: {id: number; name: string; assortmentId: number}[];
+        };
+        const companyOptions: DropdownOptions[] = data.map(company => ({
+          label: company.name,
+          value: company.id,
+        }));
+        setData(data);
         setCompanyList(companyOptions as []);
       },
       onUnauthorized: () => {
@@ -168,28 +272,103 @@ export default function useSaleCreate(
   }, [isConnected, show])
 
   // get Contact Person
-  const getContactPerson = useCallback(async () => {
-    if (!isConnected) return;
-    await GetContactPerson({
-      onSuccess: res => {
-        const { data } = res as { data: { id: number; firstName: string; lastName: string }[] };
-        const companyOptions: any[] = data.map(
+  // const getContactPerson = useCallback(async () => {
+  //   if (!isConnected) return;
+  //   await GetContactPerson({
+  //     onSuccess: res => {
+  //       const { data } = res as { data: { id: number; firstName: string; lastName: string }[] };
+  //       const companyOptions: any[] = data.map(
+  //         (item: { firstName: string; lastName: string; id: number }) => ({
+  //           label: `${item.firstName} ${item.lastName}`,
+  //           value: item.id,
+  //         }),
+  //       );
+  //       setContactPersonList(companyOptions as []);
+  //     },
+  //     onUnauthorized: () => {
+  //       show('Unauthorized', { type: 'error' });
+  //     },
+  //     onError: () => {
+  //       show('Failed to get company group', { type: 'error' });
+  //     },
+  //   });
+
+  // }, [isConnected, show])
+  
+  const getContactPerson = useCallback(async (value: string) => {
+    const result = data.find(item => item.name === value);
+            const companyOptions: any[] = result.contactPerson.map(
           (item: { firstName: string; lastName: string; id: number }) => ({
             label: `${item.firstName} ${item.lastName}`,
             value: item.id,
           }),
         );
-        setContactPersonList(companyOptions as []);
+    setContactPersonList(companyOptions as []);
+  }, [data]);
+
+  // get product
+  const onSubmitGetProduct = useCallback(
+    (buyerCompanyId: number | string) => {
+      if (!isConnected) {
+        return;
+      }
+      const buyer = data.find(
+        (b: {id: number; assortmentId?: number}) =>
+          String(b.id) === String(buyerCompanyId),
+      );
+      if (buyer == null || buyer.assortmentId == null) {
+        show('No product list for this company', {type: 'error'});
+        setProductList([]);
+        setProductUnitPriceById(new Map());
+        return;
+      }
+      GetAssortment(Number(buyer.assortmentId), {
+      onSuccess: res => {
+        const {
+          data: { products },
+        } = res as {
+          data: {
+            products: Array<
+              {
+                productName: string;
+                productId: number;
+              } & Record<string, unknown>
+            >;
+          };
+        };
+        const priceMap = new Map<number, number>();
+        const productOptions: unknown[] = products.map(product => {
+          const rawPrice =
+            (product as {salePrice?: number}).salePrice ??
+            (product as {unitPrice?: number}).unitPrice ??
+            (product as {price?: number}).price ??
+            (product as {selfWorthPrice?: number}).selfWorthPrice;
+          const n = Number(rawPrice);
+          if (Number.isFinite(n) && n >= 0) {
+            priceMap.set(product.productId, n);
+          }
+          return {
+            label: product.productName,
+            value: product.productId,
+          };
+        });
+        setProductUnitPriceById(priceMap);
+        setProductList(productOptions as DropdownOptions[]);
+        setValue('products', []);
+        setValue('saleLines', {});
       },
       onUnauthorized: () => {
-        show('Unauthorized', { type: 'error' });
+        console.log('unauthorized');
       },
-      onError: () => {
-        show('Failed to get company group', { type: 'error' });
+      onError: error => {
+        show((error as Error)?.message ?? 'Failed to get product', {
+          type: 'error',
+        });
       },
     });
-
-  }, [isConnected, show])
+  },
+  [data, isConnected, setValue, show],
+  );
 
 
   // create contact person
@@ -201,63 +380,169 @@ export default function useSaleCreate(
 
   // create company
   const onCreateCompany = useCallback(async () => {
-    if (date === '') {
-      setErrorDate('Required');
+    let datesOk = true;
+    if (orderDate === '') {
+      setErrorOrderDate('Required');
+      datesOk = false;
+    }
+    if (saleDate === '') {
+      setErrorSaleDate('Required');
+      datesOk = false;
+    }
+    if (!datesOk) {
       return;
     }
-    console.log(getValues());
-    const data: CreateCompanyRequest = {
-      // name: getValues().companyName,
-      // clientRegisteredDate: `${moment(new Date()).format('DD/MM/YYYY')}:23:59:00`,
-      // ogrnDate: `${date}:23:59:00`,
-      // ceo: getValues().generalDirector,
-      // phones: [getValues().companyPhone],
-      // emails: [],
-      // typeIds: [1],
-      // cooperationId: 1,
-      // companyGroupId: Number(getValues().companyGroup),
-      // longitude: longitude,
-      // latitude: latitude,
-    };
-    if (Number(getValues().creditorAmount) > 0) {
-      data.creditorAmount = Number(getValues().creditorAmount);
+
+    const productIds = (getValues('products') ?? []) as Array<string | number>;
+    for (const raw of productIds) {
+      clearErrors(`saleLines.${String(raw)}.quantity` as never);
     }
 
-    // if offline, save to draft
+    let linesOk = true;
+    for (const raw of productIds) {
+      const lineKey = String(raw);
+      const line = getValues('saleLines')?.[lineKey];
+      if (parseEffectiveSaleQuantity(line?.quantity) === null) {
+        linesOk = false;
+        setError(`saleLines.${lineKey}.quantity` as never, {
+          type: 'manual',
+          message: 'Quantity is required',
+        });
+      }
+    }
+    if (!linesOk) {
+      return;
+    }
+
+    const form = getValues();
+    const buyerCompanyId = Number(form.company);
+    const contactPersonId = Number(form.contactPerson);
+    if (!Number.isFinite(buyerCompanyId) || buyerCompanyId <= 0) {
+      show('Invalid company', {type: 'error'});
+      return;
+    }
+    // if (!Number.isFinite(contactPersonId) || contactPersonId <= 0) {
+    //   show('Select contact person', {type: 'error'});
+    //   return;
+    // }
+
+    const saleLines = form.saleLines ?? {};
+    const items: SaleItemRequest[] = productIds.map(raw => {
+      const lineKey = String(raw);
+      const line = saleLines[lineKey];
+      const qty = parseEffectiveSaleQuantity(line?.quantity) ?? 1;
+      const unitRaw = Number(
+        String(line?.unitPrice ?? '')
+          .replace(',', '.')
+          .replace(/\s/g, ''),
+      );
+      const unitPrice = Number.isFinite(unitRaw) ? unitRaw : 0;
+      const productId = Number(raw);
+      return {
+        productId,
+        quantity: qty,
+        unitPrice,
+        totalPrice: qty * unitPrice,
+      };
+    });
+
+    const totalAmount = items.reduce((sum, i) => sum + i.totalPrice, 0);
+    const receivedRaw = Number(
+      String(form.creditorAmount ?? '')
+        .replace(',', '.')
+        .replace(/\s/g, ''),
+    );
+    const receivedAmount = Number.isFinite(receivedRaw) ? receivedRaw : 0;
+    const orderDatePart = moment(orderDate, 'DD/MM/YYYY', true).isValid()
+      ? orderDate
+      : moment().format('DD/MM/YYYY');
+    const saleDatePart = moment(saleDate, 'DD/MM/YYYY', true).isValid()
+      ? saleDate
+      : moment().format('DD/MM/YYYY');
+
+    const payload: CreateSaleRequest = {
+      dealName: (form.dealName ?? '').trim(),
+      buyerCompanyId,
+      items,
+      totalAmount,
+      saleDate: `${saleDatePart}:23:59:00`,
+      orderDate: `${orderDatePart}:23:59:00`,
+      contactPersonId,
+      receivedAmount,
+    };
+
+    const buyerCompanyName = companyList.find(
+      c => String(c.value) === String(buyerCompanyId),
+    )?.label;
+    const contactPersonName = contactPersonList.find(
+      c => String(c.value) === String(contactPersonId),
+    )?.label;
+    const receiptLinesForPrint = buildSaleReceiptLines({
+      dealName: payload.dealName,
+      buyerCompanyName:
+        buyerCompanyName != null ? String(buyerCompanyName) : undefined,
+      orderDateDdMmYy: orderDatePart,
+      saleDateDdMmYy: saleDatePart,
+      contactPersonName:
+        contactPersonName != null ? String(contactPersonName) : undefined,
+      items: items.map(it => ({
+        productName: String(
+          productList.find(p => String(p.value) === String(it.productId))
+            ?.label ?? `#${it.productId}`,
+        ),
+        quantity: it.quantity,
+        unitPrice: it.unitPrice,
+        totalPrice: it.totalPrice,
+      })),
+      totalAmount: payload.totalAmount,
+      receivedAmount: payload.receivedAmount,
+      responsibleFirstName: profile?.firstname,
+    });
+
     if (!isConnected) {
-      const check = Draft.find(item => item.name === data.name);
-      if(check) {
-        show('Company already exists in draft', {type: 'error'});
+      const check = Draft.find(
+        (d: {key?: string; dealName?: string}) =>
+          d.key === 'Sale' && d.dealName === payload.dealName,
+      );
+      if (check) {
+        show('Sale already in draft', {type: 'error'});
         return;
       }
-      data.key = 'Buyer'
-      setDraft([...Draft, data]);
-      show('Company saved to draft', {type: 'success'});
+      setDraft([...Draft, {...payload, key: 'Sale'}]);
+      show('Sale saved to draft', {type: 'success'});
       navigation.goBack();
       return;
     }
 
-    if (key === 'edit' && (item as any)?.id != null) {
-      UpdateCompany((item as any).id, data, {
+    const printerReady = await ensureSalePrinterGate(show);
+    if (!printerReady) {
+      return;
+    }
+
+    const saleItem = item as GetSaleSuccessResponse | undefined;
+    if (key === 'edit' && saleItem?.id != null) {
+      UpdateSale(saleItem.id, payload, {
         onSuccess: () => {
-          show('Company updated successfully', {type: 'success'});
+          tryPrintSaleReceipt(receiptLinesForPrint).catch(() => undefined);
+          show('Sale updated successfully', {type: 'success'});
           navigation.goBack();
         },
         onError: () => {
-          show('Failed to update company', {type: 'error'});
+          show('Failed to update sale', {type: 'error'});
         },
       });
     } else {
-      CreateCompany(data, {
+      CreateSale(payload, {
         onSuccess: () => {
-          show('Company created successfully', {type: 'success'});
-          navigation.goBack();
+          tryPrintSaleReceipt(receiptLinesForPrint).catch(() => undefined);
+          show('Sale created successfully', {type: 'success'});
+          // navigation.goBack();
         },
         onUnauthorized: () => {
           show('Unauthorized', {type: 'error'});
         },
         onError: error => {
-          show((error as Error)?.message ?? 'Failed to create company', {
+          show((error as Error)?.message ?? 'Failed to create sale', {
             type: 'error',
           });
         },
@@ -265,7 +550,8 @@ export default function useSaleCreate(
     }
   }, [
     getValues,
-    date,
+    orderDate,
+    saleDate,
     show,
     navigation,
     Draft,
@@ -273,14 +559,20 @@ export default function useSaleCreate(
     isConnected,
     item,
     key,
+    clearErrors,
+    setError,
+    companyList,
+    contactPersonList,
+    productList,
+    profile?.firstname,
   ]);
 
   useFocusEffect(
     useCallback(() => {
       getBuyers();
       getLine()
-      getContactPerson()
-    }, [getBuyers, getLine, getContactPerson]),
+      // getContactPerson()
+    }, [getBuyers, getLine]),
   );
 
 
@@ -288,21 +580,31 @@ export default function useSaleCreate(
     control,
     handleSubmit,
     errors,
-    onOpenDate,
-    onclearDate,
+    onOpenOrderDate,
+    onOpenSaleDate,
+    onClearOrderDate,
+    onClearSaleDate,
     onCloseDate,
-    date,
+    orderDate,
+    saleDate,
+    calendarValueDate: activeDateField === 'sale' ? saleDate : orderDate,
     showDate,
     onConfirmDate,
     companyList,
     isConnected,
     onCreateCompany,
-    errorDate,
+    errorOrderDate,
+    errorSaleDate,
     keyValue,
     lineList,
     selectedLineValues, setSelectedLineValues,
     contactPersonList,
-    onSubmitCreateContactPerson
+    onSubmitCreateContactPerson,
+    getContactPerson,
+    onSubmitGetProduct,
+    productList,
+    syncSaleLinesForSelection,
+    removeSaleProduct,
   };
 }
 

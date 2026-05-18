@@ -27,6 +27,7 @@ type Endpoints = {
   GetAccountList: string;
   GetAccountHistory: string;
   GetSaleSuccess: string;
+  CreateSale: string;
   GetLine: string;
   GetContactPerson: string;
   GetSeller: string;
@@ -92,6 +93,7 @@ export const endpoints:Endpoints = {
 
   //sale
   GetSaleSuccess: 'company/sale/success/all',
+  CreateSale: 'company/sale/on-site',
   GetSale: 'company/sale/',
   GetPreOrder: 'company/sale/pending/all',
 
