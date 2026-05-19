@@ -80,7 +80,7 @@ export default function useSale() {
   // submit edit //
   const onSubmitEdit = (item: GetSaleSuccessResponse) => {
     navigation.navigate('SalesStack', {
-      screen: 'CreateSale',
+      screen: 'SalesCreate',
       params: {item: item, key: 'edit'},
     });
   };

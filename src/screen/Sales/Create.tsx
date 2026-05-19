@@ -1,6 +1,12 @@
-import { StyleSheet, ScrollView, KeyboardAvoidingView } from 'react-native';
+import {
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Text,
+  View,
+} from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Colors } from '@/theme';
+import { Colors, FontFamily, FontSizes, Shadows } from '@/theme';
 import { Controller, useWatch } from 'react-hook-form';
 import TextView from '@/component/view/TextView';
 import TextInput from '@/component/input/TextInput';
@@ -12,8 +18,13 @@ import DateIcon from '@/component/icons/DateIcon';
 import moment from 'moment';
 import DropdownComponent, { DropdownMultiSelect } from '@/component/dropdown';
 import type { SalesParamList } from '@/navigation/types';
+import { useMemo } from 'react';
 import useSaleCreate from '@/hooks/useSale/useCreate';
-import SaleProductLineRow from '@/screen/Sales/_component/SaleProductLineRow';
+import SaleProductLineRow, {
+  formatTotalRub,
+  parseSaleLineNumber,
+  quantityForLineTotal,
+} from '@/screen/Sales/_component/SaleProductLineRow';
 
 type Props = NativeStackScreenProps<SalesParamList, 'SalesCreate'>;
 
@@ -35,7 +46,6 @@ export default function SalesCreate(route: Props) {
     calendarValueDate,
     showDate,
     onConfirmDate,
-    companyList,
     lineList,
     isConnected,
     onCreateCompany,
@@ -45,23 +55,48 @@ export default function SalesCreate(route: Props) {
     selectedLineValues,
     setSelectedLineValues,
     contactPersonList,
-    onSubmitCreateContactPerson,
-    getContactPerson,
-    onSubmitGetProduct,
     productList,
     syncSaleLinesForSelection,
     removeSaleProduct,
+    companyName,
   } = useSaleCreate(route);
 
-  const selectedProducts =
-    useWatch({ control, name: 'products' }) ?? [];
-    const keyboardVerticalOffset = 30;
+  const productsWatch = useWatch({ control, name: 'products' });
+  const saleLinesWatch = useWatch({ control, name: 'saleLines' });
+
+  const { selectedProductIds, productsGrandTotal } = useMemo(() => {
+    const ids = Array.isArray(productsWatch)
+      ? productsWatch.filter(isDropdownValue)
+      : [];
+    const lines =
+      saleLinesWatch != null && typeof saleLinesWatch === 'object'
+        ? (saleLinesWatch as Record<
+            string,
+            { quantity?: string; unitPrice?: string }
+          >)
+        : {};
+    let sum = 0;
+    for (const pid of ids) {
+      const idKey = String(pid);
+      const row = lines[idKey];
+      if (!row) {
+        continue;
+      }
+      const qty = quantityForLineTotal(row.quantity);
+      const unit = parseSaleLineNumber(String(row.unitPrice ?? '0'));
+      sum += qty * unit;
+    }
+    return { selectedProductIds: ids, productsGrandTotal: sum };
+  }, [productsWatch, saleLinesWatch]);
+
+  const keyboardVerticalOffset = 30;
 
   return (
     <KeyboardAvoidingView
-    behavior="padding"
-    keyboardVerticalOffset={keyboardVerticalOffset}
-    style={styles.container}>
+      behavior="padding"
+      keyboardVerticalOffset={keyboardVerticalOffset}
+      style={styles.container}
+    >
       <CustomHeader title={'Create Sale'} showBack={true} />
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -83,15 +118,20 @@ export default function SalesCreate(route: Props) {
           )}
         />
         <TextView title="Line" style={styles.marginTop} />
-        <DropdownMultiSelect
-          style={styles.marginTop}
-          data={lineList}
-          value={selectedLineValues}
-          onChange={setSelectedLineValues}
-        />
+        <View style={styles.selectedContainer}>
+          {lineList.length > 0 &&
+            lineList.map(item => (
+              <View key={String(item.value)} style={styles.selectedChip}>
+                <Text style={styles.selectedChipText}>{item.label}</Text>
+              </View>
+            ))}
+        </View>
 
         <TextView title="Company" style={styles.marginTop} />
-        <Controller
+        <View style={styles.companyChip}>
+          <Text style={styles.selectedChipText}>{companyName}</Text>
+        </View>
+        {/* <Controller
           control={control}
           name="company"
           render={({ field: { onChange, value: value } }) => (
@@ -99,18 +139,28 @@ export default function SalesCreate(route: Props) {
               style={styles.marginTop}
               data={isConnected ? companyList : []}
               value={value}
-              onClick={({value: buyerCompanyId, label: labelValue}) => {
+              onClick={({value: buyerCompanyId}) => {
                 onChange(buyerCompanyId);
-                getContactPerson(labelValue);
+                // getContactPerson(labelValue);
                 onSubmitGetProduct(String(buyerCompanyId));
               }}
               errorMessage={errors.company?.message}
             />
           )}
-        />
+        /> */}
 
         <TextView title="Contact person" style={styles.marginTop} />
-        <Controller
+        <View style={styles.selectedContainer}>
+          {contactPersonList.length > 0 &&
+            contactPersonList.map(item => (
+              <View key={String(item.value)} style={styles.selectedChip}>
+                <Text style={styles.selectedChipText}>
+                  {item.firstName} {item.lastName}
+                </Text>
+              </View>
+            ))}
+        </View>
+        {/* <Controller
           control={control}
           name="contactPerson"
           render={({ field: { onChange, value: Value } }) => (
@@ -122,37 +172,42 @@ export default function SalesCreate(route: Props) {
               errorMessage={errors.contactPerson?.message}
             />
           )}
-        />
+        /> */}
 
-        <Botton
+        {/* <Botton
           title={'Add More'}
           onHandler={onSubmitCreateContactPerson}
           style={styles.contactPersonButton}
           textStyle={styles.contactPersonButtonText}
-        />
-
-        <TextView title="Order date" />
-        <TouchableView
-          title={orderDate}
-          style={styles.marginTop}
-          onPress={onOpenOrderDate}
-          onClose={onClearOrderDate}
-          onBlur={showDate}
-          icon={<DateIcon size={24} color={Colors.black} />}
-          errorMessage={errorOrderDate}
-        />
-
-        <TextView title="Sale date" style={styles.marginTop} />
-        <TouchableView
-          title={saleDate}
-          style={styles.marginTop}
-          onPress={onOpenSaleDate}
-          onClose={onClearSaleDate}
-          onBlur={showDate}
-          icon={<DateIcon size={24} color={Colors.black} />}
-          errorMessage={errorSaleDate}
-        />
-
+        /> */}
+        <View style={styles.dateContainer}>
+          <View style={styles.dateColumn}>
+            <TextView title="Order date" style={styles.marginTop} />
+            <TouchableView
+              title={orderDate}
+              containerStyle={styles.dateTouchableWrapper}
+              style={styles.marginTop}
+              onPress={onOpenOrderDate}
+              onClose={onClearOrderDate}
+              onBlur={showDate}
+              icon={<DateIcon size={22} color={Colors.black} />}
+              errorMessage={errorOrderDate}
+            />
+          </View>
+          <View style={styles.dateColumn}>
+            <TextView title="Sale date" style={styles.marginTop} />
+            <TouchableView
+              title={saleDate}
+              containerStyle={styles.dateTouchableWrapper}
+              style={styles.marginTop}
+              onPress={onOpenSaleDate}
+              onClose={onClearSaleDate}
+              onBlur={showDate}
+              icon={<DateIcon size={22} color={Colors.black} />}
+              errorMessage={errorSaleDate}
+            />
+          </View>
+        </View>
         <TextView title="Products" style={styles.marginTop} />
         <Controller
           control={control}
@@ -171,10 +226,7 @@ export default function SalesCreate(route: Props) {
           )}
         />
 
-        {(Array.isArray(selectedProducts)
-          ? selectedProducts.filter(isDropdownValue)
-          : []
-        ).map(productId => {
+        {selectedProductIds.map(productId => {
           const meta = productList.find(
             p => String(p.value) === String(productId),
           );
@@ -191,6 +243,14 @@ export default function SalesCreate(route: Props) {
             />
           );
         })}
+
+        {selectedProductIds.length > 0 ? (
+          <>
+            <Text style={styles.productsGrandTotal}>
+              Total price:{formatTotalRub(productsGrandTotal)}
+            </Text>
+          </>
+        ) : null}
 
         <TextView title="Received amount" style={styles.marginTop} />
         <Controller
@@ -236,6 +296,15 @@ const styles = StyleSheet.create({
   marginTop: {
     marginTop: 10,
   },
+  productsGrandTotal: {
+    marginTop: '5%',
+    width: '93%',
+    alignSelf: 'center',
+    fontSize: 17,
+    fontWeight: '600',
+    color: Colors.black,
+    textAlign: 'right',
+  },
   button: {
     marginTop: '5%',
   },
@@ -254,5 +323,59 @@ const styles = StyleSheet.create({
   },
   contactPersonButtonText: {
     color: Colors.gray_400,
+  },
+  selectedChipText: {
+    fontSize: FontSizes.xsmall,
+    fontFamily: FontFamily.semiBold,
+    color: Colors.black,
+  },
+  selectedChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.gray_200,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginRight: 8,
+    marginBottom: 8,
+    ...Shadows.sm,
+  },
+  selectedContainer: {
+    width: '93%',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 10,
+  },
+  companyChip: {
+    alignSelf: 'flex-start',
+    marginLeft: '4%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.gray_200,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 10,
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    width: '93%',
+    alignSelf: 'center',
+    marginTop: 10,
+    columnGap: 10,
+  },
+  dateColumn: {
+    flex: 1,
+    minWidth: 0,
+  },
+  dateTouchableWrapper: {
+    width: '100%',
+    alignSelf: 'stretch',
   },
 });

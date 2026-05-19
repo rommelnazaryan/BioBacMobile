@@ -22,7 +22,6 @@ export default function useCompany() {
   const navigation =
     useNavigation<NativeStackNavigationProp<CompanyParamList>>();
   const isConnected = useNetworkStore(s => s.isConnected);
-  const {profile} = useProfileStore();
   const {allCompanyCash, setAllCompanyCash} = useAllCompanyCashStore();
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState<number>(0);
@@ -192,7 +191,7 @@ export default function useCompany() {
   // get Line
   const getLine = useCallback(async () => {
     if (!isConnected) return;
-    await GetLine({
+    await GetLine( undefined,{
       onSuccess: res => {
         const { data } = res as { data: { id: number; name: string}[] };
         const companyOptions: any[] = data.map(

@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { PrinterLanguage } from '@/native/printerSdk';
 import {
   connectPrinterBluetooth,
   connectPrinterNet,
@@ -6,6 +7,8 @@ import {
 } from '@/native/printerSdk';
 
 export const LAST_SDK_PRINTER_CREDENTIALS_KEY = '@BioBac/sdk_printer_credentials_v1';
+
+export const SDK_PRINT_LANGUAGE_KEY = '@BioBac/sdk_print_language_v1';
 
 export type PersistedSdkPrinter =
   | {kind: 'BLE'; mac: string; name?: string}
@@ -54,4 +57,20 @@ export async function reconnectStoredSdkPrinter(): Promise<boolean> {
     return false;
   }
   return false;
+}
+
+export async function persistPrintLanguage(lang: PrinterLanguage): Promise<void> {
+  await AsyncStorage.setItem(SDK_PRINT_LANGUAGE_KEY, lang);
+}
+
+export async function getPersistedPrintLanguage(): Promise<PrinterLanguage> {
+  try {
+    const v = await AsyncStorage.getItem(SDK_PRINT_LANGUAGE_KEY);
+    if (v === 'ESC_POS' || v === 'TSPL' || v === 'ZPL') {
+      return v;
+    }
+  } catch {
+    // ignore
+  }
+  return 'TSPL';
 }

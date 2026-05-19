@@ -203,7 +203,7 @@ export default function useDetail(route: Props) {
       case 'ReturnProduct':
         navigation.navigate('ReturnProductStack', {
           screen: 'ReturnProductCreate',
-          params: {item: undefined, key: 'create',name: item.name},
+          params: {item: undefined as any, key: 'create',name: item.name},
         });
         // navigation.navigate('ReturnProductStack', {
         //   screen: 'ReturnProduct',
@@ -216,7 +216,7 @@ export default function useDetail(route: Props) {
       case 'Sales':
         navigation.navigate('SalesStack', {
           screen: 'SalesCreate',
-          params: {item: undefined, key: 'create'},
+          params: {item: item as any, key: 'create'},
         });
         break;
       case 'Map':
