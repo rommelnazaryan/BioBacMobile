@@ -21,6 +21,8 @@ import com.facebook.react.bridge.ReactMethod
 import net.posprinter.IConnectListener
 import net.posprinter.IDeviceConnection
 import net.posprinter.POSConnect
+import net.posprinter.POSConst
+import net.posprinter.POSPrinter
 import net.posprinter.TSPLConst
 import net.posprinter.TSPLPrinter
 import net.posprinter.ZPLConst
@@ -204,10 +206,10 @@ class PrinterSdkModule(private val reactContext: ReactApplicationContext) :
     }
 
     try {
-      if (language.equals("ZPL", ignoreCase = true)) {
-        printZplSample(conn)
-      } else {
-        printTsplSample(conn)
+      when {
+        language.equals("ZPL", ignoreCase = true) -> printZplSample(conn)
+        language.equals("ESC_POS", ignoreCase = true) -> printEscPosSample(conn)
+        else -> printTsplSample(conn)
       }
       promise.resolve(true)
     } catch (error: Exception) {
@@ -224,10 +226,10 @@ class PrinterSdkModule(private val reactContext: ReactApplicationContext) :
     }
 
     try {
-      if (language.equals("ZPL", ignoreCase = true)) {
-        printZplBill(conn)
-      } else {
-        printTsplBill(conn)
+      when {
+        language.equals("ZPL", ignoreCase = true) -> printZplBill(conn)
+        language.equals("ESC_POS", ignoreCase = true) -> printEscPosBill(conn)
+        else -> printTsplBill(conn)
       }
       promise.resolve(true)
     } catch (error: Exception) {
@@ -264,9 +266,33 @@ class PrinterSdkModule(private val reactContext: ReactApplicationContext) :
   }
 
   /**
-   * Multi-line TSPL receipt (UTF-8 / Cyrillic support depends on printer firmware).
-   * Label height scales with line count (~5 mm per row, capped).
+   * ESC/POS receipt: same text raster as TSPL path, sent via [POSPrinter] (58/80 mm thermal).
    */
+  @ReactMethod
+  fun printEscPosReceiptLinesJson(linesJson: String, promise: Promise) {
+    val conn = connection
+    if (conn?.isConnect != true) {
+      promise.reject("NOT_CONNECTED", "Printer is not connected")
+      return
+    }
+    try {
+      val ja = org.json.JSONArray(linesJson)
+      if (ja.length() <= 0) {
+        promise.reject("EMPTY_RECEIPT", "No lines to print")
+        return
+      }
+      val arr = Arguments.createArray()
+      for (i in 0 until ja.length()) {
+        arr.pushString(ja.optString(i, ""))
+      }
+      printEscPosReceiptLines(conn, arr)
+      promise.resolve(true)
+    } catch (error: Exception) {
+      promise.reject("PRINT_RECEIPT_FAILED", error.message, error)
+    }
+  }
+
+  /** Multi-line receipt via TSPL raster (legacy array API). Prefer [printReceiptLinesJson]. */
   @ReactMethod
   fun printReceiptLines(lines: ReadableArray, promise: Promise) {
     val conn = connection
@@ -287,14 +313,95 @@ class PrinterSdkModule(private val reactContext: ReactApplicationContext) :
     }
   }
 
+  /**
+   * Demo receipt used for **Print sample** (TSPL raster, ESC/POS raster, ZPL).
+   */
+  private fun sampleReceiptDemoLines(): List<String> {
+    return listOf(
+               "31.03.2026 12:03",
+      "ПОСТАВЩИК ООО \"БИОБАК\"",
+      "www.biobac.ru  Тел. +7-495-743-97-78",
+      "Ответственный: Грач - +7-926-473-82-76",
+      "------------------------------------------------------------------------",
+      "                             ПОКУПАТЕЛЬ",
+      "",
+      "ООО КЛЁН",
+      "Начальный баланс:      -19521.00 долг",
+      "",
+      "------------------------------------------------------------------------",
+      "Продукт             Кол      Цена                   Сумма",
+      "",
+      "BB VS-60            39        215.0                      8385.0",
+      "",
+      "ИТОГО: 24721.0",
+      "",
+      "Оплачено:                0.00",
+      "Конечный баланс:",
+      "31.03.2026          -44242.00 долг",
+      "",
+      "Подписи",
+      "Ф.И.О _______________________",
+      "                          М.П.",
+      "Подпись _____________________",
+      "",
+    )
+  }
+
+  private fun readableSampleCheckLines(): ReadableArray {
+    val arr = Arguments.createArray()
+    for (line in sampleReceiptDemoLines()) {
+      arr.pushString(line)
+    }
+    return arr
+  }
+
   private fun truncateReceiptLineForWidth(text: String, paint: Paint, maxWidthPx: Float): String {
     if (paint.measureText(text) <= maxWidthPx) return text
-    var t = text
     val ellipsis = "..."
+    /** Lines like spaces + "ИТОГО: …" — trim leading spaces; trim from left if still too wide (keep tail). */
+    if (isReceiptTotalHeadingLine(text)) {
+      var t = text.trimStart()
+      while (t.isNotEmpty() && paint.measureText(t) > maxWidthPx) {
+        t = t.drop(1)
+      }
+      return if (t.isEmpty()) ellipsis else t
+    }
+    var t = text
     while (t.isNotEmpty() && paint.measureText(t + ellipsis) > maxWidthPx) {
       t = t.dropLast(1)
     }
     return if (t.isEmpty()) ellipsis else t + ellipsis
+  }
+
+  private fun isReceiptTotalHeadingLine(raw: String): Boolean {
+    return raw.trimStart().startsWith("ИТОГО:")
+  }
+
+  /**
+   * Text size + vertical step (px) for one receipt line (normal vs ИТОГО heading).
+   */
+  private fun receiptLineRasterMetrics(
+    text: String,
+    baseSizePx: Float,
+    totalSizePx: Float,
+  ): Pair<Float, Int> {
+    val emphasized = isReceiptTotalHeadingLine(text)
+    val sz = if (emphasized) totalSizePx else baseSizePx
+    val tp =
+      TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+        textSize = sz
+        typeface =
+          Typeface.create(
+            Typeface.SANS_SERIF,
+            if (emphasized) Typeface.BOLD else Typeface.NORMAL,
+          )
+      }
+    val fm = tp.fontMetrics
+    val step =
+      kotlin.math.ceil((fm.descent - fm.ascent).toDouble() + 10.0)
+        .toInt()
+        .coerceAtLeast(8)
+    return Pair(sz, step)
   }
 
   /**
@@ -307,41 +414,75 @@ class PrinterSdkModule(private val reactContext: ReactApplicationContext) :
     val bitmapWidthDots = kotlin.math.max((((maxPrintDots + 7) shr 3) shl 3), 288)
     val padding = 16
     val textSizePx = 24f
+    val totalLineTextSizePx = 30f
 
     val lineCount = lines.size().coerceAtLeast(1)
     val texts = List(lineCount) { idx -> lines.getString(idx) ?: "" }
 
-    val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-      color = Color.BLACK
-      textSize = textSizePx
-      typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
-      isSubpixelText = true
-    }
-
-    val fm = paint.fontMetrics
-    val lineStep =
-      kotlin.math.ceil((fm.descent - fm.ascent).toDouble() + 10.0).toInt().coerceAtLeast(8)
+    val paint =
+      TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.BLACK
+        textSize = textSizePx
+        typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
+        isSubpixelText = true
+      }
 
     val maxTextWidthPx = (bitmapWidthDots - padding * 2).toFloat()
 
-    val maxScratchHeightDots = kotlin.math.min(lineCount * lineStep + padding * 2, 6144)
-    val scratch = Bitmap.createBitmap(
-      bitmapWidthDots,
-      maxScratchHeightDots.coerceAtLeast(lineStep + padding * 2),
-      Bitmap.Config.ARGB_8888,
-    )
+    var totalScratchHeightDots = padding * 2
+    for (entry in texts) {
+      totalScratchHeightDots += receiptLineRasterMetrics(entry, textSizePx, totalLineTextSizePx).second
+    }
+
+    val maxScratchHeightDots =
+      kotlin.math.min(totalScratchHeightDots.coerceAtLeast(48), 6144)
+
+    val scratch =
+      Bitmap.createBitmap(
+        bitmapWidthDots,
+        maxScratchHeightDots.coerceAtLeast(textSizePx.toInt()),
+        Bitmap.Config.ARGB_8888,
+      )
     scratch.eraseColor(Color.WHITE)
     val canvas = Canvas(scratch)
 
-    var baselineY = padding - fm.ascent
-    var maxBottom = baselineY + fm.descent
+    var baselineY = 0f
+    var isFirstBaseline = true
+    var maxBottom = 0f
 
     for (entry in texts) {
+      val emphasized = isReceiptTotalHeadingLine(entry)
+      paint.textSize =
+        if (emphasized) totalLineTextSizePx else textSizePx
+      paint.typeface =
+        Typeface.create(
+          Typeface.SANS_SERIF,
+          if (emphasized) Typeface.BOLD else Typeface.NORMAL,
+        )
+
+      val fmCur = paint.fontMetrics
+      val stepPx =
+        kotlin.math.ceil((fmCur.descent - fmCur.ascent).toDouble() + 10.0)
+          .toInt()
+          .coerceAtLeast(8)
+
+      if (isFirstBaseline) {
+        baselineY = padding - fmCur.ascent
+        isFirstBaseline = false
+      }
+
       if (baselineY >= scratch.height - padding) break
+
       val drawMe = truncateReceiptLineForWidth(entry, paint, maxTextWidthPx)
-      canvas.drawText(drawMe, padding.toFloat(), baselineY, paint)
-      maxBottom = kotlin.math.max(maxBottom, baselineY + fm.descent)
-      baselineY += lineStep
+      if (emphasized) {
+        paint.textAlign = Paint.Align.RIGHT
+        canvas.drawText(drawMe, padding + maxTextWidthPx, baselineY, paint)
+        paint.textAlign = Paint.Align.LEFT
+      } else {
+        canvas.drawText(drawMe, padding.toFloat(), baselineY, paint)
+      }
+      maxBottom = kotlin.math.max(maxBottom, baselineY + fmCur.descent)
+      baselineY += stepPx
     }
 
     val contentHeightDots =
@@ -392,6 +533,45 @@ class PrinterSdkModule(private val reactContext: ReactApplicationContext) :
     return out.toByteArray()
   }
 
+  private fun printEscPosReceiptLines(conn: IDeviceConnection, lines: ReadableArray) {
+    val bmp = rasterizeReceiptLinesToBitmap(lines)
+    try {
+      POSPrinter(conn)
+        .initializePrinter()
+        .printBitmap(bmp, POSConst.ALIGNMENT_LEFT, POSConst.BMP_NORMAL)
+        .feedLine(3)
+        .cutPaper(POSConst.CUT_HALF)
+    } finally {
+      if (!bmp.isRecycled) {
+        bmp.recycle()
+      }
+    }
+  }
+
+  private fun printEscPosSample(conn: IDeviceConnection) {
+    printEscPosReceiptLines(conn, readableSampleCheckLines())
+  }
+
+  private fun printEscPosBill(conn: IDeviceConnection) {
+    POSPrinter(conn)
+      .initializePrinter()
+      .setAlignment(POSConst.ALIGNMENT_CENTER)
+      .printString("BioBac BILL\n")
+      .feedLine(1)
+      .setAlignment(POSConst.ALIGNMENT_LEFT)
+      .printString("Item          Qty  Price\n")
+      .printString("----------------------------\n")
+      .printString("Skirt Palas    x2   500${'$'}\n")
+      .printString("Blouse Ropol   x1   300${'$'}\n")
+      .feedLine(2)
+      .setAlignment(POSConst.ALIGNMENT_CENTER)
+      .printQRCode("BIOBAC BILL")
+      .feedLine(2)
+      .printString("Thank you\n")
+      .feedLine(3)
+      .cutPaper(POSConst.CUT_HALF)
+  }
+
   private fun printTsplReceiptLines(conn: IDeviceConnection, lines: ReadableArray) {
     val bmp = rasterizeReceiptLinesToBitmap(lines)
     try {
@@ -416,18 +596,7 @@ class PrinterSdkModule(private val reactContext: ReactApplicationContext) :
   }
 
   private fun printTsplSample(conn: IDeviceConnection) {
-    TSPLPrinter(conn)
-      .sizeMm(60.0, 30.0)
-      .gapMm(2.0, 0.0)
-      .speed(5.0)
-      .density(10)
-      .direction(TSPLConst.DIRECTION_FORWARD)
-      .reference(0, 0)
-      .cls()
-      .text(30, 25, TSPLConst.FNT_16_24, TSPLConst.ROTATION_0, 1, 1, "BIOBAC")
-      .text(30, 65, TSPLConst.FNT_12_20, TSPLConst.ROTATION_0, 1, 1, "TSPL2 sample")
-      .qrcode(360, 25, TSPLConst.EC_LEVEL_H, 4, TSPLConst.QRCODE_MODE_MANUAL, TSPLConst.ROTATION_0, "BIOBAC")
-      .print(1)
+    printTsplReceiptLines(conn, readableSampleCheckLines())
   }
 
   private fun printTsplBill(conn: IDeviceConnection) {
@@ -456,15 +625,30 @@ class PrinterSdkModule(private val reactContext: ReactApplicationContext) :
   }
 
   private fun printZplSample(conn: IDeviceConnection) {
-    ZPLPrinter(conn)
-      .addStart()
-      .setPrinterWidth(480)
-      .setLabelLength(240)
-      .addText(30, 25, ZPLConst.FNT_D, ZPLConst.ROTATION_0, 24, 14, "BIOBAC")
-      .addText(30, 75, ZPLConst.FNT_D, ZPLConst.ROTATION_0, 18, 10, "ZPL2 sample")
-      .addQRCode(330, 25, "BIOBAC")
-      .addPrintCount(1)
-      .addEnd()
+    val lines = sampleReceiptDemoLines()
+    val labelDots = (lines.size * 22 + 48).coerceIn(400, 4096)
+    var z =
+      ZPLPrinter(conn)
+        .addStart()
+        .setPrinterWidth(480)
+        .setLabelLength(labelDots)
+    var y = 16
+    for (raw in lines) {
+      val line =
+        when {
+          raw.isEmpty() -> " "
+          raw.length > 48 -> raw.take(45) + "..."
+          else -> raw
+        }
+      val totalHeading = isReceiptTotalHeadingLine(raw)
+      val font = if (totalHeading) ZPLConst.FNT_D else ZPLConst.FNT_A
+      val hDots = if (totalHeading) 24 else 12
+      val vDots = if (totalHeading) 14 else 8
+      z =
+        z.addText(18, y, font, ZPLConst.ROTATION_0, hDots, vDots, line)
+      y += if (totalHeading) 28 else 20
+    }
+    z.addPrintCount(1).addEnd()
   }
 
   private fun printZplBill(conn: IDeviceConnection) {

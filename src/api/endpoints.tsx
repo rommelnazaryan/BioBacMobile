@@ -40,6 +40,7 @@ type Endpoints = {
   GetWarehouseRelatedProducts: string;
   GetWarehouseProductBalance: string;
   CreateTransferProduct: string;
+  GetCompany: string;
 }
 
 export const endpoints:Endpoints = {
@@ -71,7 +72,7 @@ export const endpoints:Endpoints = {
   GetContactPerson: 'company/contact-person',
   GetByLines: 'company/all/by-lines',
   GetCompanyFns: 'company/fns/',
-
+  GetCompany:'company/',
   //payment
   GetPaymentCategory: 'company/payment-category',
   CreatePayment: 'company/payment/funds-entry',

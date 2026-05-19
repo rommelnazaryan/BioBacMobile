@@ -14,8 +14,6 @@ import {
 import type {GetSaleSuccessResponse} from '@/types';
 import useDraftStore from '@/zustland/draftStore';
 import type {NativeStackNavigationProp, NativeStackScreenProps} from '@react-navigation/native-stack';
-import {GetBuyers} from '@/services/Company/Buyers';
-import {GetLine} from '@/services/Company/GetLine';
 import {GetAssortment} from '@/services/Company/GetAssortment';
 import {
   CreateSale,
@@ -27,6 +25,7 @@ import {buildSaleReceiptLines} from '@/services/print/buildSaleReceiptLines';
 import {ensureSalePrinterGate} from '@/services/print/ensureSalePrinterGate';
 import {tryPrintSaleReceipt} from '@/services/print/tryPrintSaleReceipt';
 import useProfileStore from '@/zustland/profileStore';
+import { GetCompany } from '@/services/Company/GetCompany';
 
 const parseEffectiveSaleQuantity = (raw: unknown): number | null => {
   const qStr = String(raw ?? '').trim();
@@ -39,6 +38,29 @@ const parseEffectiveSaleQuantity = (raw: unknown): number | null => {
   }
   return q <= 0 ? 1 : q;
 };
+
+/** API may return lines as {id, name}[], {label, value}[], or primitives. */
+function mapLinesToDropdownOptions(
+  lines: unknown,
+): DropdownOptions[] {
+  if (!Array.isArray(lines)) {
+    return [];
+  }
+  return lines.map((entry, index) => {
+    if (entry != null && typeof entry === 'object') {
+      const o = entry as Record<string, unknown>;
+      const value = (o.id ?? o.value ?? index) as string | number;
+      const label =
+        o.name != null
+          ? String(o.name)
+          : o.label != null
+            ? String(o.label)
+            : String(value);
+      return {label, value};
+    }
+    return {label: String(entry), value: entry as string | number};
+  });
+}
 
 export type SaleLineFields = {
   quantity: string;
@@ -72,16 +94,18 @@ export default function useSaleCreate(
   const [saleDate, setSaleDate] = useState<string>(todayDdMmYyyy);
   const [errorOrderDate, setErrorOrderDate] = useState<string>('');
   const [errorSaleDate, setErrorSaleDate] = useState<string>('');
-  const [companyList, setCompanyList] = useState<DropdownOptions[]>([]);
+  const [companyList, _setCompanyList] = useState<DropdownOptions[]>([]);
   const [lineList, setLineList] = useState<DropdownOptions[]>([]);
   const [keyValue, setKeyValue] = useState<string>('');
   const [selectedLineValues, setSelectedLineValues] = useState<Array<string | number>>([]);
-  const [contactPersonList, setContactPersonList] = useState<DropdownOptions[]>([]);
-  const [data, setData] = useState<any[]>([]);
+  const [contactPersonList, setContactPersonList] = useState<any[]>([]);
+  const [data, _setData] = useState<any[]>([]);
   const [productUnitPriceById, setProductUnitPriceById] = useState<
     Map<number, number>
   >(() => new Map());
   const [productList, setProductList] = useState<DropdownOptions[]>([]);
+  const [companyName, setCompanyName] = useState<string>('');
+  const [balance, setBalance] = useState<number>(0);
   const validationSchema = Yup.object().shape({
     dealName: Yup.string().trim().default(''),
     company: Yup.string().trim().required('Required'),
@@ -220,56 +244,29 @@ export default function useSaleCreate(
     setActiveDateField(null);
   };
 
-
-  // get Buyer
-  const getBuyers = useCallback(async () => {
-    if (!isConnected) return;
-    await GetBuyers({
-      onSuccess: res => {
-
-        const {data} = res as {
-          data: {id: number; name: string; assortmentId: number}[];
-        };
-        const companyOptions: DropdownOptions[] = data.map(company => ({
-          label: company.name,
-          value: company.id,
-        }));
-        setData(data);
-        setCompanyList(companyOptions as []);
-      },
-      onUnauthorized: () => {
-        show('Unauthorized', { type: 'error' });
-      },
-      onError: () => {
-        show('Failed to get company group', { type: 'error' });
-      },
-    });
-
-  }, [isConnected, show])
-
   // get Line
-  const getLine = useCallback(async () => {
-    if (!isConnected) return;
-    await GetLine({
-      onSuccess: res => {
-        const { data } = res as { data: { id: number; name: string}[] };
-        const companyOptions: any[] = data.map(
-          (item: { name: string; id: number }) => ({
-            label: item.name,
-            value: item.id,
-          }),
-        );
-        setLineList(companyOptions as []);
-      },
-      onUnauthorized: () => {
-        show('Unauthorized', { type: 'error' });
-      },
-      onError: () => {
-        show('Failed to get company group', { type: 'error' });
-      },
-    });
+  // const getLine = useCallback(async () => {
+  //   if (!isConnected) return;
+  //   await GetLine(undefined, {
+  //     onSuccess: res => {
+  //       const { data } = res as { data: { id: number; name: string}[] };
+  //       const companyOptions: any[] = data.map(
+  //         (item: { name: string; id: number }) => ({
+  //           label: item.name,
+  //           value: item.id,
+  //         }),
+  //       );
+  //       setLineList(companyOptions as []);
+  //     },
+  //     onUnauthorized: () => {
+  //       show('Unauthorized', { type: 'error' });
+  //     },
+  //     onError: () => {
+  //       show('Failed to get company group', { type: 'error' });
+  //     },
+  //   });
 
-  }, [isConnected, show])
+  // }, [isConnected, show])
 
   // get Contact Person
   // const getContactPerson = useCallback(async () => {
@@ -312,17 +309,17 @@ export default function useSaleCreate(
       if (!isConnected) {
         return;
       }
-      const buyer = data.find(
-        (b: {id: number; assortmentId?: number}) =>
-          String(b.id) === String(buyerCompanyId),
-      );
-      if (buyer == null || buyer.assortmentId == null) {
-        show('No product list for this company', {type: 'error'});
-        setProductList([]);
-        setProductUnitPriceById(new Map());
-        return;
-      }
-      GetAssortment(Number(buyer.assortmentId), {
+      // const buyer = data.find(
+      //   (b: {id: number; assortmentId?: number}) =>
+      //     String(b.id) === String(buyerCompanyId),
+      // );
+      // if (buyer == null || buyer.assortmentId == null) {
+      //   show('No product list for this company', {type: 'error'});
+      //   setProductList([]);
+      //   setProductUnitPriceById(new Map());
+      //   return;
+      // }
+      GetAssortment(Number(buyerCompanyId), {
       onSuccess: res => {
         const {
           data: { products },
@@ -367,9 +364,54 @@ export default function useSaleCreate(
       },
     });
   },
-  [data, isConnected, setValue, show],
+  [isConnected, setValue, show],
   );
 
+  const getCompany = useCallback(async () => {
+    if (!isConnected || item?.id == null) {
+      return;
+    }
+    await GetCompany(Number(item.id), {
+      onSuccess: res => {
+        const payload = res as {
+          data?: {
+            companyGroup?: {lines?: unknown};
+            name?: string;
+            contactPerson?: unknown;
+            balance?: number | string | null;
+            assortmentId?: number;
+          };
+        };
+        const {companyGroup, name, contactPerson, balance: balanceRaw,assortmentId} =
+          payload.data ?? {};
+        setLineList(mapLinesToDropdownOptions(companyGroup?.lines ?? []));
+        setCompanyName(name ?? '');
+        setValue('company', String(item.id));
+        _setCompanyList([
+          {label: name != null && name !== '' ? name : String(item.id), value: item.id},
+        ]);
+        setContactPersonList(
+          Array.isArray(contactPerson)
+            ? (contactPerson as DropdownOptions[])
+            : [],
+        );
+        const b =
+          typeof balanceRaw === 'number'
+            ? balanceRaw
+            : balanceRaw != null && balanceRaw !== ''
+              ? Number(balanceRaw)
+              : NaN;
+        setBalance(Number.isFinite(b) ? b : 0);
+        onSubmitGetProduct(Number(assortmentId));
+      },
+      onUnauthorized: () => {
+        show('Unauthorized', { type: 'error' });
+      },
+      onError: () => {
+        show('Failed to get company group', { type: 'error' });
+      },
+    });
+  }, [isConnected, item, setValue, show, onSubmitGetProduct]);
 
   // create contact person
   const onSubmitCreateContactPerson = useCallback(async () => {
@@ -477,6 +519,14 @@ export default function useSaleCreate(
     const contactPersonName = contactPersonList.find(
       c => String(c.value) === String(contactPersonId),
     )?.label;
+
+    /** Оценка конечного баланса для чека: открытый баланс + сумма продажи − оплачено. */
+    const openingBal = Number.isFinite(balance) ? balance : null;
+    const closingBal =
+      openingBal != null
+        ? openingBal + totalAmount - receivedAmount
+        : null;
+
     const receiptLinesForPrint = buildSaleReceiptLines({
       dealName: payload.dealName,
       buyerCompanyName:
@@ -497,6 +547,10 @@ export default function useSaleCreate(
       totalAmount: payload.totalAmount,
       receivedAmount: payload.receivedAmount,
       responsibleFirstName: profile?.firstname,
+      responsiblePhone:
+        profile?.phoneNumber?.trim?.() ?? undefined,
+      openingBalanceDebt: openingBal,
+      closingBalanceDebt: closingBal,
     });
 
     if (!isConnected) {
@@ -536,7 +590,7 @@ export default function useSaleCreate(
         onSuccess: () => {
           tryPrintSaleReceipt(receiptLinesForPrint).catch(() => undefined);
           show('Sale created successfully', {type: 'success'});
-          // navigation.goBack();
+          navigation.goBack();
         },
         onUnauthorized: () => {
           show('Unauthorized', {type: 'error'});
@@ -565,14 +619,16 @@ export default function useSaleCreate(
     contactPersonList,
     productList,
     profile?.firstname,
+    profile?.phoneNumber,
+    balance,
   ]);
 
   useFocusEffect(
     useCallback(() => {
-      getBuyers();
-      getLine()
+      getCompany();
+
       // getContactPerson()
-    }, [getBuyers, getLine]),
+    }, [getCompany]),
   );
 
 
@@ -605,6 +661,7 @@ export default function useSaleCreate(
     productList,
     syncSaleLinesForSelection,
     removeSaleProduct,
+    companyName
   };
 }
 

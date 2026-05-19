@@ -13,6 +13,7 @@ interface TouchableViewProps {
   onBlur?:boolean
   icon?: React.ReactNode;
   errorMessage?: string;
+  containerStyle?: ViewStyle;
 }
 
 export default function TouchableView({
@@ -25,6 +26,7 @@ export default function TouchableView({
   onBlur,
   icon,
   errorMessage,
+  containerStyle,
 }: TouchableViewProps) {
   const [isFocusedInternal, setIsFocusedInternal] = useState(onBlur);
   const isFocused = focused ?? isFocusedInternal;
@@ -38,7 +40,7 @@ export default function TouchableView({
   }, [onBlur]);
   
   return (
-    <View style={ styles.wrapper}>
+    <View style={[styles.wrapper, containerStyle]}>
       <TouchableOpacity
         activeOpacity={0.8}
         disabled={disabled}
@@ -56,7 +58,10 @@ export default function TouchableView({
         ]}
         onPress={onHandlerPress}
       >
-        <Text style={[styles.text, {color: title ? Colors.black : Colors.gray}]}>
+        <Text
+          style={[styles.text, {color: title ? Colors.black : Colors.gray}]}
+          numberOfLines={1}
+          ellipsizeMode="tail">
           {title || 'Select'}
         </Text>
 
@@ -96,6 +101,7 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.small,
     fontFamily: FontFamily.regular,
     color: Colors.black,
+    flexShrink: 1,
   },
   errorText: {
     marginTop: 6,

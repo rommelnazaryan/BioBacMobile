@@ -84,6 +84,8 @@ const DropdownComponent = ({
     );
   };
 
+  const locked = disable && !isEmpty;
+
   return (
     <>
       <Dropdown
@@ -99,6 +101,13 @@ const DropdownComponent = ({
         selectedTextStyle={styles.selectedTextStyle}
         iconStyle={styles.iconStyle}
         iconColor={Colors.black}
+        renderRightIcon={
+          locked
+            ? () => (
+                <Feather name="chevron-down" size={22} color={Colors.black} style={styles.trailingIcon} />
+              )
+            : undefined
+        }
         search={search && !isEmpty}
         data={data}
         disable={isEmpty || disable}
@@ -176,6 +185,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   iconStyle: {
+    width: 25,
+    height: 25,
+  },
+  trailingIcon: {
     width: 25,
     height: 25,
   },

@@ -86,7 +86,10 @@ export type AdditionalItemsParamList = {
 
 export type SalesParamList = {
   Sales: undefined;
-  SalesCreate: {item: GetSaleSuccessResponse | undefined,key: 'create' | 'edit'};
+  SalesCreate: {
+    item: GetSaleSuccessResponse | AllCompanyProps | undefined;
+    key: 'create' | 'edit';
+  };
   CreateContactPerson: undefined;
 };
 

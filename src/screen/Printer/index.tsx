@@ -40,8 +40,13 @@ import {
   printPrinterSdkBill,
   printPrinterSdkSample,
 } from '@/native/printerSdk';
-import {persistLastSdkPrinterCredential} from '@/services/print/sdkPrinterStorage';
-
+import {
+  persistLastSdkPrinterCredential,
+  persistPrintLanguage,
+} from '@/services/print/sdkPrinterStorage';
+import Header from '@/navigation/Header';
+import { t } from '@/locales';
+import CustomHeader from '@/navigation/Header';
 type PrinterKind = 'BLE' | 'NET' | 'USB';
 
 /** Demo QR — همان الگوی کتابخانه؛ می‌توانید URL یا بیس‌۶۴ خودتان را جایگزین کنید */
@@ -91,6 +96,7 @@ const KIND_OPTIONS: {key: PrinterKind; label: string}[] = [
 const LANGUAGE_OPTIONS: {key: PrinterLanguage; label: string}[] = [
   {key: 'TSPL', label: 'TSPL2'},
   {key: 'ZPL', label: 'ZPL2'},
+  {key: 'ESC_POS', label: 'ESC/POS'},
 ];
 
 export default function PrinterScreen() {
@@ -252,6 +258,10 @@ export default function PrinterScreen() {
       closeConnSafe();
     };
   }, [closeConnSafe]);
+
+  useEffect(() => {
+    persistPrintLanguage(language).catch(() => undefined);
+  }, [language]);
 
   useEffect(() => {
     const sub = NetPrinterEventEmitter.addListener(
@@ -484,9 +494,11 @@ export default function PrinterScreen() {
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>Printer</Text>
-
-        <Text style={styles.label}>Select printer type:</Text>
+    <CustomHeader
+        title={t('common.printer')}
+        showBack={true}
+      />       
+       <Text style={styles.label}>Select printer type:</Text>
         {KIND_OPTIONS.map(opt => {
           if (opt.key === 'USB' && Platform.OS !== 'android') {
             return null;
@@ -662,7 +674,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   scroll: {
-    padding: 20,
+    width:'90%',
+    alignSelf:'center',
     paddingBottom: 40,
   },
   title: {

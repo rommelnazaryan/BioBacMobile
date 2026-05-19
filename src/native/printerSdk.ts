@@ -13,7 +13,7 @@ export type PrinterBluetoothDevice = {
   isXp: boolean;
 };
 
-export type PrinterLanguage = 'TSPL' | 'ZPL';
+export type PrinterLanguage = 'TSPL' | 'ZPL' | 'ESC_POS';
 
 type PrinterSdkNative = {
   isBluetoothEnabled: () => Promise<boolean>;
@@ -32,6 +32,7 @@ type PrinterSdkNative = {
   printReceiptLines?: (lines: string[]) => Promise<boolean>;
   /** Prefer this on Android — survives bridge quirks vs raw array arguments. */
   printReceiptLinesJson?: (linesJson: string) => Promise<boolean>;
+  printEscPosReceiptLinesJson?: (linesJson: string) => Promise<boolean>;
 };
 
 function getPrinterSdkNative(): PrinterSdkNative | undefined {
@@ -86,9 +87,18 @@ export function printPrinterSdkBill(language: PrinterLanguage) {
   return requireNative().printBill(language);
 }
 
-export function printPrinterSdkReceiptLines(lines: string[]): Promise<boolean> {
+export function printPrinterSdkReceiptLines(
+  lines: string[],
+  language: PrinterLanguage = 'TSPL',
+): Promise<boolean> {
   const n = requireNative();
   const jsonPayload = JSON.stringify(lines);
+  if (
+    language === 'ESC_POS' &&
+    typeof n.printEscPosReceiptLinesJson === 'function'
+  ) {
+    return n.printEscPosReceiptLinesJson.call(n, jsonPayload);
+  }
   if (typeof n.printReceiptLinesJson === 'function') {
     return n.printReceiptLinesJson.call(n, jsonPayload);
   }

@@ -1,19 +1,20 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Controller, useWatch } from 'react-hook-form';
+import { Controller } from 'react-hook-form';
 import type { Control, FieldErrors } from 'react-hook-form';
 import TextInput from '@/component/input/TextInput';
 import Botton from '@/component/button';
 import { Colors, FontFamily, FontSizes } from '@/theme';
 import type { SaleCreateFormValues } from '@/hooks/useSale/useCreate';
 
-const parseNum = (v: string) => {
+/** Parse numeric input for sale line price/qty (shared with screen total). */
+export const parseSaleLineNumber = (v: string) => {
   const n = Number(String(v ?? '').replace(',', '.').replace(/\s/g, ''));
   return Number.isFinite(n) ? n : 0;
 };
 
 /** Empty → no line total. Valid non‑positive (e.g. 0) → count as 1. */
-const quantityForLineTotal = (quantityRaw: string | undefined): number => {
+export const quantityForLineTotal = (quantityRaw: string | undefined): number => {
   const t = String(quantityRaw ?? '').trim();
   if (t === '') {
     return 0;
@@ -25,7 +26,7 @@ const quantityForLineTotal = (quantityRaw: string | undefined): number => {
   return n <= 0 ? 1 : n;
 };
 
-const formatTotalRub = (total: number) =>
+export const formatTotalRub = (total: number) =>
   `${total.toFixed(2).replace('.', ',')} руб.`;
 
 type Props = {
@@ -44,11 +45,6 @@ export default function SaleProductLineRow({
   onRemove,
 }: Props) {
   const idKey = String(productId);
-  const quantity = useWatch({ control, name: `saleLines.${idKey}.quantity` }) ?? '';
-  const unitPrice = useWatch({ control, name: `saleLines.${idKey}.unitPrice` }) ?? '0';
-  const unitNum = parseNum(String(unitPrice));
-  const qtyForTotal = quantityForLineTotal(String(quantity));
-  const lineTotal = qtyForTotal * unitNum;
 
   const saleLinesErr = errors.saleLines as
     | Record<string, { quantity?: { message?: string } }>
@@ -98,10 +94,7 @@ export default function SaleProductLineRow({
             )}
           />
         </View>
-        <View style={styles.colTotal}>
-          <Text style={styles.cellLabel}>TOTAL PRICE</Text>
-          <Text style={styles.totalText}>{formatTotalRub(lineTotal)}</Text>
-        </View>
+        {/* Line total removed; sum of all lines is shown above «Received amount». */}
         <View style={styles.colActions}>
           <Botton
             title="DELETE"
@@ -155,12 +148,6 @@ const styles = StyleSheet.create({
     flexBasis: '22%',
     minWidth: 72,
   },
-  colTotal: {
-    flexGrow: 1,
-    flexBasis: '28%',
-    minWidth: 88,
-    justifyContent: 'flex-start',
-  },
   colActions: {
     justifyContent: 'flex-end',
     alignSelf: 'stretch',
@@ -174,12 +161,6 @@ const styles = StyleSheet.create({
   },
   inputCompact: {
     marginTop: 0,
-  },
-  totalText: {
-    fontFamily: FontFamily.semiBold,
-    fontSize: FontSizes.small,
-    color: Colors.black,
-    marginTop: 8,
   },
   deleteBtn: {
     backgroundColor: Colors.red,
