@@ -572,7 +572,8 @@ export default function useSaleCreate(
     if (!printerReady) {
       return;
     }
-
+ 
+    
     const saleItem = item as GetSaleSuccessResponse | undefined;
     if (key === 'edit' && saleItem?.id != null) {
       UpdateSale(saleItem.id, payload, {
